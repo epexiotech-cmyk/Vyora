@@ -37,6 +37,12 @@ The Turborepo workspaces must be strictly separated to ensure independent scalin
 - **Pre-Push Strategy**: We do not enforce strict `typecheck` or tests on `pre-push` to avoid blocking developer velocity when saving WIP branches.
 - **CI Pipeline**: Full deterministic validation occurs in CI. A standard pipeline must execute `pnpm install`, `pnpm run lint`, and `pnpm run typecheck` across the Turborepo workspace.
 
+### Environment & Secrets Discipline
+
+- **Strict Schema Validation**: All environment variables must be registered and validated at runtime using `zod` inside the `@vyora/env` package. Unstructured `process.env` access is prohibited.
+- **Electron Boundaries**: The Electron Renderer (and future web clients) must **never** consume the `ServerEnvSchema` directly. They are restricted to `ClientEnvSchema`.
+- **Secret Safekeeping**: `.env` and `.env.*` files (excluding `.env.example`) are globally git-ignored. Actual deployment secrets will be injected by the CI/CD pipeline (e.g., GitHub Actions secrets) or the cloud environment runtime, rather than being tracked in code.
+
 ### Electron Boundary
 
 - **Electron Main Process = Backend Engine:** Handles all direct SQLite database access, filesystem access, sync queue polling, and thermal printing hardware commands.
