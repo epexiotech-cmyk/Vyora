@@ -31,6 +31,12 @@ The Turborepo workspaces must be strictly separated to ensure independent scalin
 - Do **NOT** blindly add this flag to packages that register globals, patch runtime behavior, initialize services, or contain startup logic (e.g., `database`, `sync-engine`, `auth`).
 - This strict policy ensures robust tree-shaking, smaller bundles, and faster application startup (Electron/Next.js) without runtime breakage.
 
+### Automation & CI Discipline
+
+- **Pre-Commit Hook (`lint-staged`)**: Formatting (Prettier) and Linting (ESLint) are enforced on **staged files only**. Full-workspace validations are blocked from pre-commit to keep commits instantaneous.
+- **Pre-Push Strategy**: We do not enforce strict `typecheck` or tests on `pre-push` to avoid blocking developer velocity when saving WIP branches.
+- **CI Pipeline**: Full deterministic validation occurs in CI. A standard pipeline must execute `pnpm install`, `pnpm run lint`, and `pnpm run typecheck` across the Turborepo workspace.
+
 ### Electron Boundary
 
 - **Electron Main Process = Backend Engine:** Handles all direct SQLite database access, filesystem access, sync queue polling, and thermal printing hardware commands.
