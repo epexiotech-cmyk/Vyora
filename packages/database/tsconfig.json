@@ -1,7 +1,11 @@
 {
   "extends": "@vyora/config/tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@prisma/client/sqlite": ["./node_modules/@prisma/client/sqlite"],
+      "@prisma/client/postgres": ["./node_modules/@prisma/client/postgres"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
