@@ -2,7 +2,7 @@
   "name": "@vyora/sync-engine",
   "version": "1.0.0",
   "private": true,
-  "main": "index.ts",
+  "main": "src/index.ts",
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit"
@@ -11,5 +11,12 @@
     "eslint": "^8.57.0",
     "typescript": "latest",
     "@vyora/config": "workspace:*"
+  },
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   }
 }

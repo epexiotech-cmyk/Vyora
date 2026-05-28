@@ -25,6 +25,12 @@ The Turborepo workspaces must be strictly separated to ensure independent scalin
 
 ## 2. Architecture Discipline
 
+### Package Optimization (Tree Shaking)
+
+- Use `"sideEffects": false` in `package.json` ONLY for packages that are genuinely side-effect free upon import (e.g., `@vyora/types`, `@vyora/utils`, `@vyora/ui`).
+- Do **NOT** blindly add this flag to packages that register globals, patch runtime behavior, initialize services, or contain startup logic (e.g., `database`, `sync-engine`, `auth`).
+- This strict policy ensures robust tree-shaking, smaller bundles, and faster application startup (Electron/Next.js) without runtime breakage.
+
 ### Electron Boundary
 
 - **Electron Main Process = Backend Engine:** Handles all direct SQLite database access, filesystem access, sync queue polling, and thermal printing hardware commands.

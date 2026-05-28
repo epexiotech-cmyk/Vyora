@@ -19,6 +19,18 @@ module.exports = {
       },
     ],
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@vyora/*/src/*'],
+            message:
+              'Direct internal imports are not allowed. Please import from the package root instead.',
+          },
+        ],
+      },
+    ],
   },
   env: {
     node: true,
