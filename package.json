@@ -35,5 +35,11 @@
     "prettier-plugin-tailwindcss": "^0.8.0",
     "turbo": "latest",
     "typescript": "latest"
+  },
+  "pnpm": {
+    "neverBuiltDependencies": [
+      "better-sqlite3",
+      "bcrypt"
+    ]
   }
 }

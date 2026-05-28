@@ -1,0 +1,19 @@
+appId: com.vyora.desktop
+productName: Vyora
+directories:
+  output: dist-installers
+  buildResources: build
+files:
+  - dist-electron/**/*
+  - renderer/out/**/*
+  - package.json
+  - assets/**/*
+win:
+  target: nsis
+  icon: build/icon.ico
+mac:
+  target: dmg
+  icon: build/icon.icns
+linux:
+  target: AppImage
+  icon: build/icon.png

@@ -1,0 +1,83 @@
+@theme inline {
+  /* Colors - Modern Dark Graphite & Electric Cyan */
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+
+  --color-primary: var(--cyan-500);
+  --color-primary-foreground: #000000;
+
+  --color-secondary: var(--graphite-800);
+  --color-secondary-foreground: var(--text-primary);
+
+  --color-muted: var(--graphite-900);
+  --color-muted-foreground: var(--text-muted);
+
+  --color-accent: var(--cyan-500);
+  --color-accent-foreground: #000000;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: var(--border-subtle);
+  --color-input: var(--border-subtle);
+  --color-ring: var(--cyan-500);
+
+  /* Radius - Compact */
+  --radius-sm: 0.125rem;
+  --radius: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+}
+
+:root {
+  /* Graphite Base (Dark Mode Default) */
+  --graphite-950: #0a0a0c;
+  --graphite-900: #121214;
+  --graphite-800: #1a1a1e;
+  --graphite-700: #27272c;
+  --graphite-600: #3f3f46;
+  --graphite-500: #52525b;
+
+  /* Electric Cyan */
+  --cyan-400: #22d3ee;
+  --cyan-500: #06b6d4;
+  --cyan-600: #0891b2;
+
+  /* Theme variables */
+  --bg-primary: var(--graphite-950);
+  --bg-secondary: var(--graphite-900);
+  --bg-tertiary: var(--graphite-800);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --border-subtle: var(--graphite-700);
+  --border-strong: var(--graphite-600);
+
+  /* Glassmorphism Utilities */
+  --glass-bg: rgba(26, 26, 30, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.05);
+
+  /* Layout Spacing (Compact ERP) */
+  --header-height: 48px;
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+}
+
+.light {
+  /* Light mode overrides (Graphite inverted to light grey, cyan accent) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
+}
