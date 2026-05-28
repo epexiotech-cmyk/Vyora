@@ -4,14 +4,24 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,json}\"",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "turbo": "latest",
     "prettier": "latest",
-    "typescript": "latest"
+    "prettier-plugin-tailwindcss": "^0.8.0",
+    "turbo": "latest",
+    "typescript": "latest",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "latest",
+    "eslint-plugin-prettier": "latest",
+    "eslint-plugin-import": "latest",
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest"
   }
 }

@@ -16,32 +16,32 @@ Vyora is a modern offline-first + cloud-synced business billing and management s
 
 The software will provide:
 
-* Billing & invoicing
-* GST management
-* Inventory management
-* Accounting basics
-* Multi-user system
-* Cloud synchronization
-* Desktop + Mobile ecosystem
-* Modern UI/UX
-* High performance
-* Offline-first architecture
+- Billing & invoicing
+- GST management
+- Inventory management
+- Accounting basics
+- Multi-user system
+- Cloud synchronization
+- Desktop + Mobile ecosystem
+- Modern UI/UX
+- High performance
+- Offline-first architecture
 
 Vyora should compete with:
 
-* Vyapar
-* Marg ERP
-* TallyPrime
-* Busy
-* Zoho Billing
+- Vyapar
+- Marg ERP
+- TallyPrime
+- Busy
+- Zoho Billing
 
 But with:
 
-* Better UI
-* Faster workflow
-* Offline + Cloud hybrid system
-* Modern architecture
-* Modular scalability
+- Better UI
+- Faster workflow
+- Offline + Cloud hybrid system
+- Modern architecture
+- Modular scalability
 
 ---
 
@@ -65,18 +65,18 @@ But with:
 
 Primary platform:
 
-* Windows Desktop
+- Windows Desktop
 
 Future:
 
-* macOS
-* Linux
+- macOS
+- Linux
 
 Desktop stack:
 
-* Electron
-* Next.js
-* TypeScript
+- Electron
+- Next.js
+- TypeScript
 
 ---
 
@@ -85,35 +85,39 @@ Desktop stack:
 We are officially adopting **Flutter** for the mobile application. The app must be architected to support **two modes**:
 
 ### Mode 1 — Standalone Mobile Billing System
+
 Functions independently as a complete offline-first billing software for small shops, mobile sellers, and field sales teams.
-* Customer & product management
-* Invoice generation & thermal printing
-* Local offline database (SQFlite)
-* GST support and reports
-* Local backup/restore
+
+- Customer & product management
+- Invoice generation & thermal printing
+- Local offline database (SQFlite)
+- GST support and reports
+- Local backup/restore
 
 ### Mode 2 — Multi-Device Linked Ecosystem
+
 An optional mode where the mobile app links to the desktop and cloud ecosystem.
-* Multi-device sync
-* Desktop + mobile linking
-* Shared business data via PostgreSQL cloud
-* Platform-agnostic APIs
+
+- Multi-device sync
+- Desktop + mobile linking
+- Shared business data via PostgreSQL cloud
+- Platform-agnostic APIs
 
 The mobile app will support:
 
-* Android phones
-* Android tablets
-* Future possibility:
-  * iOS
-  * Handheld POS devices
+- Android phones
+- Android tablets
+- Future possibility:
+  - iOS
+  - Handheld POS devices
 
 Features:
 
-* Sales entry
-* Invoice sharing
-* Dashboard
-* Notifications
-* Reports
+- Sales entry
+- Invoice sharing
+- Dashboard
+- Notifications
+- Reports
 
 ---
 
@@ -123,34 +127,33 @@ Features:
 
 ### Local Database
 
-* SQLite
-* Used for:
-
-  * Offline operation
-  * Fast local access
-  * Billing continuity
+- SQLite
+- Used for:
+  - Offline operation
+  - Fast local access
+  - Billing continuity
 
 ### Cloud Database
 
-* PostgreSQL
+- PostgreSQL
 
 Used for:
 
-* Multi-device sync
-* Backup
-* Analytics
-* User management
-* Remote access
+- Multi-device sync
+- Backup
+- Analytics
+- User management
+- Remote access
 
 ### Sync Engine
 
 Custom sync engine will:
 
-* Sync local SQLite with PostgreSQL
-* Work in background
-* Handle conflicts safely
-* Retry failed uploads
-* Maintain audit logs
+- Sync local SQLite with PostgreSQL
+- Work in background
+- Handle conflicts safely
+- Retry failed uploads
+- Maintain audit logs
 
 ---
 
@@ -158,57 +161,57 @@ Custom sync engine will:
 
 ## Frontend
 
-* Next.js
-* React
-* TypeScript
-* TailwindCSS
-* ShadCN UI
+- Next.js
+- React
+- TypeScript
+- TailwindCSS
+- ShadCN UI
 
 ## Desktop
 
-* Electron
+- Electron
 
 ## Backend
 
-* Node.js
-* Express / Next API
+- Node.js
+- Express / Next API
 
 ## Database
 
-* SQLite (local)
-* PostgreSQL (cloud)
+- SQLite (local)
+- PostgreSQL (cloud)
 
 ## ORM
 
-* Prisma ORM
+- Prisma ORM
 
 ## State Management
 
-* Zustand
+- Zustand
 
 ## Forms
 
-* React Hook Form
-* Zod validation
+- React Hook Form
+- Zod validation
 
 ## PDF & Printing
 
-* React PDF
-* HTML print engine
+- React PDF
+- HTML print engine
 
 ## Charts
 
-* Recharts
+- Recharts
 
 ## Authentication
 
-* JWT
-* Refresh token system
+- JWT
+- Refresh token system
 
 ## Storage
 
-* Google Drive backup integration
-* Local encrypted backups
+- Google Drive backup integration
+- Local encrypted backups
 
 ---
 
@@ -216,76 +219,76 @@ Custom sync engine will:
 
 ## Phase 1 — Foundation
 
-* Monorepo setup
-* Electron setup
-* Next.js setup
-* Database architecture
-* Prisma ORM
-* Authentication system
-* Theme system
-* Folder structure
-* Shared packages
+- Monorepo setup
+- Electron setup
+- Next.js setup
+- Database architecture
+- Prisma ORM
+- Authentication system
+- Theme system
+- Folder structure
+- Shared packages
 
 ---
 
 ## Phase 2 — Billing Engine
 
-* Customer management
-* Product management
-* GST calculations
-* Invoice creation
-* Invoice editing
-* Thermal printing
-* PDF export
-* QR code support
-* Barcode support
-* Multiple invoice templates
+- Customer management
+- Product management
+- GST calculations
+- Invoice creation
+- Invoice editing
+- Thermal printing
+- PDF export
+- QR code support
+- Barcode support
+- Multiple invoice templates
 
 Minimum:
 
-* 5 invoice designs
+- 5 invoice designs
 
 ---
 
 ## Phase 3 — Inventory & Accounts
 
-* Stock management
-* Purchase entries
-* Expense management
-* Ledger
-* Profit/loss
-* Reports
-* GST reports
+- Stock management
+- Purchase entries
+- Expense management
+- Ledger
+- Profit/loss
+- Reports
+- GST reports
 
 ---
 
 ## Phase 4 — Offline Sync Engine
 
-* Local sync queue
-* Conflict handling
-* Background uploads
-* Cloud reconciliation
-* Backup system
+- Local sync queue
+- Conflict handling
+- Background uploads
+- Cloud reconciliation
+- Backup system
 
 ---
 
 ## Phase 5 — Multi-user & Cloud
 
-* Organization accounts
-* Staff accounts
-* Permissions
-* Activity logs
-* Cloud dashboard
+- Organization accounts
+- Staff accounts
+- Permissions
+- Activity logs
+- Cloud dashboard
 
 ---
 
 ## Phase 6 — Mobile App
 
-* Android app
-* Dashboard
-* Sales management
-* Invoice sharing
-* Reports
+- Android app
+- Dashboard
+- Sales management
+- Invoice sharing
+- Reports
 
 ---
 
@@ -295,43 +298,43 @@ Minimum:
 
 Vyora UI should be:
 
-* Minimal
-* Fast
-* Premium
-* Clean
-* Business focused
-* Modern dark/light theme
+- Minimal
+- Fast
+- Premium
+- Clean
+- Business focused
+- Modern dark/light theme
 
 ## Official Brand/UI Colors
 
 Primary design language should use:
 
-* Light Neon Green
-* Light Neon Blue
+- Light Neon Green
+- Light Neon Blue
 
 The feel should remain:
 
-* Professional
-* Premium
-* Modern
-* Minimal
-* Business-oriented
+- Professional
+- Premium
+- Modern
+- Minimal
+- Business-oriented
 
 Avoid:
 
-* Overly cyberpunk aesthetics
-* Excessive glow effects
-* Gaming-style neon
-* Oversaturated colors
+- Overly cyberpunk aesthetics
+- Excessive glow effects
+- Gaming-style neon
+- Oversaturated colors
 
 The UI should feel like modern SaaS software, an enterprise dashboard, or clean futuristic productivity software. Use neon accents subtly for highlights, focus states, buttons, charts, and active elements.
 
 Inspired by:
 
-* Linear
-* Stripe
-* Notion
-* Modern SaaS dashboards
+- Linear
+- Stripe
+- Notion
+- Modern SaaS dashboards
 
 ---
 
@@ -353,9 +356,9 @@ Each major feature should have separate branch.
 
 Example:
 
-* feature/auth
-* feature/billing
-* feature/inventory
+- feature/auth
+- feature/billing
+- feature/inventory
 
 ---
 
@@ -363,17 +366,17 @@ Example:
 
 /apps
 
-* desktop
-* web
-* mobile
+- desktop
+- web
+- mobile
 
 /packages
 
-* ui
-* database
-* auth
-* billing
-* shared
+- ui
+- database
+- auth
+- billing
+- shared
 
 /prisma
 /docs
@@ -385,25 +388,25 @@ Example:
 
 ## Coding Standards
 
-* TypeScript strict mode
-* Reusable components
-* Modular architecture
-* Clean folder structure
-* Scalable codebase
+- TypeScript strict mode
+- Reusable components
+- Modular architecture
+- Clean folder structure
+- Scalable codebase
 
 ## UI Standards
 
-* Responsive layouts
-* Accessible components
-* Keyboard shortcuts
-* Fast interactions
+- Responsive layouts
+- Accessible components
+- Keyboard shortcuts
+- Fast interactions
 
 ## Security Standards
 
-* Secure authentication
-* Encrypted local storage
-* Secure sync engine
-* Audit logs
+- Secure authentication
+- Encrypted local storage
+- Secure sync engine
+- Audit logs
 
 ---
 
@@ -411,15 +414,15 @@ Example:
 
 Future possible modules:
 
-* CRM
-* WhatsApp integration
-* AI insights
-* E-commerce sync
-* UPI reconciliation
-* Accounting automation
-* Multi-language support
-* POS support
-* GST auto filing
+- CRM
+- WhatsApp integration
+- AI insights
+- E-commerce sync
+- UPI reconciliation
+- Accounting automation
+- Multi-language support
+- POS support
+- GST auto filing
 
 ---
 
@@ -427,32 +430,32 @@ Future possible modules:
 
 Build Vyora into a complete Indian business operating platform with:
 
-* Desktop software
-* Cloud SaaS
-* Mobile ecosystem
-* API integrations
-* Enterprise scalability
+- Desktop software
+- Cloud SaaS
+- Mobile ecosystem
+- API integrations
+- Enterprise scalability
 
 The focus should always remain:
 
-* Speed
-* Simplicity
-* Reliability
-* Offline-first experience
-* Professional user experience
+- Speed
+- Simplicity
+- Reliability
+- Offline-first experience
+- Professional user experience
 
 ---
 
 # Important Development Notes
 
-* Always prioritize scalable architecture.
-* Avoid quick hacks.
-* Build reusable systems.
-* Keep modules independent.
-* Maintain clean documentation.
-* Optimize for low-end business PCs.
-* Keep startup time fast.
-* Billing flow must remain extremely responsive.
+- Always prioritize scalable architecture.
+- Avoid quick hacks.
+- Build reusable systems.
+- Keep modules independent.
+- Maintain clean documentation.
+- Optimize for low-end business PCs.
+- Keep startup time fast.
+- Billing flow must remain extremely responsive.
 
 ---
 

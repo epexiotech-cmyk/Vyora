@@ -5,6 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "typescript": "latest",
+    "@vyora/config": "workspace:*"
   }
 }

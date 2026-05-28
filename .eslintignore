@@ -1,0 +1,11 @@
+# Same as .prettierignore
+.next/
+dist/
+build/
+out/
+.turbo/
+.cache/
+node_modules/
+apps/mobile/
+packages/database/node_modules/
+coverage/

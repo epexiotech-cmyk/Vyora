@@ -5,6 +5,13 @@
   "main": "main.js",
   "scripts": {
     "dev": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "typescript": "latest",
+    "@vyora/config": "workspace:*"
   }
 }
