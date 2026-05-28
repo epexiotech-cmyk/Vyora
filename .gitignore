@@ -16,8 +16,12 @@ apps/mobile/.pub/
 apps/mobile/build/
 
 # Prisma
+# Ensure generated clients are ignored
 packages/database/node_modules/
-
+**/.prisma/
+# Ensure schemas and migrations are explicitly tracked (overrides any broad ignores)
+!packages/database/prisma/**/*.prisma
+!packages/database/prisma/**/migrations/
 # Electron
 apps/desktop/dist/
 apps/desktop/build/
