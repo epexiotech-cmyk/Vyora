@@ -30,7 +30,7 @@ export class DatabaseService {
     // For now, we'll try to find it in the workspace during dev.
     const isDev = !app.isPackaged;
     if (isDev) {
-      this.migrationsFolder = path.join(__dirname, '../../../../packages/database/drizzle');
+      this.migrationsFolder = path.join(__dirname, '../../../packages/database/drizzle');
     } else {
       this.migrationsFolder = path.join(process.resourcesPath, 'assets/drizzle');
     }

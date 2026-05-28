@@ -9,3 +9,4 @@ node_modules/
 apps/mobile/
 packages/database/node_modules/
 coverage/
+apps/desktop/dist-electron/

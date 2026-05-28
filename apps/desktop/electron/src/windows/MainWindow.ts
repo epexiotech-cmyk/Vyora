@@ -19,10 +19,10 @@ export class MainWindow {
       transparent: true,
       frame: false,
       alwaysOnTop: true,
-      icon: path.join(__dirname, '../../assets/icons/icon.png'),
+      icon: path.join(__dirname, '../assets/icons/icon.png'),
     });
 
-    await this.splash.loadFile(path.join(__dirname, '../../assets/splash.html'));
+    await this.splash.loadFile(path.join(__dirname, '../assets/splash.html'));
 
     // Create Main Window
     this.window = new BrowserWindow({
@@ -31,11 +31,11 @@ export class MainWindow {
       minWidth: 900,
       minHeight: 600,
       title: 'Vyora',
-      icon: path.join(__dirname, '../../assets/icons/icon.png'),
+      icon: path.join(__dirname, '../assets/icons/icon.png'),
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, '../preload.js'),
+        preload: path.join(__dirname, 'preload.js'),
         sandbox: true,
       },
       show: false, // Show when ready to prevent flickering
@@ -61,7 +61,7 @@ export class MainWindow {
       await this.window.loadURL(rendererUrl);
     } else {
       // In production, load the static Next.js output
-      const appPath = path.join(__dirname, '../../renderer/out/index.html');
+      const appPath = path.join(__dirname, '../renderer/out/index.html');
       await this.window.loadFile(appPath);
     }
 

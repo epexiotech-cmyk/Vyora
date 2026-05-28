@@ -1,31 +1,12 @@
-# Build artifacts
+# Same as .prettierignore
 .next/
 dist/
 build/
 out/
-
-# Cache
 .turbo/
 .cache/
-
-# Dependencies
 node_modules/
-apps/mobile/.pub-cache/
-
-# Coverage
+apps/mobile/
+packages/database/node_modules/
 coverage/
-
-# OS specific
-.DS_Store
-
-# Prisma generated
-packages/database/prisma/sqlite/migrations/
-packages/database/prisma/postgres/migrations/
-
-# Flutter specific
-apps/mobile/build/
-apps/mobile/.dart_tool/
-apps/mobile/.pub/
-
-# Secrets
-.env*
+apps/desktop/dist-electron/
