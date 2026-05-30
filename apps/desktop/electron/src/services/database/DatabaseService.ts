@@ -1,28 +1,33 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { initializeDatabase, VyoraDatabase, seedDatabase } from '@vyora/database';
+import { VyoraDatabase, seedDatabase } from '@vyora/database';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { app } from 'electron';
 
+import { IDatabaseAdapter } from '../../main/database/adapters/IDatabaseAdapter';
+import { DatabaseAdapterFactory } from '../../main/database/DatabaseAdapterFactory';
+import { DEFAULT_DATABASE_ENGINE } from '../../main/database/DatabaseEngine';
+import { databaseMigrationService } from '../../main/database/migration/DatabaseMigrationService';
+import { companyStorageService } from '../../main/security/CompanyStorageService';
 import { loggerService } from '../logger/LoggerService';
 
 export class DatabaseService {
-  private db: VyoraDatabase | null = null;
+  private adapter: IDatabaseAdapter;
   private dbPath: string;
   private migrationsFolder: string;
 
   constructor() {
-    // Determine user data path (e.g. AppData/Roaming/Vyora on Windows)
-    const userDataPath = app.getPath('userData');
-    const dbDir = path.join(userDataPath, 'database');
+    this.dbPath = companyStorageService.getCompanyDatabasePath('vyora');
+    const dbDir = path.dirname(this.dbPath);
 
     // Ensure directory exists
     if (!fs.existsSync(dbDir)) {
       fs.mkdirSync(dbDir, { recursive: true });
     }
 
-    this.dbPath = path.join(dbDir, 'vyora.db');
+    // Engine is selected asynchronously during init(), but we set a default here.
+    this.adapter = DatabaseAdapterFactory.createAdapter(DEFAULT_DATABASE_ENGINE);
 
     // Resolve migrations folder.
     // In dev, it might be in packages/database/drizzle
@@ -36,16 +41,36 @@ export class DatabaseService {
     }
   }
 
+  private initialized = false;
+
   public async init(): Promise<void> {
-    loggerService.info(`[DatabaseService] Initializing at ${this.dbPath}`);
+    if (this.initialized) return;
+
+    loggerService.info(`[DatabaseService] Initializing database at ${this.dbPath}`);
+
     try {
-      const { db } = initializeDatabase(this.dbPath);
-      this.db = db;
+      // Synchronous state check is removed in favor of full migration pipeline.
+      // If migration is required, the encryption migration service will perform it now.
+      if (databaseMigrationService.requiresMigration(this.dbPath)) {
+        const { databaseEncryptionMigrationService } =
+          await import('../../main/database/migration/DatabaseEncryptionMigrationService');
+        await databaseEncryptionMigrationService.runMigration(this.dbPath);
+
+        // Important: After successful migration, the original .db file is renamed.
+        // We must fetch the new path (.vyr) from the storage service.
+        this.dbPath = companyStorageService.getCompanyDatabasePath('vyora');
+      }
+
+      // Engine is now always SQLCIPHER
+      const engine = databaseMigrationService.getRecommendedEngine(this.dbPath);
+      this.adapter = DatabaseAdapterFactory.createAdapter(engine);
+
+      await this.adapter.connect(this.dbPath);
 
       // Run migrations
       if (fs.existsSync(this.migrationsFolder)) {
         loggerService.info(`[DatabaseService] Running migrations from ${this.migrationsFolder}...`);
-        migrate(this.db, { migrationsFolder: this.migrationsFolder });
+        migrate(this.adapter.getDb(), { migrationsFolder: this.migrationsFolder });
         loggerService.info(`[DatabaseService] Migrations applied successfully.`);
       } else {
         loggerService.warn(
@@ -54,8 +79,9 @@ export class DatabaseService {
       }
 
       // Run seed
-      await seedDatabase(this.db);
+      await seedDatabase(this.adapter.getDb());
 
+      this.initialized = true;
       loggerService.info(`[DatabaseService] Initialization complete.`);
     } catch (error) {
       loggerService.error('[DatabaseService] Initialization failed:', error);
@@ -64,10 +90,7 @@ export class DatabaseService {
   }
 
   public getDb(): VyoraDatabase {
-    if (!this.db) {
-      throw new Error('Database is not initialized. Call init() first.');
-    }
-    return this.db;
+    return this.adapter.getDb();
   }
 }
 

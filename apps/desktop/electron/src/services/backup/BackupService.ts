@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { app } from 'electron';
-
+import { companyStorageService } from '../../main/security/CompanyStorageService';
 import { fileSystemService } from '../filesystem/FileSystemService';
 import { loggerService } from '../logger/LoggerService';
 
@@ -13,7 +12,7 @@ export class BackupService {
     try {
       loggerService.info('[Backup] Starting manual backup...');
 
-      const dbPath = path.join(app.getPath('userData'), 'database', 'vyora.db');
+      const dbPath = companyStorageService.getCompanyDatabasePath('vyora');
       if (!fs.existsSync(dbPath)) {
         throw new Error('Database file not found for backup.');
       }

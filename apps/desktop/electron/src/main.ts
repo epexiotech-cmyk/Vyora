@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 
 import { registerCustomerHandlers, registerProductHandlers } from './ipc/handlers/dbHandlers';
+import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
+import { encryptionService } from './main/security/EncryptionService';
+import { keyManagementService } from './main/security/KeyManagementService';
 import { dbService } from './services/database/DatabaseService';
 import { fileSystemService } from './services/filesystem/FileSystemService';
 import { loggerService } from './services/logger/LoggerService';
@@ -16,6 +19,18 @@ async function bootstrap() {
   // Initialize Core Infrastructure
   loggerService.init();
   fileSystemService.init();
+
+  // Initialize Security Services
+  const keyExists = (await keyManagementService.getKeyInfo()).exists;
+  await keyManagementService.ensureMasterKey();
+  if (keyExists) {
+    loggerService.info('Master encryption key loaded');
+  } else {
+    loggerService.info('Master encryption key generated');
+  }
+
+  await encryptionService.init();
+  await databaseIntegrityService.init();
 
   // IPC Handlers
   ipcMain.handle('system:ping', () => {

@@ -59,6 +59,9 @@ importers:
       better-sqlite3:
         specifier: ^11.1.2
         version: 11.10.0
+      better-sqlite3-multiple-ciphers:
+        specifier: ^12.10.0
+        version: 12.10.0
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@prisma/client@6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)(prisma@6.19.3(typescript@5.9.3))
@@ -68,6 +71,9 @@ importers:
       electron-store:
         specifier: ^8.2.0
         version: 8.2.0
+      keytar:
+        specifier: ^7.9.0
+        version: 7.9.0
     devDependencies:
       '@electron/rebuild':
         specifier: ^3.2.13
@@ -2438,6 +2444,10 @@ packages:
   bcryptjs@2.4.3:
     resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
+  better-sqlite3-multiple-ciphers@12.10.0:
+    resolution: {integrity: sha512-M7V2JJHIcdB90WRkf0UXwUZWOCCEz+hBZnb24VS9TzLDbpblckyxKWZ1H/CD3OtVM5xild5i/L1VNmweREo2sQ==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
+
   better-sqlite3@11.10.0:
     resolution: {integrity: sha512-EwhOpyXiOEL/lKzHz9AW1msWFNzGc/z+LzeB3/jnFJpxu+th2yqvzsSWas1v9jgs9+xiXJcD5A8CJxAG2TaghQ==}
 
@@ -4259,6 +4269,9 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
+  keytar@7.9.0:
+    resolution: {integrity: sha512-VPD8mtVtm5JNtA2AErl6Chp06JBfy7diFQ7TQQhdpWOl6MrCRB+eRbvAZUsbGQS9kiMq0coJsy0W0vHpDCkWsQ==}
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -4669,6 +4682,9 @@ packages:
 
   node-addon-api@1.7.2:
     resolution: {integrity: sha512-ibPK3iA+vaY1eEjESkQkM0BbCqFOaZMiXRTtdB0u7b4djtY6JnsjvPdUHVMg6xQt3B8fpTTWHI9A+ADjM9frzg==}
+
+  node-addon-api@4.3.0:
+    resolution: {integrity: sha512-73sE9+3UaLYYFmDsFZnqCInzPyh3MqIwZO9cw58yIqAZhONrrabrYyYe3TuIqtIiOuTXVhsGau8hcrhhwSsDIQ==}
 
   node-api-version@0.2.1:
     resolution: {integrity: sha512-2xP/IGGMmmSQpI1+O/k72jF/ykvZ89JeuKX3TLJAYPDVLUalrshrLHkeVcCCZqG/eEa635cr8IBYzgnDvM2O8Q==}
@@ -8030,6 +8046,11 @@ snapshots:
 
   bcryptjs@2.4.3: {}
 
+  better-sqlite3-multiple-ciphers@12.10.0:
+    dependencies:
+      bindings: 1.5.0
+      prebuild-install: 7.1.3
+
   better-sqlite3@11.10.0:
     dependencies:
       bindings: 1.5.0
@@ -10087,6 +10108,11 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
+  keytar@7.9.0:
+    dependencies:
+      node-addon-api: 4.3.0
+      prebuild-install: 7.1.3
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -10471,6 +10497,8 @@ snapshots:
 
   node-addon-api@1.7.2:
     optional: true
+
+  node-addon-api@4.3.0: {}
 
   node-api-version@0.2.1:
     dependencies:
