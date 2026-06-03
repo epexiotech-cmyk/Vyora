@@ -4,26 +4,13 @@ import { BrowserWindow } from 'electron';
 
 export class MainWindow {
   public window: BrowserWindow | null = null;
-  public splash: BrowserWindow | null = null;
   private isDev: boolean;
 
   constructor(isDev: boolean) {
     this.isDev = isDev;
   }
 
-  public async create() {
-    // Create Splash Screen
-    this.splash = new BrowserWindow({
-      width: 500,
-      height: 300,
-      transparent: true,
-      frame: false,
-      alwaysOnTop: true,
-      icon: path.join(__dirname, '../assets/icons/icon.png'),
-    });
-
-    await this.splash.loadFile(path.join(__dirname, '../assets/splash.html'));
-
+  public async create(onReady?: () => void) {
     // Create Main Window
     this.window = new BrowserWindow({
       width: 1280,
@@ -31,7 +18,7 @@ export class MainWindow {
       minWidth: 900,
       minHeight: 600,
       title: 'Vyora',
-      icon: path.join(__dirname, '../assets/icons/icon.png'),
+      icon: path.join(__dirname, '../assets/icons/Vyora Logo.ico'),
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -47,8 +34,9 @@ export class MainWindow {
     }
 
     this.window.on('ready-to-show', () => {
-      this.splash?.destroy();
-      this.window?.show();
+      if (onReady) {
+        onReady();
+      }
 
       if (this.isDev) {
         // this.window?.webContents.openDevTools();

@@ -8,45 +8,37 @@
       body {
         margin: 0;
         padding: 0;
-        background-color: #0f172a;
+        background-color: transparent;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         height: 100vh;
-        color: white;
-        font-family:
-          system-ui,
-          -apple-system,
-          sans-serif;
         overflow: hidden;
+        -webkit-app-region: drag; /* Allows moving the window */
       }
-      .logo {
-        font-size: 3rem;
-        font-weight: 800;
-        background: linear-gradient(to right, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 2rem;
-      }
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(255, 255, 255, 0.1);
-        border-left-color: #3b82f6;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
     </style>
   </head>
   <body>
-    <div class="logo">Vyora</div>
-    <div class="spinner"></div>
+    <!-- Display the animated SVG -->
+    <img src="./VYORA SPLASH.svg" alt="Vyora Splash" draggable="false" />
+
+    <script>
+      // The SVG shine sweep animation finishes roughly around 4.0s
+      // We will fire the custom event slightly before that to begin transition
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('splash-finished'));
+      }, 3800);
+
+      window.addEventListener('splash-finished', () => {
+        if (window.vyora?.splash?.finished) {
+          window.vyora.splash.finished();
+        }
+      });
+    </script>
   </body>
 </html>

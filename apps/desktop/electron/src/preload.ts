@@ -18,10 +18,17 @@ contextBridge.exposeInMainWorld('vyora', {
         ipcRenderer.invoke('db:products:create', data),
     },
   },
+  splash: {
+    finished: () => ipcRenderer.send('splash-finished'),
+  },
 });
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
+};
+
+export type VyoraSplashAPI = {
+  finished: () => void;
 };
 
 export type VyoraDatabaseAPI = {
@@ -40,6 +47,7 @@ declare global {
     vyora: {
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
+      splash: VyoraSplashAPI;
     };
   }
 }

@@ -6,10 +6,10 @@
   --color-primary: var(--cyan-500);
   --color-primary-foreground: #000000;
 
-  --color-secondary: var(--graphite-800);
+  --color-secondary: var(--bg-tertiary);
   --color-secondary-foreground: var(--text-primary);
 
-  --color-muted: var(--graphite-900);
+  --color-muted: var(--bg-secondary);
   --color-muted-foreground: var(--text-muted);
 
   --color-accent: var(--cyan-500);

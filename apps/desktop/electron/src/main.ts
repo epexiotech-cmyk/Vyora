@@ -8,13 +8,19 @@ import { dbService } from './services/database/DatabaseService';
 import { fileSystemService } from './services/filesystem/FileSystemService';
 import { loggerService } from './services/logger/LoggerService';
 import { MainWindow } from './windows/MainWindow';
+import { SplashWindow } from './windows/SplashWindow';
 
 let mainWindow: MainWindow | null = null;
+let splashWindow: SplashWindow | null = null;
 
 const isDev = process.env.NODE_ENV === 'development';
 
 async function bootstrap() {
   await app.whenReady();
+
+  // Show Splash Screen immediately
+  splashWindow = new SplashWindow();
+  await splashWindow.create();
 
   // Initialize Core Infrastructure
   loggerService.init();
@@ -37,7 +43,6 @@ async function bootstrap() {
     return 'Electron Connected';
   });
 
-  // Database
   try {
     await dbService.init();
     registerCustomerHandlers();
@@ -46,13 +51,30 @@ async function bootstrap() {
     console.error('Failed to initialize database:', err);
   }
 
-  mainWindow = new MainWindow(isDev);
-  await mainWindow.create();
+  let splashFinished = false;
+
+  const finishSplash = async () => {
+    if (splashFinished) return;
+    splashFinished = true;
+
+    mainWindow = new MainWindow(isDev);
+    await mainWindow.create(() => {
+      splashWindow?.fadeOutAndClose();
+      splashWindow = null;
+      mainWindow?.window?.show();
+    });
+  };
+
+  // Wait for splash animation IPC event or timeout
+  ipcMain.once('splash-finished', finishSplash);
+  setTimeout(finishSplash, 5000);
 
   app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       mainWindow = new MainWindow(isDev);
-      await mainWindow.create();
+      await mainWindow.create(() => {
+        mainWindow?.window?.show();
+      });
     }
   });
 }
