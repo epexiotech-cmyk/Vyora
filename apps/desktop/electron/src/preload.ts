@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('vyora', {
   db: {
     customers: {
       getAll: () => ipcRenderer.invoke('db:customers:getAll'),
-      create: (data: Omit<InsertCustomer, 'id' | 'createdAt'>) =>
+      create: (data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>) =>
         ipcRenderer.invoke('db:customers:create', data),
     },
     products: {
@@ -17,6 +17,20 @@ contextBridge.exposeInMainWorld('vyora', {
       create: (data: Omit<InsertProduct, 'id' | 'createdAt'>) =>
         ipcRenderer.invoke('db:products:create', data),
     },
+  },
+  bootstrap: {
+    status: () => ipcRenderer.invoke('bootstrap:status'),
+    createCompany: (data: {
+      name: string;
+      isGstRegistered: boolean;
+      gstin: string | null;
+      financialYearStart: Date;
+      currency: string;
+    }) => ipcRenderer.invoke('bootstrap:create-company', data),
+  },
+  company: {
+    getActive: () => ipcRenderer.invoke('company:get-active'),
+    setActive: (id: string) => ipcRenderer.invoke('company:set-active', id),
   },
   splash: {
     finished: () => ipcRenderer.send('splash-finished'),
@@ -34,7 +48,9 @@ export type VyoraSplashAPI = {
 export type VyoraDatabaseAPI = {
   customers: {
     getAll: () => Promise<ApiResponse<Customer[]>>;
-    create: (data: Omit<InsertCustomer, 'id' | 'createdAt'>) => Promise<ApiResponse<Customer>>;
+    create: (
+      data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>,
+    ) => Promise<ApiResponse<Customer>>;
   };
   products: {
     getAll: () => Promise<ApiResponse<Product[]>>;
@@ -42,11 +58,29 @@ export type VyoraDatabaseAPI = {
   };
 };
 
+export type VyoraBootstrapAPI = {
+  status: () => Promise<ApiResponse<boolean>>;
+  createCompany: (data: {
+    name: string;
+    isGstRegistered: boolean;
+    gstin: string | null;
+    financialYearStart: Date;
+    currency: string;
+  }) => Promise<ApiResponse<string>>;
+};
+
+export type VyoraCompanyAPI = {
+  getActive: () => Promise<ApiResponse<string | null>>;
+  setActive: (id: string) => Promise<ApiResponse<void>>;
+};
+
 declare global {
   interface Window {
     vyora: {
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
+      bootstrap: VyoraBootstrapAPI;
+      company: VyoraCompanyAPI;
       splash: VyoraSplashAPI;
     };
   }

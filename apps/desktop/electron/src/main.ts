@@ -6,10 +6,13 @@ import {
   registerSalesInvoiceHandlers,
   registerPurchaseHandlers,
   registerInventoryHandlers,
+  registerBootstrapHandlers,
+  registerCompanyHandlers,
 } from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
 import { encryptionService } from './main/security/EncryptionService';
 import { keyManagementService } from './main/security/KeyManagementService';
+import { companyContextService } from './services/CompanyContextService';
 import { dbService } from './services/database/DatabaseService';
 import { fileSystemService } from './services/filesystem/FileSystemService';
 import { loggerService } from './services/logger/LoggerService';
@@ -56,6 +59,16 @@ async function bootstrap() {
     registerSalesInvoiceHandlers();
     registerPurchaseHandlers();
     registerInventoryHandlers();
+    registerBootstrapHandlers();
+    registerCompanyHandlers();
+
+    // Try to load active company context immediately after DB init
+    try {
+      await companyContextService.loadActiveCompany();
+      loggerService.info('Active company context loaded');
+    } catch (e) {
+      loggerService.warn('Failed to load active company context: ' + e);
+    }
   } catch (err) {
     console.error('Failed to initialize database:', err);
   }

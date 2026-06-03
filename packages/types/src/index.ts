@@ -5,4 +5,15 @@ export type ApiResponse<T> = {
 };
 
 // Re-export natively inferred models directly from the database schema
-export type { Customer, InsertCustomer, Product, InsertProduct } from '@vyora/database';
+export type {
+  Customer,
+  InsertCustomer,
+  Product,
+  InsertProduct,
+  Company,
+  InsertCompany,
+  AppSetting,
+  InsertAppSetting,
+  CompanySetting,
+  InsertCompanySetting,
+} from '@vyora/database';

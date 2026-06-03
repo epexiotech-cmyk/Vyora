@@ -20,7 +20,7 @@ export function registerCustomerHandlers() {
     'db:customers:create',
     async (
       _event,
-      data: Omit<InsertCustomer, 'id' | 'createdAt'>,
+      data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>,
     ): Promise<ApiResponse<Customer>> => {
       try {
         const result = await customerService.createCustomer(data);
