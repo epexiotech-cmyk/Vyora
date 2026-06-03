@@ -1,7 +1,6 @@
-import { ApiResponse } from '@vyora/types';
+import { ApiResponse, CreateSalesInvoiceInput } from '@vyora/types';
 import { ipcMain } from 'electron';
 
-import { CreateSalesInvoiceInput } from '../../repositories';
 import { salesInvoiceService } from '../../services/SalesInvoiceService';
 
 export function registerSalesInvoiceHandlers() {

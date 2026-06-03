@@ -1,4 +1,10 @@
-import type { InsertCustomer, InsertProduct, ApiResponse, Customer, Product } from '@vyora/types';
+import type {
+  CreateCustomerInput,
+  CreateProductInput,
+  ApiResponse,
+  CustomerDto,
+  ProductDto,
+} from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
 // Expose a secure API to the renderer process
@@ -9,13 +15,11 @@ contextBridge.exposeInMainWorld('vyora', {
   db: {
     customers: {
       getAll: () => ipcRenderer.invoke('db:customers:getAll'),
-      create: (data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>) =>
-        ipcRenderer.invoke('db:customers:create', data),
+      create: (data: CreateCustomerInput) => ipcRenderer.invoke('db:customers:create', data),
     },
     products: {
       getAll: () => ipcRenderer.invoke('db:products:getAll'),
-      create: (data: Omit<InsertProduct, 'id' | 'createdAt'>) =>
-        ipcRenderer.invoke('db:products:create', data),
+      create: (data: CreateProductInput) => ipcRenderer.invoke('db:products:create', data),
     },
   },
   bootstrap: {
@@ -47,14 +51,12 @@ export type VyoraSplashAPI = {
 
 export type VyoraDatabaseAPI = {
   customers: {
-    getAll: () => Promise<ApiResponse<Customer[]>>;
-    create: (
-      data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>,
-    ) => Promise<ApiResponse<Customer>>;
+    getAll: () => Promise<ApiResponse<CustomerDto[]>>;
+    create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerDto>>;
   };
   products: {
-    getAll: () => Promise<ApiResponse<Product[]>>;
-    create: (data: Omit<InsertProduct, 'id' | 'createdAt'>) => Promise<ApiResponse<Product>>;
+    getAll: () => Promise<ApiResponse<ProductDto[]>>;
+    create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
   };
 };
 

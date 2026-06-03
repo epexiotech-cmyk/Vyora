@@ -1,6 +1,6 @@
 'use client';
 
-import { Customer } from '@vyora/types';
+import { CustomerDto } from '@vyora/types';
 import * as React from 'react';
 
 import { AppButton } from '@/components/ui/AppButton';
@@ -8,7 +8,7 @@ import { AppCard, AppCardHeader, AppCardTitle, AppCardContent } from '@/componen
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function DashboardPage() {
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [customers, setCustomers] = React.useState<CustomerDto[]>([]);
   const [status, setStatus] = React.useState<'checking' | 'connected' | 'error'>('checking');
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
@@ -41,7 +41,6 @@ export default function DashboardPage() {
     if (typeof window !== 'undefined' && window.vyora?.db) {
       // In a real app we'd fetch the default company ID. For test, pass a dummy or empty.
       const res = await window.vyora.db.customers.create({
-        companyId: 'system-test', // Test dummy
         name: `Test Customer ${Math.floor(Math.random() * 1000)}`,
         city: 'Mumbai',
         balance: 0,

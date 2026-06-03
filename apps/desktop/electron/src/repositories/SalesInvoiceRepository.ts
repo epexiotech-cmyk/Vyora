@@ -1,45 +1,55 @@
 import { randomUUID } from 'crypto';
 
 import { sales_invoices, sales_invoice_items } from '@vyora/database';
+import {
+  CreateSalesInvoiceInput,
+  SalesInvoiceDto,
+  SalesInvoiceLineDto,
+  ListSalesInvoicesOptions,
+} from '@vyora/types';
 import { eq, and, desc } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
-export type CreateSalesInvoiceItemInput = {
-  productId: string;
-  unitId: string;
-  taxId: string;
-  description?: string | null;
-  hsnCode?: string | null;
-  quantity: number;
-  rate: number;
-  discountAmount: number;
-  taxableAmount: number;
-  taxAmount: number;
-  lineTotal: number;
-};
+type DbSalesInvoice = typeof sales_invoices.$inferSelect;
+type DbSalesInvoiceItem = typeof sales_invoice_items.$inferSelect;
 
-export type CreateSalesInvoiceInput = {
-  companyId: string;
-  financialYearId: string;
-  customerId: string;
-  invoiceNumber: string;
-  invoiceDate: Date;
-  subtotal: number;
-  discountAmount: number;
-  taxAmount: number;
-  roundOffAmount: number;
-  grandTotal: number;
-  notes?: string | null;
-  status: string;
-  items: CreateSalesInvoiceItemInput[];
-};
+function mapToLineDto(entity: DbSalesInvoiceItem): SalesInvoiceLineDto {
+  return {
+    id: entity.id,
+    salesInvoiceId: entity.salesInvoiceId,
+    productId: entity.productId,
+    unitId: entity.unitId,
+    taxId: entity.taxId,
+    description: entity.description,
+    hsnCode: entity.hsnCode,
+    quantity: entity.quantity,
+    rate: entity.rate,
+    discountAmount: entity.discountAmount,
+    taxableAmount: entity.taxableAmount,
+    taxAmount: entity.taxAmount,
+    lineTotal: entity.lineTotal,
+  };
+}
 
-export interface ListSalesInvoicesOptions {
-  companyId?: string;
-  financialYearId?: string;
-  limit?: number;
-  offset?: number;
+function mapToDto(entity: DbSalesInvoice, items?: DbSalesInvoiceItem[]): SalesInvoiceDto {
+  return {
+    id: entity.id,
+    companyId: entity.companyId,
+    financialYearId: entity.financialYearId,
+    customerId: entity.customerId,
+    invoiceNumber: entity.invoiceNumber,
+    invoiceDate: entity.invoiceDate,
+    subtotal: entity.subtotal,
+    discountAmount: entity.discountAmount,
+    taxAmount: entity.taxAmount,
+    roundOffAmount: entity.roundOffAmount,
+    grandTotal: entity.grandTotal,
+    notes: entity.notes,
+    status: entity.status,
+    createdAt: entity.createdAt,
+    items: items ? items.map(mapToLineDto) : undefined,
+  };
 }
 
 export class SalesInvoiceRepository extends BaseRepository {
@@ -80,7 +90,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       });
     }
   }
-  public async getById(id: string) {
+  public async getById(id: string): Promise<SalesInvoiceDto | null> {
     const invoice = await this.db
       .select()
       .from(sales_invoices)
@@ -95,14 +105,14 @@ export class SalesInvoiceRepository extends BaseRepository {
       .where(eq(sales_invoice_items.salesInvoiceId, id))
       .all();
 
-    return { ...invoice, items };
+    return mapToDto(invoice, items);
   }
 
   public async getByInvoiceNumber(
     companyId: string,
     financialYearId: string,
     invoiceNumber: string,
-  ) {
+  ): Promise<SalesInvoiceDto | null> {
     const invoice = await this.db
       .select()
       .from(sales_invoices)
@@ -123,10 +133,10 @@ export class SalesInvoiceRepository extends BaseRepository {
       .where(eq(sales_invoice_items.salesInvoiceId, invoice.id))
       .all();
 
-    return { ...invoice, items };
+    return mapToDto(invoice, items);
   }
 
-  public async list(options?: ListSalesInvoicesOptions) {
+  public async list(options?: ListSalesInvoicesOptions): Promise<SalesInvoiceDto[]> {
     let query = this.db.select().from(sales_invoices).$dynamic();
 
     const conditions = [];
@@ -150,6 +160,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       query = query.offset(options.offset);
     }
 
-    return await query.all();
+    const results = await query.all();
+    return results.map((row) => mapToDto(row));
   }
 }

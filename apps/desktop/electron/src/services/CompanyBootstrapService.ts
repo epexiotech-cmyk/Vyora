@@ -2,6 +2,8 @@
 import { CompanyRepository, SettingsRepository } from '../repositories';
 import { dbService } from './database/DatabaseService';
 
+import { CreateCompanyInput } from '@vyora/types';
+
 import { companyContextService } from './CompanyContextService';
 
 export class CompanyBootstrapService {
@@ -18,19 +20,13 @@ export class CompanyBootstrapService {
     return status === 'true';
   }
 
-  public async createCompany(
-    name: string,
-    isGstRegistered: boolean,
-    gstin: string | null,
-    financialYearStart: Date,
-    currency: string,
-  ): Promise<string> {
+  public async createCompany(input: CreateCompanyInput): Promise<string> {
     return await dbService.getDb().transaction(async (tx) => {
       // 1. Create base company record
       const company = await this.companyRepo.create(
         {
-          name,
-          gstin,
+          name: input.name,
+          gstin: input.gstin || null,
           address: null,
           phone: null,
           email: null,
@@ -43,9 +39,9 @@ export class CompanyBootstrapService {
       await this.settingsRepo.createCompanySettings(
         {
           companyId: company.id,
-          financialYearStart,
-          currency,
-          isGstRegistered,
+          financialYearStart: input.financialYearStart,
+          currency: input.currency,
+          isGstRegistered: input.isGstRegistered,
           salesPrefix: 'INV',
           purchasePrefix: 'PUR',
           defaultInvoiceNotes: 'Thank you for your business!',

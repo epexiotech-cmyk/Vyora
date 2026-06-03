@@ -1,7 +1,11 @@
 import { randomUUID } from 'crypto';
 
-import { app_settings, company_settings } from '@vyora/database';
-import { CompanySetting, InsertCompanySetting } from '@vyora/types';
+import {
+  app_settings,
+  company_settings,
+  CompanySetting,
+  InsertCompanySetting,
+} from '@vyora/database';
 import { eq } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';

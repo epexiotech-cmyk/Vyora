@@ -1,8 +1,6 @@
-import {
-  PurchaseInvoiceRepository,
-  StockMovementRepository,
-  CreatePurchaseInvoiceInput,
-} from '../repositories';
+import { CreatePurchaseInvoiceInput } from '@vyora/types';
+
+import { PurchaseInvoiceRepository, StockMovementRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
 

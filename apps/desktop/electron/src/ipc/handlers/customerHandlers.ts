@@ -1,4 +1,4 @@
-import { Customer, InsertCustomer, ApiResponse } from '@vyora/types';
+import { CustomerDto, CreateCustomerInput, ApiResponse } from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { customerService } from '../../services/CustomerService';
@@ -6,7 +6,7 @@ import { customerService } from '../../services/CustomerService';
 export function registerCustomerHandlers() {
   ipcMain.handle(
     'db:customers:getAll',
-    async (_event, _args?: unknown): Promise<ApiResponse<Customer[]>> => {
+    async (_event, _args?: unknown): Promise<ApiResponse<CustomerDto[]>> => {
       try {
         const result = await customerService.getAllCustomers();
         return { success: true, data: result };
@@ -18,10 +18,7 @@ export function registerCustomerHandlers() {
 
   ipcMain.handle(
     'db:customers:create',
-    async (
-      _event,
-      data: Omit<InsertCustomer, 'id' | 'createdAt' | 'companyId'>,
-    ): Promise<ApiResponse<Customer>> => {
+    async (_event, data: CreateCustomerInput): Promise<ApiResponse<CustomerDto>> => {
       try {
         const result = await customerService.createCustomer(data);
         return { success: true, data: result };

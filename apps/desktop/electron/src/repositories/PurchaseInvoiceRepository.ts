@@ -1,47 +1,57 @@
 import { randomUUID } from 'crypto';
 
 import { purchase_invoices, purchase_invoice_items } from '@vyora/database';
-import { eq, and, desc } from 'drizzle-orm';
+import {
+  CreatePurchaseInvoiceInput,
+  ListPurchaseInvoicesOptions,
+  PurchaseInvoiceDto,
+  PurchaseInvoiceLineDto,
+} from '@vyora/types';
+import { and, desc, eq } from 'drizzle-orm';
+
+type DbPurchaseInvoice = typeof purchase_invoices.$inferSelect;
+type DbPurchaseInvoiceItem = typeof purchase_invoice_items.$inferSelect;
+
+function mapToLineDto(entity: DbPurchaseInvoiceItem): PurchaseInvoiceLineDto {
+  return {
+    id: entity.id,
+    purchaseInvoiceId: entity.purchaseInvoiceId,
+    productId: entity.productId,
+    unitId: entity.unitId,
+    taxId: entity.taxId,
+    description: entity.description,
+    hsnCode: entity.hsnCode,
+    quantity: entity.quantity,
+    rate: entity.rate,
+    discountAmount: entity.discountAmount,
+    taxableAmount: entity.taxableAmount,
+    taxAmount: entity.taxAmount,
+    lineTotal: entity.lineTotal,
+  };
+}
+
+function mapToDto(entity: DbPurchaseInvoice, items?: DbPurchaseInvoiceItem[]): PurchaseInvoiceDto {
+  return {
+    id: entity.id,
+    companyId: entity.companyId,
+    financialYearId: entity.financialYearId,
+    supplierId: entity.supplierId,
+    invoiceNumber: entity.invoiceNumber,
+    supplierInvoiceNumber: entity.supplierInvoiceNumber,
+    invoiceDate: entity.invoiceDate,
+    subtotal: entity.subtotal,
+    discountAmount: entity.discountAmount,
+    taxAmount: entity.taxAmount,
+    roundOffAmount: entity.roundOffAmount,
+    grandTotal: entity.grandTotal,
+    notes: entity.notes,
+    status: entity.status,
+    createdAt: entity.createdAt,
+    items: items ? items.map(mapToLineDto) : undefined,
+  };
+}
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
-
-export type CreatePurchaseInvoiceItemInput = {
-  productId: string;
-  unitId: string;
-  taxId: string;
-  description?: string | null;
-  hsnCode?: string | null;
-  quantity: number;
-  rate: number;
-  discountAmount: number;
-  taxableAmount: number;
-  taxAmount: number;
-  lineTotal: number;
-};
-
-export type CreatePurchaseInvoiceInput = {
-  companyId: string;
-  financialYearId: string;
-  supplierId: string;
-  invoiceNumber: string;
-  supplierInvoiceNumber?: string | null;
-  invoiceDate: Date;
-  subtotal: number;
-  discountAmount: number;
-  taxAmount: number;
-  roundOffAmount: number;
-  grandTotal: number;
-  notes?: string | null;
-  status: string;
-  items: CreatePurchaseInvoiceItemInput[];
-};
-
-export interface ListPurchaseInvoicesOptions {
-  companyId?: string;
-  financialYearId?: string;
-  limit?: number;
-  offset?: number;
-}
 
 export class PurchaseInvoiceRepository extends BaseRepository {
   public async createInvoice(
@@ -82,7 +92,7 @@ export class PurchaseInvoiceRepository extends BaseRepository {
     }
   }
 
-  public async getById(id: string) {
+  public async getById(id: string): Promise<PurchaseInvoiceDto | null> {
     const invoice = await this.db
       .select()
       .from(purchase_invoices)
@@ -97,14 +107,14 @@ export class PurchaseInvoiceRepository extends BaseRepository {
       .where(eq(purchase_invoice_items.purchaseInvoiceId, id))
       .all();
 
-    return { ...invoice, items };
+    return mapToDto(invoice, items);
   }
 
   public async getByInvoiceNumber(
     companyId: string,
     financialYearId: string,
     invoiceNumber: string,
-  ) {
+  ): Promise<PurchaseInvoiceDto | null> {
     const invoice = await this.db
       .select()
       .from(purchase_invoices)
@@ -125,10 +135,10 @@ export class PurchaseInvoiceRepository extends BaseRepository {
       .where(eq(purchase_invoice_items.purchaseInvoiceId, invoice.id))
       .all();
 
-    return { ...invoice, items };
+    return mapToDto(invoice, items);
   }
 
-  public async list(options?: ListPurchaseInvoicesOptions) {
+  public async list(options?: ListPurchaseInvoicesOptions): Promise<PurchaseInvoiceDto[]> {
     let query = this.db.select().from(purchase_invoices).$dynamic();
 
     const conditions = [];
@@ -152,6 +162,7 @@ export class PurchaseInvoiceRepository extends BaseRepository {
       query = query.offset(options.offset);
     }
 
-    return await query.all();
+    const results = await query.all();
+    return results.map((row) => mapToDto(row));
   }
 }

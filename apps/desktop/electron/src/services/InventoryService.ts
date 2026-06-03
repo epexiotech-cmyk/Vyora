@@ -1,13 +1,15 @@
+import { InventoryStockDto, StockMovementDto } from '@vyora/types';
+
 import { StockMovementRepository } from '../repositories';
 
 export class InventoryService {
   private stockMovementRepo = new StockMovementRepository();
 
-  public async getCurrentStock(productId: string): Promise<{ stock: number }> {
+  public async getCurrentStock(productId: string): Promise<InventoryStockDto> {
     return await this.stockMovementRepo.getCurrentStock(productId);
   }
 
-  public async getProductLedger(productId: string) {
+  public async getProductLedger(productId: string): Promise<StockMovementDto[]> {
     return await this.stockMovementRepo.getProductLedger(productId);
   }
 

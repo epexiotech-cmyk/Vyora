@@ -1,7 +1,6 @@
-import { ApiResponse } from '@vyora/types';
+import { ApiResponse, CreatePurchaseInvoiceInput } from '@vyora/types';
 import { ipcMain } from 'electron';
 
-import { CreatePurchaseInvoiceInput } from '../../repositories';
 import { purchaseInvoiceService } from '../../services/PurchaseInvoiceService';
 
 export function registerPurchaseHandlers() {
