@@ -1,6 +1,12 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 
-import { registerCustomerHandlers, registerProductHandlers } from './ipc/handlers/dbHandlers';
+import {
+  registerCustomerHandlers,
+  registerProductHandlers,
+  registerSalesInvoiceHandlers,
+  registerPurchaseHandlers,
+  registerInventoryHandlers,
+} from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
 import { encryptionService } from './main/security/EncryptionService';
 import { keyManagementService } from './main/security/KeyManagementService';
@@ -47,6 +53,9 @@ async function bootstrap() {
     await dbService.init();
     registerCustomerHandlers();
     registerProductHandlers();
+    registerSalesInvoiceHandlers();
+    registerPurchaseHandlers();
+    registerInventoryHandlers();
   } catch (err) {
     console.error('Failed to initialize database:', err);
   }
