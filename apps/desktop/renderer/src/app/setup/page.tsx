@@ -70,7 +70,7 @@ export default function SetupPage() {
           <div className="space-y-4">
             <h1 className="text-2xl font-bold tracking-tight">Create Your Business</h1>
             <p className="text-muted-foreground text-sm">
-              Let's start by setting up your business profile.
+              Let&apos;s start by setting up your business profile.
             </p>
 
             {error && <div className="text-sm text-red-500">{error}</div>}
