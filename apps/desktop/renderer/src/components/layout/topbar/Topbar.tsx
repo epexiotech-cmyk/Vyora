@@ -25,8 +25,8 @@ export function Topbar() {
       <div className="flex items-center gap-3">
         {/* System Status Indicators */}
         <div className="text-muted-foreground mr-2 hidden items-center gap-3 text-xs sm:flex">
-          <div className="flex items-center gap-1.5 rounded-sm border border-green-500/20 bg-green-500/10 px-2 py-1 text-green-600 dark:text-green-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500"></span>
+          <div className="border-success/20 bg-success/10 text-success dark:text-success-bright flex items-center gap-1.5 rounded-sm border px-2 py-1">
+            <span className="bg-online h-1.5 w-1.5 animate-pulse rounded-full"></span>
             <span className="font-medium">DB Ready</span>
           </div>
           <div className="flex items-center gap-1.5">

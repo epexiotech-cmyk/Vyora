@@ -7,7 +7,10 @@ const AppCard = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEle
     <div
       ref={ref}
       className={cn(
-        'bg-card text-card-foreground bg-glass-bg border-glass-border rounded-md border shadow-sm backdrop-blur-md',
+        'text-card-foreground rounded-md',
+        'bg-[var(--card-bg-light)] dark:bg-[var(--card-bg-dark)]',
+        'border border-[var(--card-border-light)] dark:border-[var(--card-border-dark)]',
+        'shadow-[var(--card-shadow-light)] dark:shadow-[var(--card-shadow-dark)]',
         className,
       )}
       {...props}

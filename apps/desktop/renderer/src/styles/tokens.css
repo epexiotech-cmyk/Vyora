@@ -3,8 +3,8 @@
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
 
-  --color-primary: var(--cyan-500);
-  --color-primary-foreground: #000000;
+  --color-primary: var(--vyora-blue-dark);
+  --color-primary-foreground: #FFFFFF;
 
   --color-secondary: var(--bg-tertiary);
   --color-secondary-foreground: var(--text-primary);
@@ -12,21 +12,41 @@
   --color-muted: var(--bg-secondary);
   --color-muted-foreground: var(--text-muted);
 
-  --color-accent: var(--cyan-500);
+  --color-accent: var(--vyora-blue-light);
   --color-accent-foreground: #000000;
 
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
 
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #000000;
+
+  --color-success: var(--vyora-green-dark);
+  --color-success-bright: var(--vyora-green-light);
+  --color-online: var(--vyora-green-neon);
+
   --color-border: var(--border-subtle);
   --color-input: var(--border-subtle);
-  --color-ring: var(--cyan-500);
+  --color-ring: var(--vyora-blue-light);
 
   /* Radius - Compact */
   --radius-sm: 0.125rem;
   --radius: 0.25rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
+
+  /* Premium SaaS Backgrounds */
+  --color-mesh-dark: radial-gradient(circle at top right, rgba(0, 41, 145, 0.03), transparent 60%);
+  --color-mesh-light: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  
+  /* Card Depths */
+  --card-bg-dark: rgba(255, 255, 255, 0.02);
+  --card-border-dark: rgba(255, 255, 255, 0.06);
+  --card-shadow-dark: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --card-bg-light: #ffffff;
+  --card-border-light: rgba(0, 0, 0, 0.05);
+  --card-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 :root {
@@ -38,10 +58,12 @@
   --graphite-600: #3f3f46;
   --graphite-500: #52525b;
 
-  /* Electric Cyan */
-  --cyan-400: #22d3ee;
-  --cyan-500: #06b6d4;
-  --cyan-600: #0891b2;
+  /* Vyora Branding */
+  --vyora-blue-dark: #002991;
+  --vyora-blue-light: #10BFDE;
+  --vyora-green-dark: #1AA978;
+  --vyora-green-light: #00EB43;
+  --vyora-green-neon: #00FF48;
 
   /* Theme variables */
   --bg-primary: var(--graphite-950);

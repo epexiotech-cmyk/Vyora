@@ -31,7 +31,10 @@ export default function DashboardPage() {
   }, []);
 
   React.useEffect(() => {
-    loadData();
+    const init = async () => {
+      await loadData();
+    };
+    void init();
   }, [loadData]);
 
   const handleCreateTestCustomer = async () => {
@@ -63,11 +66,11 @@ export default function DashboardPage() {
           <AppCardContent>
             <div className="flex items-center gap-2 text-xl font-bold capitalize">
               <span
-                className={`h-3 w-3 rounded-full ${status === 'connected' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-yellow-500'}`}
+                className={`h-3 w-3 rounded-full ${status === 'connected' ? 'bg-online' : status === 'error' ? 'bg-destructive' : 'bg-warning'}`}
               />
               {status}
             </div>
-            {errorMsg && <p className="mt-1 text-xs text-red-500">{errorMsg}</p>}
+            {errorMsg && <p className="text-destructive mt-1 text-xs">{errorMsg}</p>}
           </AppCardContent>
         </AppCard>
 
@@ -82,7 +85,7 @@ export default function DashboardPage() {
       </div>
 
       {status === 'connected' && (
-        <div className="bg-background/50 mt-4 rounded-lg border border-dashed p-4">
+        <div className="bg-background/50 mt-4 rounded-lg border p-4">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-semibold">IPC Database Test</h3>
             <AppButton onClick={handleCreateTestCustomer}>Add Test Customer</AppButton>
