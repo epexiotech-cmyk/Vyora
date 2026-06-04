@@ -4,6 +4,7 @@ import type {
   ApiResponse,
   CustomerDto,
   ProductDto,
+  CreateSalesInvoiceInput,
 } from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
 
@@ -20,6 +21,10 @@ contextBridge.exposeInMainWorld('vyora', {
     products: {
       getAll: () => ipcRenderer.invoke('db:products:getAll'),
       create: (data: CreateProductInput) => ipcRenderer.invoke('db:products:create', data),
+    },
+    sales: {
+      createInvoice: (data: CreateSalesInvoiceInput) =>
+        ipcRenderer.invoke('sales:invoice:create', data),
     },
   },
   bootstrap: {

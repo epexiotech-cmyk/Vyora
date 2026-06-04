@@ -4,6 +4,7 @@ import type {
   CreateCustomerInput,
   ProductDto,
   CreateProductInput,
+  CreateSalesInvoiceInput,
 } from '@vyora/types';
 
 export type VyoraSystemAPI = {
@@ -18,6 +19,9 @@ export type VyoraDatabaseAPI = {
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;
     create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
+  };
+  sales: {
+    createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
   };
 };
 

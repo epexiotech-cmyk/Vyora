@@ -48,23 +48,23 @@ export function Sidebar() {
       <div className="scrollbar-thumb-border flex-1 scrollbar-thin scrollbar-track-transparent overflow-x-hidden overflow-y-auto py-4">
         <SidebarGroup label="Overview">
           <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
-          <SidebarItem icon={BarChart3} label="Reports" href="/reports" />
+          <SidebarItem icon={BarChart3} label="Reports" href="/dashboard/reports" />
         </SidebarGroup>
 
         <SidebarGroup label="Business">
-          <SidebarItem icon={ShoppingCart} label="Sales" href="/sales" />
-          <SidebarItem icon={Package} label="Purchase" href="/purchase" />
-          <SidebarItem icon={Box} label="Inventory" href="/inventory" />
+          <SidebarItem icon={ShoppingCart} label="Sales" href="/dashboard/sales" />
+          <SidebarItem icon={Package} label="Purchase" href="/dashboard/purchase" />
+          <SidebarItem icon={Box} label="Inventory" href="/dashboard/inventory" />
         </SidebarGroup>
 
         <SidebarGroup label="Compliance">
-          <SidebarItem icon={Receipt} label="GST Returns" href="/gst" />
+          <SidebarItem icon={Receipt} label="GST Returns" href="/dashboard/gst" />
         </SidebarGroup>
       </div>
 
       {/* Footer / Settings */}
       <div className="mt-auto border-t p-2">
-        <SidebarItem icon={Settings} label="Settings" href="/settings" />
+        <SidebarItem icon={Settings} label="Settings" href="/dashboard/settings" />
       </div>
 
       {/* Collapse Toggle */}
