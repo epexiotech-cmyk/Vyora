@@ -1,0 +1,2 @@
+ALTER TABLE `company_settings` ADD `allow_negative_stock` integer DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE `company_settings` ADD `negative_stock_warning_only` integer DEFAULT false NOT NULL;

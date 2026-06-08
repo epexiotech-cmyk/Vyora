@@ -47,9 +47,62 @@ pnpm-debug.log*
 .DS_Store?
 ._*
 .Spotlight-V100
+# Dependency directories
+node_modules/
+dist/
+
+# Next.js
+.next/
+out/
+build/
+
+# Flutter / Mobile
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/build/
+apps/mobile/.pub-cache/
+apps/mobile/.pub/
+apps/mobile/build/
+
+# Prisma
+# Ensure generated clients are ignored
+packages/database/node_modules/
+**/.prisma/
+# Ensure schemas and migrations are explicitly tracked (overrides any broad ignores)
+!packages/database/prisma/**/*.prisma
+!packages/database/prisma/**/migrations/
+# Electron
+apps/desktop/dist/
+apps/desktop/build/
+apps/desktop/out/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Turborepo
+.turbo/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
 .Trashes
 ehthumbs.db
 Thumbs.db
 
 apps/desktop/dist-electron/
 
+apps/desktop/dist-installers/
+apps/desktop/playwright-report/
+apps/desktop/test-results/
+apps/desktop/audit-dist/
