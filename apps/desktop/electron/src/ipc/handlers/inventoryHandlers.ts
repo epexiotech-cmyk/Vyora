@@ -1,6 +1,7 @@
 import { ApiResponse, InventoryStockDto, StockMovementDto } from '@vyora/types';
 import { ipcMain } from 'electron';
 
+import { companyContextService } from '../../services/CompanyContextService';
 import { inventoryService } from '../../services/InventoryService';
 
 export function registerInventoryHandlers() {
@@ -8,7 +9,9 @@ export function registerInventoryHandlers() {
     'inventory:stock:get',
     async (_event, productId: string): Promise<ApiResponse<InventoryStockDto>> => {
       try {
-        const result = await inventoryService.getCurrentStock(productId);
+        const companyId = companyContextService.getActiveCompany();
+        if (!companyId) throw new Error('No active company selected');
+        const result = await inventoryService.getCurrentStock(companyId, productId);
         return { success: true, data: result };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
@@ -20,7 +23,9 @@ export function registerInventoryHandlers() {
     'inventory:ledger:get',
     async (_event, productId: string): Promise<ApiResponse<StockMovementDto[]>> => {
       try {
-        const result = await inventoryService.getProductLedger(productId);
+        const companyId = companyContextService.getActiveCompany();
+        if (!companyId) throw new Error('No active company selected');
+        const result = await inventoryService.getProductLedger(companyId, productId);
         return { success: true, data: result };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };

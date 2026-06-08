@@ -5,7 +5,14 @@ import type {
   ProductDto,
   CreateProductInput,
   CreateSalesInvoiceInput,
+  FinancialYearDto,
+  SalesInvoiceDto,
+  ListSalesInvoicesOptions,
+  UpdateSalesInvoiceInput,
+  PincodeDTO,
+  PincodeSearchResponse,
 } from '@vyora/types';
+import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
@@ -22,6 +29,14 @@ export type VyoraDatabaseAPI = {
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
+    updateDraft: (
+      invoiceId: string,
+      payload: UpdateSalesInvoiceInput,
+    ) => Promise<ApiResponse<SalesInvoiceDto>>;
+    submitInvoice: (invoiceId: string) => Promise<ApiResponse<{ warnings: unknown[] }>>;
+    cancelInvoice: (invoiceId: string) => Promise<ApiResponse<void>>;
+    getById: (invoiceId: string) => Promise<ApiResponse<SalesInvoiceDto>>;
+    list: (options?: ListSalesInvoicesOptions) => Promise<ApiResponse<SalesInvoiceDto[]>>;
   };
 };
 
@@ -41,6 +56,57 @@ export type VyoraCompanyAPI = {
   setActive: (id: string) => Promise<ApiResponse<void>>;
 };
 
+export type VyoraFinancialYearAPI = {
+  getCurrent: () => Promise<ApiResponse<FinancialYearDto | null>>;
+};
+
+export type VyoraPrintAPI = {
+  exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
+  print: (
+    html: string,
+    options?: WebContentsPrintOptions,
+  ) => Promise<{ success: boolean; failureReason?: string }>;
+};
+
+export type VyoraSplashAPI = {
+  finished: () => void;
+};
+
+export type VyoraDirectoriesAPI = {
+  pincode: {
+    get: (pincode: string) => Promise<ApiResponse<PincodeDTO | null>>;
+    search: (query: {
+      pincode?: string;
+      district?: string;
+      state?: string;
+    }) => Promise<ApiResponse<PincodeSearchResponse>>;
+  };
+  country: {
+    get: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string) => Promise<ApiResponse<unknown>>;
+  };
+  currency: {
+    get: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string) => Promise<ApiResponse<unknown>>;
+  };
+  state: {
+    get: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string) => Promise<ApiResponse<unknown>>;
+  };
+  uqc: {
+    getByCode: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string) => Promise<ApiResponse<unknown>>;
+  };
+  hsn: {
+    getByCode: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string, limit?: number) => Promise<ApiResponse<unknown>>;
+  };
+  sac: {
+    getByCode: (code: string) => Promise<ApiResponse<unknown>>;
+    search: (query: string, includeAll?: boolean) => Promise<ApiResponse<unknown>>;
+  };
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -48,6 +114,10 @@ declare global {
       db: VyoraDatabaseAPI;
       bootstrap: VyoraBootstrapAPI;
       company: VyoraCompanyAPI;
+      financialYear: VyoraFinancialYearAPI;
+      print: VyoraPrintAPI;
+      splash: VyoraSplashAPI;
+      directories: VyoraDirectoriesAPI;
     };
   }
 }

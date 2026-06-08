@@ -5,8 +5,13 @@ import type {
   CustomerDto,
   ProductDto,
   CreateSalesInvoiceInput,
+  FinancialYearDto,
+  SalesInvoiceDto,
+  ListSalesInvoicesOptions,
+  UpdateSalesInvoiceInput,
 } from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
+import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 // Expose a secure API to the renderer process
 contextBridge.exposeInMainWorld('vyora', {
@@ -18,6 +23,9 @@ contextBridge.exposeInMainWorld('vyora', {
       getAll: () => ipcRenderer.invoke('db:customers:getAll'),
       create: (data: CreateCustomerInput) => ipcRenderer.invoke('db:customers:create', data),
     },
+    taxes: {
+      getAll: () => ipcRenderer.invoke('db:taxes:getAll'),
+    },
     products: {
       getAll: () => ipcRenderer.invoke('db:products:getAll'),
       create: (data: CreateProductInput) => ipcRenderer.invoke('db:products:create', data),
@@ -25,6 +33,13 @@ contextBridge.exposeInMainWorld('vyora', {
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
         ipcRenderer.invoke('sales:invoice:create', data),
+      updateDraft: (invoiceId: string, payload: UpdateSalesInvoiceInput) =>
+        ipcRenderer.invoke('sales:invoice:updateDraft', invoiceId, payload),
+      submitInvoice: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:submit', invoiceId),
+      cancelInvoice: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:cancel', invoiceId),
+      getById: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:getById', invoiceId),
+      list: (options?: ListSalesInvoicesOptions) =>
+        ipcRenderer.invoke('sales:invoice:list', options),
     },
   },
   bootstrap: {
@@ -41,8 +56,48 @@ contextBridge.exposeInMainWorld('vyora', {
     getActive: () => ipcRenderer.invoke('company:get-active'),
     setActive: (id: string) => ipcRenderer.invoke('company:set-active', id),
   },
+  financialYear: {
+    getCurrent: () => ipcRenderer.invoke('financial-year:get-current'),
+  },
   splash: {
     finished: () => ipcRenderer.send('splash-finished'),
+  },
+  print: {
+    exportPdf: (html: string, options?: PrintToPDFOptions) =>
+      ipcRenderer.invoke('print:export-pdf', html, options),
+    print: (html: string, options?: WebContentsPrintOptions) =>
+      ipcRenderer.invoke('print:print', html, options),
+  },
+  directories: {
+    pincode: {
+      get: (pincode: string) => ipcRenderer.invoke('directory:pincode:get', pincode),
+      search: (query: { pincode?: string; district?: string; state?: string }) =>
+        ipcRenderer.invoke('directory:pincode:search', query),
+    },
+    country: {
+      get: (code: string) => ipcRenderer.invoke('directory:country:get', code),
+      search: (query: string) => ipcRenderer.invoke('directory:country:search', query),
+    },
+    currency: {
+      get: (code: string) => ipcRenderer.invoke('directory:currency:get', code),
+      search: (query: string) => ipcRenderer.invoke('directory:currency:search', query),
+    },
+    state: {
+      get: (code: string) => ipcRenderer.invoke('directory:state:get', code),
+      search: (query: string) => ipcRenderer.invoke('directory:state:search', query),
+    },
+    uqc: {
+      getByCode: (code: string) => ipcRenderer.invoke('directory:uqc:get', code),
+      search: (query: string) => ipcRenderer.invoke('directory:uqc:search', query),
+    },
+    hsn: {
+      getByCode: (code: string) => ipcRenderer.invoke('directory:hsn:get', code),
+      search: (query: string, limit?: number) => ipcRenderer.invoke('directory:hsn:search', query, limit),
+    },
+    sac: {
+      getByCode: (code: string) => ipcRenderer.invoke('directory:sac:get', code),
+      search: (query: string, includeAll?: boolean) => ipcRenderer.invoke('directory:sac:search', query, includeAll),
+    },
   },
 });
 
@@ -59,9 +114,23 @@ export type VyoraDatabaseAPI = {
     getAll: () => Promise<ApiResponse<CustomerDto[]>>;
     create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerDto>>;
   };
+  taxes: {
+    getAll: () => Promise<ApiResponse<import('@vyora/types').TaxDto[]>>;
+  };
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;
     create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
+  };
+  sales: {
+    createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
+    updateDraft: (
+      invoiceId: string,
+      payload: UpdateSalesInvoiceInput,
+    ) => Promise<ApiResponse<SalesInvoiceDto>>;
+    submitInvoice: (invoiceId: string) => Promise<ApiResponse<{ warnings: unknown[] }>>;
+    cancelInvoice: (invoiceId: string) => Promise<ApiResponse<void>>;
+    getById: (invoiceId: string) => Promise<ApiResponse<SalesInvoiceDto>>;
+    list: (options?: ListSalesInvoicesOptions) => Promise<ApiResponse<SalesInvoiceDto[]>>;
   };
 };
 
@@ -81,6 +150,49 @@ export type VyoraCompanyAPI = {
   setActive: (id: string) => Promise<ApiResponse<void>>;
 };
 
+export type VyoraFinancialYearAPI = {
+  getCurrent: () => Promise<ApiResponse<FinancialYearDto | null>>;
+};
+
+export type VyoraPrintAPI = {
+  exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
+  print: (
+    html: string,
+    options?: WebContentsPrintOptions,
+  ) => Promise<{ success: boolean; failureReason?: string }>;
+};
+
+export interface VyoraDirectoriesAPI {
+  pincode: {
+    getByPincode(pincode: string): Promise<any>;
+    search(query: string, filter?: any): Promise<any>;
+  };
+  country: {
+    getByCode(code: string): Promise<any>;
+    search(query: string): Promise<any>;
+  };
+  currency: {
+    getByCode(code: string): Promise<any>;
+    search(query: string): Promise<any>;
+  };
+  state: {
+    getByCode(code: string): Promise<any>;
+    search(query: string): Promise<any>;
+  };
+  uqc: {
+    getByCode(code: string): Promise<any>;
+    search(query: string): Promise<any>;
+  };
+  hsn: {
+    getByCode(code: string): Promise<any>;
+    search(query: string, limit?: number): Promise<any>;
+  };
+  sac: {
+    getByCode(code: string): Promise<any>;
+    search(query: string, includeAll?: boolean): Promise<any>;
+  };
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -88,7 +200,10 @@ declare global {
       db: VyoraDatabaseAPI;
       bootstrap: VyoraBootstrapAPI;
       company: VyoraCompanyAPI;
+      financialYear: VyoraFinancialYearAPI;
       splash: VyoraSplashAPI;
+      print: VyoraPrintAPI;
+      directories: VyoraDirectoriesAPI;
     };
   }
 }
