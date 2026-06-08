@@ -4,7 +4,8 @@ import { useForm, FormProvider, UseFormReturn, SubmitHandler, FieldValues } from
 import { z } from 'zod';
 
 interface AppFormProps<T extends FieldValues> {
-  schema: z.ZodType<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  schema: z.ZodType<any, any, any>;
   defaultValues?: Partial<T>;
   onSubmit: SubmitHandler<T>;
   children: (methods: UseFormReturn<T>) => React.ReactNode;

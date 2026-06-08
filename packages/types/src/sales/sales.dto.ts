@@ -30,6 +30,8 @@ export interface CreateSalesInvoiceInput {
   items: CreateSalesInvoiceItemInput[];
 }
 
+export type UpdateSalesInvoiceInput = Partial<CreateSalesInvoiceInput>;
+
 export interface SalesInvoiceLineDto {
   id: string;
   salesInvoiceId: string;

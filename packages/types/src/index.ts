@@ -5,3 +5,5 @@ export * from './product/product.dto';
 export * from './sales/sales.dto';
 export * from './purchase/purchase.dto';
 export * from './inventory/inventory.dto';
+export * from './master/tax.dto';
+export * from './system/financial-year.dto';
