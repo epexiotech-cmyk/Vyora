@@ -11,6 +11,7 @@ import type {
   UpdateSalesInvoiceInput,
   PincodeDTO,
   PincodeSearchResponse,
+  SmartPincodeLookupResponse,
 } from '@vyora/types';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
@@ -75,6 +76,7 @@ export type VyoraSplashAPI = {
 export type VyoraDirectoriesAPI = {
   pincode: {
     get: (pincode: string) => Promise<ApiResponse<PincodeDTO | null>>;
+    smartLookup: (pincode: string) => Promise<SmartPincodeLookupResponse>;
     search: (query: {
       pincode?: string;
       district?: string;

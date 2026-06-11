@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+
 import { hsnService } from '../../modules/directories/hsn/HsnService';
 
 export function registerHsnHandlers(): void {

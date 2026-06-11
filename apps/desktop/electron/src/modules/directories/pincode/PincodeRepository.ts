@@ -13,7 +13,7 @@ export class PincodeRepository extends BaseRepository {
 
   async findByPincode(pincode: string) {
     return directoryDatabaseService.execute(async (db) => {
-      return db.select().from(pincodeMaster).where(eq(pincodeMaster.pincode, pincode)).get();
+      return db.select().from(pincodeMaster).where(eq(pincodeMaster.pincode, pincode)).all();
     });
   }
 

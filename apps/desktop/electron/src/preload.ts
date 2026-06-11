@@ -9,6 +9,8 @@ import type {
   SalesInvoiceDto,
   ListSalesInvoicesOptions,
   UpdateSalesInvoiceInput,
+  PincodeDTO,
+  SmartPincodeLookupResponse,
 } from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
@@ -71,6 +73,8 @@ contextBridge.exposeInMainWorld('vyora', {
   directories: {
     pincode: {
       get: (pincode: string) => ipcRenderer.invoke('directory:pincode:get', pincode),
+      smartLookup: (pincode: string) =>
+        ipcRenderer.invoke('directory:pincode:smartLookup', pincode),
       search: (query: { pincode?: string; district?: string; state?: string }) =>
         ipcRenderer.invoke('directory:pincode:search', query),
     },
@@ -92,11 +96,13 @@ contextBridge.exposeInMainWorld('vyora', {
     },
     hsn: {
       getByCode: (code: string) => ipcRenderer.invoke('directory:hsn:get', code),
-      search: (query: string, limit?: number) => ipcRenderer.invoke('directory:hsn:search', query, limit),
+      search: (query: string, limit?: number) =>
+        ipcRenderer.invoke('directory:hsn:search', query, limit),
     },
     sac: {
       getByCode: (code: string) => ipcRenderer.invoke('directory:sac:get', code),
-      search: (query: string, includeAll?: boolean) => ipcRenderer.invoke('directory:sac:search', query, includeAll),
+      search: (query: string, includeAll?: boolean) =>
+        ipcRenderer.invoke('directory:sac:search', query, includeAll),
     },
   },
 });
@@ -164,34 +170,35 @@ export type VyoraPrintAPI = {
 
 export interface VyoraDirectoriesAPI {
   pincode: {
-    getByPincode(pincode: string): Promise<any>;
-    search(query: string, filter?: any): Promise<any>;
+    get(pincode: string): Promise<PincodeDTO | null>;
+    smartLookup(pincode: string): Promise<SmartPincodeLookupResponse>;
+    search(query: { pincode?: string; district?: string; state?: string }): Promise<PincodeDTO[]>;
   };
   country: {
-    getByCode(code: string): Promise<any>;
-    search(query: string): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string): Promise<unknown>;
   };
   currency: {
-    getByCode(code: string): Promise<any>;
-    search(query: string): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string): Promise<unknown>;
   };
   state: {
-    getByCode(code: string): Promise<any>;
-    search(query: string): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string): Promise<unknown>;
   };
   uqc: {
-    getByCode(code: string): Promise<any>;
-    search(query: string): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string): Promise<unknown>;
   };
   hsn: {
-    getByCode(code: string): Promise<any>;
-    search(query: string, limit?: number): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string, limit?: number): Promise<unknown>;
   };
   sac: {
-    getByCode(code: string): Promise<any>;
-    search(query: string, includeAll?: boolean): Promise<any>;
+    getByCode(code: string): Promise<unknown>;
+    search(query: string, includeAll?: boolean): Promise<unknown>;
   };
-};
+}
 
 declare global {
   interface Window {

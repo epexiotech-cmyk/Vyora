@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { HsnRepository } from './HsnRepository';
+
 import { DirectoryDatabaseService } from '../../../services/database/DirectoryDatabaseService';
+
+import { HsnRepository } from './HsnRepository';
 
 vi.mock('../../../services/database/DirectoryDatabaseService');
 
@@ -26,7 +28,9 @@ describe('HsnRepository', () => {
 
   it('should throw error if db is not initialized', async () => {
     mockDbService.getDb.mockReturnValue(null as any);
-    await expect(repository.getByCode('1234')).rejects.toThrow('Directory database is not initialized');
+    await expect(repository.getByCode('1234')).rejects.toThrow(
+      'Directory database is not initialized',
+    );
   });
 
   it('should get hsn by code', async () => {
