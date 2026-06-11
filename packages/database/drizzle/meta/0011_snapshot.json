@@ -77,30 +77,22 @@
       "indexes": {
         "country_master_country_code_unique": {
           "name": "country_master_country_code_unique",
-          "columns": [
-            "country_code"
-          ],
+          "columns": ["country_code"],
           "isUnique": true
         },
         "country_master_country_code_alpha3_unique": {
           "name": "country_master_country_code_alpha3_unique",
-          "columns": [
-            "country_code_alpha3"
-          ],
+          "columns": ["country_code_alpha3"],
           "isUnique": true
         },
         "idx_country_master_name": {
           "name": "idx_country_master_name",
-          "columns": [
-            "country_name"
-          ],
+          "columns": ["country_name"],
           "isUnique": false
         },
         "idx_country_master_currency": {
           "name": "idx_country_master_currency",
-          "columns": [
-            "currency_code"
-          ],
+          "columns": ["currency_code"],
           "isUnique": false
         }
       },
@@ -176,16 +168,12 @@
       "indexes": {
         "currency_master_currency_code_unique": {
           "name": "currency_master_currency_code_unique",
-          "columns": [
-            "currency_code"
-          ],
+          "columns": ["currency_code"],
           "isUnique": true
         },
         "idx_currency_master_name": {
           "name": "idx_currency_master_name",
-          "columns": [
-            "currency_name"
-          ],
+          "columns": ["currency_name"],
           "isUnique": false
         }
       },
@@ -286,23 +274,17 @@
       "indexes": {
         "idx_pincode_master_pincode": {
           "name": "idx_pincode_master_pincode",
-          "columns": [
-            "pincode"
-          ],
+          "columns": ["pincode"],
           "isUnique": false
         },
         "idx_pincode_master_district": {
           "name": "idx_pincode_master_district",
-          "columns": [
-            "district"
-          ],
+          "columns": ["district"],
           "isUnique": false
         },
         "idx_pincode_master_state": {
           "name": "idx_pincode_master_state",
-          "columns": [
-            "state_name"
-          ],
+          "columns": ["state_name"],
           "isUnique": false
         }
       },
@@ -556,24 +538,17 @@
       "indexes": {
         "stock_movements_product_idx": {
           "name": "stock_movements_product_idx",
-          "columns": [
-            "product_id"
-          ],
+          "columns": ["product_id"],
           "isUnique": false
         },
         "stock_movements_date_idx": {
           "name": "stock_movements_date_idx",
-          "columns": [
-            "movement_date"
-          ],
+          "columns": ["movement_date"],
           "isUnique": false
         },
         "stock_movements_product_date_idx": {
           "name": "stock_movements_product_date_idx",
-          "columns": [
-            "product_id",
-            "movement_date"
-          ],
+          "columns": ["product_id", "movement_date"],
           "isUnique": false
         }
       },
@@ -582,12 +557,8 @@
           "name": "stock_movements_company_id_companies_id_fk",
           "tableFrom": "stock_movements",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -595,12 +566,8 @@
           "name": "stock_movements_financial_year_id_financial_years_id_fk",
           "tableFrom": "stock_movements",
           "tableTo": "financial_years",
-          "columnsFrom": [
-            "financial_year_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["financial_year_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -608,12 +575,8 @@
           "name": "stock_movements_product_id_products_id_fk",
           "tableFrom": "stock_movements",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -703,12 +666,8 @@
           "name": "customers_company_id_companies_id_fk",
           "tableFrom": "customers",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -807,12 +766,8 @@
           "name": "products_company_id_companies_id_fk",
           "tableFrom": "products",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -820,12 +775,8 @@
           "name": "products_unit_id_units_id_fk",
           "tableFrom": "products",
           "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["unit_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -833,12 +784,8 @@
           "name": "products_tax_id_taxes_id_fk",
           "tableFrom": "products",
           "tableTo": "taxes",
-          "columnsFrom": [
-            "tax_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tax_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -928,12 +875,8 @@
           "name": "suppliers_company_id_companies_id_fk",
           "tableFrom": "suppliers",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1003,12 +946,8 @@
           "name": "taxes_company_id_companies_id_fk",
           "tableFrom": "taxes",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1062,12 +1001,8 @@
           "name": "units_company_id_companies_id_fk",
           "tableFrom": "units",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1242,16 +1177,12 @@
       "indexes": {
         "purchase_items_invoice_idx": {
           "name": "purchase_items_invoice_idx",
-          "columns": [
-            "purchase_invoice_id"
-          ],
+          "columns": ["purchase_invoice_id"],
           "isUnique": false
         },
         "purchase_items_product_idx": {
           "name": "purchase_items_product_idx",
-          "columns": [
-            "product_id"
-          ],
+          "columns": ["product_id"],
           "isUnique": false
         }
       },
@@ -1260,12 +1191,8 @@
           "name": "purchase_invoice_items_purchase_invoice_id_purchase_invoices_id_fk",
           "tableFrom": "purchase_invoice_items",
           "tableTo": "purchase_invoices",
-          "columnsFrom": [
-            "purchase_invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["purchase_invoice_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1273,12 +1200,8 @@
           "name": "purchase_invoice_items_product_id_products_id_fk",
           "tableFrom": "purchase_invoice_items",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1286,12 +1209,8 @@
           "name": "purchase_invoice_items_unit_id_units_id_fk",
           "tableFrom": "purchase_invoice_items",
           "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["unit_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1299,12 +1218,8 @@
           "name": "purchase_invoice_items_tax_id_taxes_id_fk",
           "tableFrom": "purchase_invoice_items",
           "tableTo": "taxes",
-          "columnsFrom": [
-            "tax_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tax_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1438,24 +1353,17 @@
       "indexes": {
         "purchase_invoices_company_fy_idx": {
           "name": "purchase_invoices_company_fy_idx",
-          "columns": [
-            "company_id",
-            "financial_year_id"
-          ],
+          "columns": ["company_id", "financial_year_id"],
           "isUnique": false
         },
         "purchase_invoices_date_idx": {
           "name": "purchase_invoices_date_idx",
-          "columns": [
-            "invoice_date"
-          ],
+          "columns": ["invoice_date"],
           "isUnique": false
         },
         "purchase_invoices_supplier_idx": {
           "name": "purchase_invoices_supplier_idx",
-          "columns": [
-            "supplier_id"
-          ],
+          "columns": ["supplier_id"],
           "isUnique": false
         }
       },
@@ -1464,12 +1372,8 @@
           "name": "purchase_invoices_company_id_companies_id_fk",
           "tableFrom": "purchase_invoices",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1477,12 +1381,8 @@
           "name": "purchase_invoices_financial_year_id_financial_years_id_fk",
           "tableFrom": "purchase_invoices",
           "tableTo": "financial_years",
-          "columnsFrom": [
-            "financial_year_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["financial_year_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1490,12 +1390,8 @@
           "name": "purchase_invoices_supplier_id_suppliers_id_fk",
           "tableFrom": "purchase_invoices",
           "tableTo": "suppliers",
-          "columnsFrom": [
-            "supplier_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["supplier_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1670,16 +1566,12 @@
       "indexes": {
         "sales_items_invoice_idx": {
           "name": "sales_items_invoice_idx",
-          "columns": [
-            "sales_invoice_id"
-          ],
+          "columns": ["sales_invoice_id"],
           "isUnique": false
         },
         "sales_items_product_idx": {
           "name": "sales_items_product_idx",
-          "columns": [
-            "product_id"
-          ],
+          "columns": ["product_id"],
           "isUnique": false
         }
       },
@@ -1688,12 +1580,8 @@
           "name": "sales_invoice_items_sales_invoice_id_sales_invoices_id_fk",
           "tableFrom": "sales_invoice_items",
           "tableTo": "sales_invoices",
-          "columnsFrom": [
-            "sales_invoice_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["sales_invoice_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1701,12 +1589,8 @@
           "name": "sales_invoice_items_product_id_products_id_fk",
           "tableFrom": "sales_invoice_items",
           "tableTo": "products",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1714,12 +1598,8 @@
           "name": "sales_invoice_items_unit_id_units_id_fk",
           "tableFrom": "sales_invoice_items",
           "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["unit_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1727,12 +1607,8 @@
           "name": "sales_invoice_items_tax_id_taxes_id_fk",
           "tableFrom": "sales_invoice_items",
           "tableTo": "taxes",
-          "columnsFrom": [
-            "tax_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tax_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2006,24 +1882,17 @@
       "indexes": {
         "sales_invoices_company_fy_idx": {
           "name": "sales_invoices_company_fy_idx",
-          "columns": [
-            "company_id",
-            "financial_year_id"
-          ],
+          "columns": ["company_id", "financial_year_id"],
           "isUnique": false
         },
         "sales_invoices_date_idx": {
           "name": "sales_invoices_date_idx",
-          "columns": [
-            "invoice_date"
-          ],
+          "columns": ["invoice_date"],
           "isUnique": false
         },
         "sales_invoices_customer_idx": {
           "name": "sales_invoices_customer_idx",
-          "columns": [
-            "customer_id"
-          ],
+          "columns": ["customer_id"],
           "isUnique": false
         }
       },
@@ -2032,12 +1901,8 @@
           "name": "sales_invoices_company_id_companies_id_fk",
           "tableFrom": "sales_invoices",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2045,12 +1910,8 @@
           "name": "sales_invoices_financial_year_id_financial_years_id_fk",
           "tableFrom": "sales_invoices",
           "tableTo": "financial_years",
-          "columnsFrom": [
-            "financial_year_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["financial_year_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2058,12 +1919,8 @@
           "name": "sales_invoices_customer_id_customers_id_fk",
           "tableFrom": "sales_invoices",
           "tableTo": "customers",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["customer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2324,12 +2181,8 @@
           "name": "company_settings_company_id_companies_id_fk",
           "tableFrom": "company_settings",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2391,12 +2244,8 @@
           "name": "document_sequences_company_id_companies_id_fk",
           "tableFrom": "document_sequences",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2404,12 +2253,8 @@
           "name": "document_sequences_financial_year_id_financial_years_id_fk",
           "tableFrom": "document_sequences",
           "tableTo": "financial_years",
-          "columnsFrom": [
-            "financial_year_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["financial_year_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2468,9 +2313,7 @@
       "indexes": {
         "idx_financial_years_company": {
           "name": "idx_financial_years_company",
-          "columns": [
-            "company_id"
-          ],
+          "columns": ["company_id"],
           "isUnique": false
         }
       },
@@ -2479,12 +2322,8 @@
           "name": "financial_years_company_id_companies_id_fk",
           "tableFrom": "financial_years",
           "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2540,12 +2379,8 @@
           "name": "settings_default_company_id_companies_id_fk",
           "tableFrom": "settings",
           "tableTo": "companies",
-          "columnsFrom": [
-            "default_company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["default_company_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2603,9 +2438,7 @@
       "indexes": {
         "users_username_unique": {
           "name": "users_username_unique",
-          "columns": [
-            "username"
-          ],
+          "columns": ["username"],
           "isUnique": true
         }
       },

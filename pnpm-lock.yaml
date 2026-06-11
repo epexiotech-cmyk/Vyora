@@ -53,6 +53,9 @@ importers:
       '@vyora/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@vyora/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -117,6 +120,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.15)(react@19.2.4)
+      '@vyora/types':
+        specifier: workspace:*
+        version: link:../../../packages/types
+      '@vyora/utils':
+        specifier: workspace:*
+        version: link:../../../packages/utils
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

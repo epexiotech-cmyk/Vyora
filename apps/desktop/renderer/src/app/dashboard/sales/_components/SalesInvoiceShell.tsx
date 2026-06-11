@@ -1,6 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SalesInvoiceDto } from '@vyora/types';
+import { getStateFromGstin } from '@vyora/utils';
 import { Save, Settings, X, FilePlus, Copy, Printer, FileDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -15,7 +16,6 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { getStateFromGstin } from '@/lib/gstUtils';
 import { mapSalesInvoiceUiToDto } from '@/lib/mappers/salesInvoiceMapper';
 import { salesInvoiceSchema, SalesInvoiceFormValues } from '@/lib/validations/salesInvoiceSchema';
 

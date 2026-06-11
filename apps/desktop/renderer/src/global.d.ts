@@ -55,6 +55,11 @@ export type VyoraBootstrapAPI = {
 export type VyoraCompanyAPI = {
   getActive: () => Promise<ApiResponse<string | null>>;
   setActive: (id: string) => Promise<ApiResponse<void>>;
+  getProfile: (id: string) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto | null>>;
+  updateProfile: (
+    id: string,
+    payload: import('@vyora/types').UpdateCompanyProfileRequest,
+  ) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto>>;
 };
 
 export type VyoraFinancialYearAPI = {

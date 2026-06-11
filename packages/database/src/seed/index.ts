@@ -24,7 +24,7 @@ export const seedDatabase = async (db: VyoraDatabase) => {
   // Create default company
   await db.insert(companies).values({
     id: companyId,
-    name: 'My Business',
+    legalName: 'My Business',
     createdAt: now,
     updatedAt: now,
   });

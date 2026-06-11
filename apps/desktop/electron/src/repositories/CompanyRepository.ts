@@ -9,13 +9,26 @@ import { BaseRepository, DbTransaction } from './BaseRepository';
 function mapToDto(entity: Company): CompanyDto {
   return {
     id: entity.id,
-    name: entity.name,
+    legalName: entity.legalName,
+    tradeName: entity.tradeName,
     gstin: entity.gstin,
-    address: entity.address,
-    phone: entity.phone,
+    pan: entity.pan,
+    constitutionType: entity.constitutionType,
+    businessType: entity.businessType,
+    addressLine1: entity.addressLine1,
+    addressLine2: entity.addressLine2,
+    city: entity.city,
+    district: entity.district,
+    stateCode: entity.stateCode,
+    countryCode: entity.countryCode,
+    pincode: entity.pincode,
     email: entity.email,
+    mobile: entity.mobile,
+    telephone: entity.telephone,
+    website: entity.website,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
+    deletedAt: entity.deletedAt,
   };
 }
 
@@ -50,5 +63,23 @@ export class CompanyRepository extends BaseRepository {
     await executor.insert(companies).values(newCompany as InsertCompany);
     const created = await executor.select().from(companies).where(eq(companies.id, id)).get();
     return mapToDto(created!);
+  }
+
+  public async updateProfile(
+    id: string,
+    data: Partial<Omit<CompanyDto, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,
+    tx?: DbTransaction,
+  ): Promise<CompanyDto | undefined> {
+    const executor = tx || this.db;
+    const now = new Date();
+
+    const updateData = {
+      ...data,
+      updatedAt: now,
+    };
+
+    await executor.update(companies).set(updateData).where(eq(companies.id, id));
+
+    return this.getById(id, tx);
   }
 }

@@ -25,11 +25,8 @@ export class CompanyBootstrapService {
       // 1. Create base company record
       const company = await this.companyRepo.create(
         {
-          name: input.name,
+          legalName: input.legalName,
           gstin: input.gstin || null,
-          address: null,
-          phone: null,
-          email: null,
         },
         tx,
       );

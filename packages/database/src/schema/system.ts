@@ -2,13 +2,26 @@ import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const companies = sqliteTable('companies', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
+  legalName: text('legal_name').notNull(),
+  tradeName: text('trade_name'),
   gstin: text('gstin'),
-  address: text('address'),
-  phone: text('phone'),
+  pan: text('pan'),
+  constitutionType: text('constitution_type'),
+  businessType: text('business_type'),
+  addressLine1: text('address_line_1'),
+  addressLine2: text('address_line_2'),
+  city: text('city'),
+  district: text('district'),
+  stateCode: text('state_code'),
+  countryCode: text('country_code'),
+  pincode: text('pincode'),
   email: text('email'),
+  mobile: text('mobile'),
+  telephone: text('telephone'),
+  website: text('website'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const app_settings = sqliteTable('app_settings', {

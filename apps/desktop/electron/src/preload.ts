@@ -11,6 +11,8 @@ import type {
   UpdateSalesInvoiceInput,
   PincodeDTO,
   SmartPincodeLookupResponse,
+  CompanyProfileDto,
+  UpdateCompanyProfileRequest,
 } from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
@@ -57,6 +59,9 @@ contextBridge.exposeInMainWorld('vyora', {
   company: {
     getActive: () => ipcRenderer.invoke('company:get-active'),
     setActive: (id: string) => ipcRenderer.invoke('company:set-active', id),
+    getProfile: (id: string) => ipcRenderer.invoke('company:get-profile', id),
+    updateProfile: (id: string, payload: UpdateCompanyProfileRequest) =>
+      ipcRenderer.invoke('company:update-profile', id, payload),
   },
   financialYear: {
     getCurrent: () => ipcRenderer.invoke('financial-year:get-current'),
@@ -154,6 +159,11 @@ export type VyoraBootstrapAPI = {
 export type VyoraCompanyAPI = {
   getActive: () => Promise<ApiResponse<string | null>>;
   setActive: (id: string) => Promise<ApiResponse<void>>;
+  getProfile: (id: string) => Promise<ApiResponse<CompanyProfileDto | null>>;
+  updateProfile: (
+    id: string,
+    payload: UpdateCompanyProfileRequest,
+  ) => Promise<ApiResponse<CompanyProfileDto>>;
 };
 
 export type VyoraFinancialYearAPI = {

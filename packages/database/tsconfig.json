@@ -2,6 +2,8 @@
   "extends": "@vyora/config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
     "paths": {
       "@prisma/client/sqlite": ["./node_modules/@prisma/client/sqlite"],
       "@prisma/client/postgres": ["./node_modules/@prisma/client/postgres"]

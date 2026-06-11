@@ -1,4 +1,9 @@
-import { CompanyDto, ApiResponse } from '@vyora/types';
+import {
+  CompanyDto,
+  CompanyProfileDto,
+  UpdateCompanyProfileRequest,
+  ApiResponse,
+} from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { companyContextService } from '../../services/CompanyContextService';
@@ -7,7 +12,7 @@ export function registerCompanyHandlers() {
   ipcMain.handle('company:get-active', async (): Promise<ApiResponse<CompanyDto | null>> => {
     try {
       const activeCompany = await companyContextService.loadActiveCompany();
-      return { success: true, data: activeCompany };
+      return { success: true, data: activeCompany as CompanyDto | null };
     } catch (error) {
       console.error('Error fetching active company:', error);
       return { success: false, error: (error as Error).message };
@@ -23,4 +28,34 @@ export function registerCompanyHandlers() {
       return { success: false, error: (error as Error).message };
     }
   });
+
+  ipcMain.handle(
+    'company:get-profile',
+    async (_, id: string): Promise<ApiResponse<CompanyProfileDto | null>> => {
+      try {
+        const profile = await companyContextService.getProfile(id);
+        return { success: true, data: profile };
+      } catch (error) {
+        console.error('Error getting company profile:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:update-profile',
+    async (
+      _,
+      id: string,
+      payload: UpdateCompanyProfileRequest,
+    ): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const profile = await companyContextService.updateProfile(id, payload);
+        return { success: true, data: profile };
+      } catch (error) {
+        console.error('Error updating company profile:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
 }

@@ -39,13 +39,35 @@ export const GST_STATE_CODES: Record<string, string> = {
   '38': 'Ladakh',
 };
 
-export function getStateFromGstin(gstin?: string): { stateCode: string; stateName: string } | null {
+const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+export function isValidGstin(gstin?: string | null): boolean {
+  if (!gstin) return false;
+  return GSTIN_REGEX.test(gstin.toUpperCase());
+}
+
+export function extractPanFromGstin(gstin?: string | null): string | null {
+  if (!gstin || gstin.length < 15) return null;
+  const upperGstin = gstin.toUpperCase();
+  if (!GSTIN_REGEX.test(upperGstin)) return null;
+  return upperGstin.substring(2, 12);
+}
+
+export function extractStateCodeFromGstin(gstin?: string | null): string | null {
   if (!gstin || gstin.length < 2) return null;
   const stateCode = gstin.substring(0, 2);
-  const stateName = GST_STATE_CODES[stateCode];
+  if (GST_STATE_CODES[stateCode]) {
+    return stateCode;
+  }
+  return null;
+}
 
-  if (stateName) {
-    return { stateCode, stateName };
+export function getStateFromGstin(
+  gstin?: string | null,
+): { stateCode: string; stateName: string } | null {
+  const stateCode = extractStateCodeFromGstin(gstin);
+  if (stateCode) {
+    return { stateCode, stateName: GST_STATE_CODES[stateCode]! };
   }
   return null;
 }
