@@ -1,13 +1,14 @@
-import { CustomerDto } from '@vyora/types';
+import { CustomerProfileDto } from '@vyora/types';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 
 interface SalesCustomerSelectorProps {
   name: string;
-  onCustomerSelect?: (customer: CustomerDto | null) => void;
+  onCustomerSelect?: (customer: CustomerProfileDto | null) => void;
   className?: string;
 }
 
@@ -19,22 +20,38 @@ export function SalesCustomerSelector({
   const { setValue, watch } = useFormContext();
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [customers, setCustomers] = React.useState<CustomerDto[]>([]);
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  const [customers, setCustomers] = React.useState<CustomerProfileDto[]>([]);
+  const [selectedCustomerObj, setSelectedCustomerObj] = React.useState<CustomerProfileDto | null>(
+    null,
+  );
+  const [lastFetchedId, setLastFetchedId] = React.useState<string | null | undefined>(null);
+
+  const selectedCustomerId = watch(name);
+
+  // Render-phase state update to clear old customer object when ID changes
+  if (selectedCustomerId !== lastFetchedId) {
+    setLastFetchedId(selectedCustomerId);
+    setSelectedCustomerObj(null);
+  }
+
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [activeIndex, setActiveIndex] = React.useState(0);
 
-  const selectedCustomerId = watch(name);
-  const selectedCustomer = React.useMemo(
+  const selectedCustomerFromSearch = React.useMemo(
     () => customers.find((c) => c.id === selectedCustomerId) || null,
     [customers, selectedCustomerId],
   );
+
+  const displayedCustomer = selectedCustomerFromSearch || selectedCustomerObj;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLUListElement>(null);
 
-  // Fetch customers
+  // Fetch search results automatically when debounced search changes
   React.useEffect(() => {
     let mounted = true;
     const fetchCustomers = async () => {
@@ -42,10 +59,14 @@ export function SalesCustomerSelector({
         setIsLoading(true);
         setError(null);
         // Uses the globally exposed Vyora API from preload/bridge
-        const res = await window.vyora.db.customers.getAll();
+        const res = await window.vyora.db.customers.search({
+          query: debouncedSearch,
+          isActive: true, // Only show active customers in sales
+          limit: 15, // Server-side pagination limit
+        });
         if (mounted) {
           if (res.success && res.data) {
-            setCustomers(res.data);
+            setCustomers(res.data.data);
           } else {
             setError(res.error || 'Failed to load customers');
           }
@@ -60,19 +81,33 @@ export function SalesCustomerSelector({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [debouncedSearch]);
 
-  // Filter customers based on search term
-  const filteredCustomers = React.useMemo(() => {
-    if (!searchTerm) return customers;
-    const lowerTerm = searchTerm.toLowerCase();
-    return customers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(lowerTerm) ||
-        (c.mobile && c.mobile.includes(lowerTerm)) ||
-        (c.gstin && c.gstin.toLowerCase().includes(lowerTerm)),
-    );
-  }, [customers, searchTerm]);
+  // Ensure the explicitly selected customer is loaded even if they aren't in the current search results
+  React.useEffect(() => {
+    let mounted = true;
+    if (
+      selectedCustomerId &&
+      !selectedCustomerFromSearch &&
+      selectedCustomerId !== selectedCustomerObj?.id
+    ) {
+      // Fetch from backend
+      const fetchSelected = async () => {
+        try {
+          const res = await window.vyora.db.customers.getById(selectedCustomerId);
+          if (mounted && res.success && res.data) {
+            setSelectedCustomerObj(res.data);
+          }
+        } catch (e) {
+          console.error('Failed to fetch selected customer', e);
+        }
+      };
+      fetchSelected();
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCustomerId, selectedCustomerFromSearch, selectedCustomerObj?.id]);
 
   // Handle outside click to close dropdown
   React.useEffect(() => {
@@ -98,7 +133,7 @@ export function SalesCustomerSelector({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setActiveIndex((prev) => (prev < filteredCustomers.length - 1 ? prev + 1 : prev));
+        setActiveIndex((prev) => (prev < customers.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -106,8 +141,8 @@ export function SalesCustomerSelector({
         break;
       case 'Enter':
         e.preventDefault();
-        if (filteredCustomers[activeIndex]) {
-          handleSelect(filteredCustomers[activeIndex]);
+        if (customers[activeIndex]) {
+          handleSelect(customers[activeIndex]);
         }
         break;
       case 'Escape':
@@ -130,8 +165,9 @@ export function SalesCustomerSelector({
     }
   }, [activeIndex, isOpen]);
 
-  const handleSelect = (customer: CustomerDto) => {
+  const handleSelect = (customer: CustomerProfileDto) => {
     setValue(name, customer.id, { shouldDirty: true });
+    setSelectedCustomerObj(customer);
     setSearchTerm('');
     setIsOpen(false);
     if (onCustomerSelect) onCustomerSelect(customer);
@@ -140,6 +176,8 @@ export function SalesCustomerSelector({
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setValue(name, null, { shouldDirty: true });
+    setSelectedCustomerObj(null);
+    setSearchTerm('');
     if (onCustomerSelect) onCustomerSelect(null);
   };
 
@@ -158,9 +196,9 @@ export function SalesCustomerSelector({
       >
         <Search className="text-muted-foreground mr-2 h-4 w-4 shrink-0" />
 
-        {!isOpen && selectedCustomer ? (
+        {!isOpen && displayedCustomer ? (
           <div className="flex flex-1 items-center justify-between truncate">
-            <span className="text-foreground truncate font-medium">{selectedCustomer.name}</span>
+            <span className="text-foreground truncate font-medium">{displayedCustomer.name}</span>
             <button
               type="button"
               onClick={handleClear}
@@ -175,7 +213,7 @@ export function SalesCustomerSelector({
             type="text"
             className="placeholder:text-muted-foreground text-foreground flex-1 bg-transparent outline-none"
             placeholder={
-              selectedCustomer ? selectedCustomer.name : 'Search by Name, Mobile, or GSTIN...'
+              displayedCustomer ? displayedCustomer.name : 'Search by Name, Mobile, or GSTIN...'
             }
             value={searchTerm}
             onChange={(e) => {
@@ -194,13 +232,13 @@ export function SalesCustomerSelector({
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border shadow-md">
-          {isLoading ? (
+          {isLoading && customers.length === 0 ? (
             <div className="text-muted-foreground flex items-center justify-center py-6 text-sm">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading customers...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...
             </div>
           ) : error ? (
             <div className="text-destructive py-6 text-center text-sm">{error}</div>
-          ) : filteredCustomers.length === 0 ? (
+          ) : customers.length === 0 ? (
             <div className="text-muted-foreground py-6 text-center text-sm">
               No customers found.
             </div>
@@ -209,7 +247,7 @@ export function SalesCustomerSelector({
               ref={listRef}
               className="scrollbar-thumb-border max-h-60 scrollbar-thin overflow-y-auto p-1"
             >
-              {filteredCustomers.map((customer, index) => {
+              {customers.map((customer, index) => {
                 const isSelected = selectedCustomerId === customer.id;
                 const isActive = index === activeIndex;
                 return (

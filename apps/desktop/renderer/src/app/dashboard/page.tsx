@@ -1,6 +1,6 @@
 'use client';
 
-import { CustomerDto } from '@vyora/types';
+import { CustomerProfileDto } from '@vyora/types';
 import * as React from 'react';
 
 import { AppButton } from '@/components/ui/AppButton';
@@ -8,16 +8,16 @@ import { AppCard, AppCardHeader, AppCardTitle, AppCardContent } from '@/componen
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function DashboardPage() {
-  const [customers, setCustomers] = React.useState<CustomerDto[]>([]);
+  const [customers, setCustomers] = React.useState<CustomerProfileDto[]>([]);
   const [status, setStatus] = React.useState<'checking' | 'connected' | 'error'>('checking');
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   const loadData = React.useCallback(async () => {
     try {
       if (typeof window !== 'undefined' && window.vyora?.db) {
-        const res = await window.vyora.db.customers.getAll();
+        const res = await window.vyora.db.customers.search({});
         if (res.success) {
-          setCustomers(res.data || []);
+          setCustomers(res.data?.data || []);
           setStatus('connected');
         } else {
           setStatus('error');
@@ -43,7 +43,10 @@ export default function DashboardPage() {
       const res = await window.vyora.db.customers.create({
         name: `Test Customer ${Math.floor(Math.random() * 1000)}`,
         city: 'Mumbai',
-        balance: 0,
+        openingBalance: 0,
+        creditLimit: 0,
+        creditDays: 0,
+        isActive: true,
       });
       if (res.success) {
         loadData(); // Refresh

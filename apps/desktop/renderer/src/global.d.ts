@@ -1,7 +1,10 @@
 import type {
   ApiResponse,
-  CustomerDto,
+  CustomerProfileDto,
   CreateCustomerInput,
+  UpdateCustomerInput,
+  SearchCustomersOptions,
+  CustomerListDto,
   ProductDto,
   CreateProductInput,
   CreateSalesInvoiceInput,
@@ -21,8 +24,11 @@ export type VyoraSystemAPI = {
 
 export type VyoraDatabaseAPI = {
   customers: {
-    getAll: () => Promise<ApiResponse<CustomerDto[]>>;
-    create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerDto>>;
+    search: (options: SearchCustomersOptions) => Promise<ApiResponse<CustomerListDto>>;
+    getById: (id: string) => Promise<ApiResponse<CustomerProfileDto | null>>;
+    create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    update: (id: string, data: UpdateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
   };
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;

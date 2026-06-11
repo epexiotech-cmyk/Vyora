@@ -18,4 +18,11 @@ export abstract class BaseRepository {
   protected get db(): VyoraDatabase {
     return dbService.getDb();
   }
+
+  /**
+   * Executes a callback within a database transaction.
+   */
+  public async transaction<T>(callback: (tx: DbTransaction) => Promise<T>): Promise<T> {
+    return this.db.transaction(callback);
+  }
 }

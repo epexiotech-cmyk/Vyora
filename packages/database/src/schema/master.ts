@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import { companies } from './system';
 
@@ -8,7 +8,9 @@ export const taxes = sqliteTable('taxes', {
     .references(() => companies.id)
     .notNull(),
   name: text('name').notNull(),
+  taxType: text('tax_type').notNull().default('GST'),
   rate: real('rate').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 
@@ -22,20 +24,61 @@ export const units = sqliteTable('units', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 
-export const customers = sqliteTable('customers', {
-  id: text('id').primaryKey(),
-  companyId: text('company_id')
-    .references(() => companies.id)
-    .notNull(),
-  name: text('name').notNull(),
-  gstin: text('gstin'),
-  mobile: text('mobile'),
-  email: text('email'),
-  city: text('city'),
-  state: text('state'),
-  balance: real('balance').default(0).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+export const customers = sqliteTable(
+  'customers',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+
+    // Identity & Contact
+    customerCode: text('customer_code').notNull(),
+    name: text('name').notNull(),
+    contactPerson: text('contact_person'),
+    mobile: text('mobile'),
+    alternateMobile: text('alternate_mobile'),
+    email: text('email'),
+
+    // Address
+    addressLine1: text('address_line_1'),
+    addressLine2: text('address_line_2'),
+    area: text('area'),
+    city: text('city'),
+    state: text('state'),
+    pincode: text('pincode'),
+
+    // Compliance
+    gstin: text('gstin'),
+    pan: text('pan'),
+    registrationType: text('registration_type', {
+      enum: ['Regular', 'Composition', 'Unregistered', 'Consumer', 'Overseas', 'SEZ'],
+    }),
+
+    // Accounting
+    openingBalance: real('opening_balance').default(0).notNull(),
+    openingType: text('opening_type', { enum: ['Dr', 'Cr'] }),
+    creditLimit: real('credit_limit').default(0).notNull(),
+    creditDays: integer('credit_days').default(0).notNull(),
+
+    // Metadata & Sync
+    notes: text('notes'),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => {
+    return {
+      companyIdIdx: index('idx_customers_company_id').on(table.companyId),
+      customerCodeIdx: uniqueIndex('idx_customers_code').on(table.companyId, table.customerCode),
+      nameIdx: index('idx_customers_name').on(table.companyId, table.name),
+      mobileIdx: index('idx_customers_mobile').on(table.companyId, table.mobile),
+      gstinIdx: index('idx_customers_gstin').on(table.companyId, table.gstin),
+    };
+  },
+);
 
 export const suppliers = sqliteTable('suppliers', {
   id: text('id').primaryKey(),

@@ -1,8 +1,11 @@
 import type {
   CreateCustomerInput,
+  UpdateCustomerInput,
+  SearchCustomersOptions,
+  CustomerProfileDto,
+  CustomerListDto,
   CreateProductInput,
   ApiResponse,
-  CustomerDto,
   ProductDto,
   CreateSalesInvoiceInput,
   FinancialYearDto,
@@ -24,8 +27,13 @@ contextBridge.exposeInMainWorld('vyora', {
   },
   db: {
     customers: {
-      getAll: () => ipcRenderer.invoke('db:customers:getAll'),
+      search: (options: SearchCustomersOptions) =>
+        ipcRenderer.invoke('db:customers:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:customers:getById', id),
       create: (data: CreateCustomerInput) => ipcRenderer.invoke('db:customers:create', data),
+      update: (id: string, data: UpdateCustomerInput) =>
+        ipcRenderer.invoke('db:customers:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('db:customers:deactivate', id),
     },
     taxes: {
       getAll: () => ipcRenderer.invoke('db:taxes:getAll'),
@@ -122,8 +130,11 @@ export type VyoraSplashAPI = {
 
 export type VyoraDatabaseAPI = {
   customers: {
-    getAll: () => Promise<ApiResponse<CustomerDto[]>>;
-    create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerDto>>;
+    search: (options: SearchCustomersOptions) => Promise<ApiResponse<CustomerListDto>>;
+    getById: (id: string) => Promise<ApiResponse<CustomerProfileDto | null>>;
+    create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    update: (id: string, data: UpdateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
   };
   taxes: {
     getAll: () => Promise<ApiResponse<import('@vyora/types').TaxDto[]>>;

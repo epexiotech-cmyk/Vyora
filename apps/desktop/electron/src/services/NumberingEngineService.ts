@@ -11,7 +11,8 @@ export type DocumentType =
   | 'CREDIT_NOTE'
   | 'DEBIT_NOTE'
   | 'PAYMENT_VOUCHER'
-  | 'RECEIPT_VOUCHER';
+  | 'RECEIPT_VOUCHER'
+  | 'CUSTOMER';
 
 export class NumberingEngineService {
   /**
