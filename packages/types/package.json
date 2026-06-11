@@ -11,5 +11,9 @@
     "@vyora/config": "workspace:*",
     "eslint": "^8.57.0",
     "typescript": "latest"
+  },
+  "dependencies": {
+    "@vyora/utils": "workspace:^",
+    "zod": "^4.4.3"
   }
 }

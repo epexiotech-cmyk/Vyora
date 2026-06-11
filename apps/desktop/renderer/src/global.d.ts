@@ -5,6 +5,11 @@ import type {
   UpdateCustomerInput,
   SearchCustomersOptions,
   CustomerListDto,
+  SupplierProfileDto,
+  CreateSupplierInput,
+  UpdateSupplierInput,
+  SearchSuppliersOptions,
+  SupplierListDto,
   ProductDto,
   CreateProductInput,
   CreateSalesInvoiceInput,
@@ -28,6 +33,13 @@ export type VyoraDatabaseAPI = {
     getById: (id: string) => Promise<ApiResponse<CustomerProfileDto | null>>;
     create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
     update: (id: string, data: UpdateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+  };
+  suppliers: {
+    search: (options: SearchSuppliersOptions) => Promise<ApiResponse<SupplierListDto>>;
+    getById: (id: string) => Promise<ApiResponse<SupplierProfileDto | null>>;
+    create: (data: CreateSupplierInput) => Promise<ApiResponse<SupplierProfileDto>>;
+    update: (id: string, data: UpdateSupplierInput) => Promise<ApiResponse<SupplierProfileDto>>;
     deactivate: (id: string) => Promise<ApiResponse<void>>;
   };
   products: {

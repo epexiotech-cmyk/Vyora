@@ -345,6 +345,13 @@ importers:
         version: 6.0.3
 
   packages/types:
+    dependencies:
+      '@vyora/utils':
+        specifier: workspace:^
+        version: link:../utils
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@vyora/config':
         specifier: workspace:*

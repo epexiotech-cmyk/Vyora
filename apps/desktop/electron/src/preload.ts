@@ -12,6 +12,11 @@ import type {
   SalesInvoiceDto,
   ListSalesInvoicesOptions,
   UpdateSalesInvoiceInput,
+  SupplierProfileDto,
+  CreateSupplierInput,
+  UpdateSupplierInput,
+  SearchSuppliersOptions,
+  SupplierListDto,
   PincodeDTO,
   SmartPincodeLookupResponse,
   CompanyProfileDto,
@@ -34,6 +39,15 @@ contextBridge.exposeInMainWorld('vyora', {
       update: (id: string, data: UpdateCustomerInput) =>
         ipcRenderer.invoke('db:customers:update', id, data),
       deactivate: (id: string) => ipcRenderer.invoke('db:customers:deactivate', id),
+    },
+    suppliers: {
+      search: (options: SearchSuppliersOptions) =>
+        ipcRenderer.invoke('db:suppliers:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:suppliers:getById', id),
+      create: (data: CreateSupplierInput) => ipcRenderer.invoke('db:suppliers:create', data),
+      update: (id: string, data: UpdateSupplierInput) =>
+        ipcRenderer.invoke('db:suppliers:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('db:suppliers:deactivate', id),
     },
     taxes: {
       getAll: () => ipcRenderer.invoke('db:taxes:getAll'),
@@ -134,6 +148,13 @@ export type VyoraDatabaseAPI = {
     getById: (id: string) => Promise<ApiResponse<CustomerProfileDto | null>>;
     create: (data: CreateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
     update: (id: string, data: UpdateCustomerInput) => Promise<ApiResponse<CustomerProfileDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+  };
+  suppliers: {
+    search: (options: SearchSuppliersOptions) => Promise<ApiResponse<SupplierListDto>>;
+    getById: (id: string) => Promise<ApiResponse<SupplierProfileDto | null>>;
+    create: (data: CreateSupplierInput) => Promise<ApiResponse<SupplierProfileDto>>;
+    update: (id: string, data: UpdateSupplierInput) => Promise<ApiResponse<SupplierProfileDto>>;
     deactivate: (id: string) => Promise<ApiResponse<void>>;
   };
   taxes: {

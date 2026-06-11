@@ -31,6 +31,7 @@ import { registerPurchaseHandlers } from './purchaseHandlers';
 import { registerSacHandlers } from './sacHandlers';
 import { registerSalesInvoiceHandlers } from './salesHandlers';
 import { registerStateHandlers } from './stateHandlers';
+import { registerSupplierHandlers } from './supplierHandlers';
 import { registerTaxHandlers } from './taxHandlers';
 import { registerUqcHandlers } from './uqcHandlers';
 
@@ -42,6 +43,7 @@ export function registerAllHandlers() {
   registerInventoryHandlers();
   registerProductHandlers();
   registerPurchaseHandlers();
+  registerSupplierHandlers();
   registerSalesInvoiceHandlers();
   registerTaxHandlers();
   registerPrintHandlers();

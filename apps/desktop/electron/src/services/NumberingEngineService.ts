@@ -12,7 +12,8 @@ export type DocumentType =
   | 'DEBIT_NOTE'
   | 'PAYMENT_VOUCHER'
   | 'RECEIPT_VOUCHER'
-  | 'CUSTOMER';
+  | 'CUSTOMER'
+  | 'SUPPLIER';
 
 export class NumberingEngineService {
   /**
@@ -55,6 +56,16 @@ export class NumberingEngineService {
       padding = settings.purchasePadding ?? 4;
       startFrom = settings.purchaseStartFrom ?? 1;
       resetPolicy = settings.purchaseResetPolicy || 'YEARLY';
+    } else if (documentType === 'CUSTOMER') {
+      prefix = 'CUST';
+      padding = 4;
+      startFrom = 1;
+      resetPolicy = 'NEVER';
+    } else if (documentType === 'SUPPLIER') {
+      prefix = 'SUPP';
+      padding = 5; // As per user request: SUPP-00001
+      startFrom = 1;
+      resetPolicy = 'NEVER';
     } else {
       // Fallbacks for future document types
       prefix = documentType.split('_')[0];
@@ -129,7 +140,7 @@ export class NumberingEngineService {
         middleSegment = '/';
       }
     } else {
-      middleSegment = '/';
+      middleSegment = '-';
     }
 
     const paddedSequence = String(nextValue).padStart(padding, '0');
