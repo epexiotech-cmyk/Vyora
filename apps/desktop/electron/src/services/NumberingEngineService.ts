@@ -13,7 +13,8 @@ export type DocumentType =
   | 'PAYMENT_VOUCHER'
   | 'RECEIPT_VOUCHER'
   | 'CUSTOMER'
-  | 'SUPPLIER';
+  | 'SUPPLIER'
+  | 'ITEM';
 
 export class NumberingEngineService {
   /**
@@ -64,6 +65,11 @@ export class NumberingEngineService {
     } else if (documentType === 'SUPPLIER') {
       prefix = 'SUPP';
       padding = 5; // As per user request: SUPP-00001
+      startFrom = 1;
+      resetPolicy = 'NEVER';
+    } else if (documentType === 'ITEM') {
+      prefix = 'ITEM';
+      padding = 5;
       startFrom = 1;
       resetPolicy = 'NEVER';
     } else {

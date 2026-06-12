@@ -14,15 +14,37 @@ export const taxes = sqliteTable('taxes', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 });
 
-export const units = sqliteTable('units', {
-  id: text('id').primaryKey(),
-  companyId: text('company_id')
-    .references(() => companies.id)
-    .notNull(),
-  name: text('name').notNull(),
-  shortName: text('short_name').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+export const units = sqliteTable(
+  'units',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    shortName: text('short_name').notNull(),
+    uqcCode: text('uqc_code'),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => {
+    return {
+      companyIdIdx: index('idx_units_company_id').on(table.companyId),
+      nameIdx: index('idx_units_name').on(table.companyId, table.name),
+      shortNameIdx: index('idx_units_short_name').on(table.companyId, table.shortName),
+      isActiveIdx: index('idx_units_is_active').on(table.companyId, table.isActive),
+      deletedAtIdx: index('idx_units_deleted_at').on(table.companyId, table.deletedAt),
+      nameUniqueIdx: uniqueIndex('idx_units_name_unique').on(table.companyId, table.name),
+      shortNameUniqueIdx: uniqueIndex('idx_units_short_name_unique').on(
+        table.companyId,
+        table.shortName,
+      ),
+    };
+  },
+);
 
 export const customers = sqliteTable(
   'customers',
@@ -136,21 +158,47 @@ export const suppliers = sqliteTable(
   },
 );
 
-export const products = sqliteTable('products', {
-  id: text('id').primaryKey(),
-  companyId: text('company_id')
-    .references(() => companies.id)
-    .notNull(),
-  name: text('name').notNull(),
-  sku: text('sku'),
-  hsnCode: text('hsn_code'),
-  unitId: text('unit_id').references(() => units.id),
-  taxId: text('tax_id').references(() => taxes.id),
-  salePrice: real('sale_price').default(0).notNull(),
-  purchasePrice: real('purchase_price').default(0).notNull(),
-  stock: real('stock').default(0).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+export const products = sqliteTable(
+  'products',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    sku: text('sku').notNull(),
+    itemType: text('item_type', {
+      enum: ['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'],
+    }).notNull(),
+    description: text('description'),
+    hsnCode: text('hsn_code'),
+    unitId: text('unit_id')
+      .references(() => units.id)
+      .notNull(),
+    taxId: text('tax_id')
+      .references(() => taxes.id)
+      .notNull(),
+    salePrice: real('sale_price').default(0).notNull(),
+    purchasePrice: real('purchase_price').default(0).notNull(),
+    stock: real('stock').default(0).notNull(),
+    reorderLevel: real('reorder_level').default(0).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => {
+    return {
+      companyIdIdx: index('idx_products_company_id').on(table.companyId),
+      skuIdx: uniqueIndex('idx_products_sku').on(table.companyId, table.sku),
+      nameIdx: index('idx_products_name').on(table.companyId, table.name),
+      hsnCodeIdx: index('idx_products_hsn_code').on(table.companyId, table.hsnCode),
+      isActiveIdx: index('idx_products_is_active').on(table.companyId, table.isActive),
+      deletedAtIdx: index('idx_products_deleted_at').on(table.companyId, table.deletedAt),
+    };
+  },
+);
 
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = typeof customers.$inferInsert;
@@ -160,3 +208,6 @@ export type InsertSupplier = typeof suppliers.$inferInsert;
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
+
+export type Unit = typeof units.$inferSelect;
+export type InsertUnit = typeof units.$inferInsert;

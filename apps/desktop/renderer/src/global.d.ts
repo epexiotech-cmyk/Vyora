@@ -42,9 +42,36 @@ export type VyoraDatabaseAPI = {
     update: (id: string, data: UpdateSupplierInput) => Promise<ApiResponse<SupplierProfileDto>>;
     deactivate: (id: string) => Promise<ApiResponse<void>>;
   };
+  taxes: {
+    getAll: () => Promise<ApiResponse<import('@vyora/types').TaxDto[]>>;
+  };
+  units: {
+    getAll: () => Promise<ApiResponse<import('@vyora/types').UnitDto[]>>;
+    search: (
+      options: import('@vyora/types').SearchUnitsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').UnitDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateUnitInput,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateUnitInput,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;
+    search: (
+      options: import('@vyora/types').SearchProductsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').ProductListDto>>;
+    getById: (id: string) => Promise<ApiResponse<ProductDto | null>>;
     create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateProductInput,
+    ) => Promise<ApiResponse<ProductDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;

@@ -1,32 +1,24 @@
 import { randomUUID } from 'crypto';
 
-import { products, Product, InsertProduct } from '@vyora/database';
+import { units, InsertUnit, Unit } from '@vyora/database';
 import {
-  ProductDto,
-  CreateProductInput,
-  UpdateProductInput,
-  SearchProductsOptions,
-  ProductListDto,
-  ItemType,
+  UnitDto,
+  CreateUnitInput,
+  UpdateUnitInput,
+  SearchUnitsOptions,
+  UnitListDto,
 } from '@vyora/types';
-import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
+import { eq, and, or, like, isNull, desc } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';
 
-function mapToDto(entity: Product): ProductDto {
+function mapToDto(entity: Unit): UnitDto {
   return {
     id: entity.id,
+    companyId: entity.companyId,
     name: entity.name,
-    sku: entity.sku,
-    itemType: entity.itemType as ItemType,
-    description: entity.description,
-    hsnCode: entity.hsnCode,
-    unitId: entity.unitId,
-    taxId: entity.taxId,
-    salePrice: entity.salePrice,
-    purchasePrice: entity.purchasePrice,
-    stock: entity.stock,
-    reorderLevel: entity.reorderLevel,
+    shortName: entity.shortName,
+    uqcCode: entity.uqcCode,
     isActive: entity.isActive,
     syncVersion: entity.syncVersion,
     createdAt: entity.createdAt,
@@ -35,33 +27,27 @@ function mapToDto(entity: Product): ProductDto {
   };
 }
 
-export class ProductRepository extends BaseRepository {
+export class UnitRepository extends BaseRepository {
   public async search(
     companyId: string,
-    options: SearchProductsOptions,
+    options: SearchUnitsOptions,
     tx?: DbTransaction,
-  ): Promise<ProductListDto> {
+  ): Promise<UnitListDto> {
     const executor = tx || this.db;
 
     const conditions: import('drizzle-orm').SQL<unknown>[] = [
-      eq(products.companyId, companyId),
-      isNull(products.deletedAt),
+      eq(units.companyId, companyId),
+      isNull(units.deletedAt),
     ];
 
     if (options.isActive !== undefined) {
-      conditions.push(eq(products.isActive, options.isActive));
+      conditions.push(eq(units.isActive, options.isActive));
     }
 
     if (options.query) {
       const q = `%${options.query}%`;
-      const searchCondition = or(
-        like(products.name, q),
-        like(products.sku, q),
-        like(products.hsnCode, q),
-      );
-      if (searchCondition) {
-        conditions.push(searchCondition);
-      }
+      const searchCondition = or(like(units.name, q), like(units.shortName, q));
+      if (searchCondition) conditions.push(searchCondition);
     }
 
     const validConditions = conditions.filter(
@@ -69,10 +55,10 @@ export class ProductRepository extends BaseRepository {
     ) as import('drizzle-orm').SQL<unknown>[];
     const baseQuery = executor
       .select()
-      .from(products)
+      .from(units)
       .where(and(...validConditions));
 
-    // Count total before pagination
+    // Count total
     const allResults = await baseQuery.all();
     const total = allResults.length;
 
@@ -82,9 +68,9 @@ export class ProductRepository extends BaseRepository {
 
     const results = await executor
       .select()
-      .from(products)
+      .from(units)
       .where(and(...validConditions))
-      .orderBy(desc(products.createdAt))
+      .orderBy(desc(units.createdAt))
       .limit(limit)
       .offset(offset);
 
@@ -94,85 +80,103 @@ export class ProductRepository extends BaseRepository {
     };
   }
 
-  public async getById(
-    id: string,
-    companyId: string,
-    tx?: DbTransaction,
-  ): Promise<ProductDto | null> {
+  public async getAll(companyId: string, tx?: DbTransaction): Promise<UnitDto[]> {
+    const executor = tx || this.db;
+    const results = await executor
+      .select()
+      .from(units)
+      .where(and(eq(units.companyId, companyId), isNull(units.deletedAt), eq(units.isActive, true)))
+      .all();
+    return results.map(mapToDto);
+  }
+
+  public async getById(id: string, companyId: string, tx?: DbTransaction): Promise<UnitDto | null> {
     const executor = tx || this.db;
     const result = await executor
       .select()
-      .from(products)
+      .from(units)
+      .where(and(eq(units.id, id), eq(units.companyId, companyId), isNull(units.deletedAt)))
+      .get();
+    if (!result) return null;
+    return mapToDto(result);
+  }
+
+  public async getByNameOrShortName(
+    companyId: string,
+    name: string,
+    shortName: string,
+    tx?: DbTransaction,
+  ): Promise<UnitDto | null> {
+    const executor = tx || this.db;
+    const result = await executor
+      .select()
+      .from(units)
       .where(
-        and(eq(products.id, id), eq(products.companyId, companyId), isNull(products.deletedAt)),
+        and(
+          eq(units.companyId, companyId),
+          isNull(units.deletedAt),
+          or(eq(units.name, name), eq(units.shortName, shortName)),
+        ),
       )
       .get();
-
     if (!result) return null;
     return mapToDto(result);
   }
 
   public async create(
     companyId: string,
-    data: CreateProductInput & { sku: string },
+    data: CreateUnitInput,
     tx?: DbTransaction,
-  ): Promise<ProductDto> {
+  ): Promise<UnitDto> {
     const executor = tx || this.db;
     const id = randomUUID();
     const now = new Date();
 
-    const newProduct = {
-      ...data,
+    const insertData: InsertUnit = {
       id,
       companyId,
+      name: data.name,
+      shortName: data.shortName,
+      uqcCode: data.uqcCode ?? null,
       isActive: data.isActive ?? true,
       syncVersion: 1,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
-      salePrice: data.salePrice ?? 0,
-      purchasePrice: data.purchasePrice ?? 0,
-      stock: data.stock ?? 0,
-      reorderLevel: data.reorderLevel ?? 0,
     };
 
-    await executor.insert(products).values(newProduct as InsertProduct);
-    const created = await executor.select().from(products).where(eq(products.id, id)).get();
+    await executor.insert(units).values(insertData);
+
+    const created = await executor.select().from(units).where(eq(units.id, id)).get();
     return mapToDto(created!);
   }
 
   public async update(
     id: string,
     companyId: string,
-    data: UpdateProductInput,
+    data: UpdateUnitInput,
     tx?: DbTransaction,
-  ): Promise<ProductDto> {
+  ): Promise<UnitDto> {
     const executor = tx || this.db;
     const now = new Date();
 
     const existing = await this.getById(id, companyId, tx);
-    if (!existing) throw new Error('Product not found');
+    if (!existing) throw new Error('Unit not found');
 
-    // Exclude id from data payload if passed
     const restData = { ...data };
-    delete (restData as Partial<UpdateProductInput>).id;
-
     const updateData = {
       ...restData,
+      uqcCode: data.uqcCode === undefined ? existing.uqcCode : data.uqcCode,
       syncVersion: existing.syncVersion + 1,
       updatedAt: now,
     };
 
-    // Remove nulls for non-nullable fields to satisfy Drizzle types at runtime
-    if (updateData.unitId === null) delete updateData.unitId;
-    if (updateData.taxId === null) delete updateData.taxId;
-
     await executor
-      .update(products)
-      .set(updateData as Partial<InsertProduct>)
-      .where(eq(products.id, id));
+      .update(units)
+      .set(updateData as Partial<InsertUnit>)
+      .where(eq(units.id, id));
 
-    const updated = await executor.select().from(products).where(eq(products.id, id)).get();
+    const updated = await executor.select().from(units).where(eq(units.id, id)).get();
     return mapToDto(updated!);
   }
 
@@ -181,16 +185,16 @@ export class ProductRepository extends BaseRepository {
     const now = new Date();
 
     const existing = await this.getById(id, companyId, tx);
-    if (!existing) throw new Error('Product not found');
+    if (!existing) throw new Error('Unit not found');
 
     await executor
-      .update(products)
+      .update(units)
       .set({
         deletedAt: now,
         isActive: false,
         syncVersion: existing.syncVersion + 1,
         updatedAt: now,
       })
-      .where(eq(products.id, id));
+      .where(eq(units.id, id));
   }
 }

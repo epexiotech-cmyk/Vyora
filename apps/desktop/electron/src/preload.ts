@@ -5,6 +5,9 @@ import type {
   CustomerProfileDto,
   CustomerListDto,
   CreateProductInput,
+  UpdateProductInput,
+  SearchProductsOptions,
+  ProductListDto,
   ApiResponse,
   ProductDto,
   CreateSalesInvoiceInput,
@@ -52,9 +55,25 @@ contextBridge.exposeInMainWorld('vyora', {
     taxes: {
       getAll: () => ipcRenderer.invoke('db:taxes:getAll'),
     },
+    units: {
+      getAll: () => ipcRenderer.invoke('db:units:getAll'),
+      search: (options: import('@vyora/types').SearchUnitsOptions) =>
+        ipcRenderer.invoke('db:units:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:units:getById', id),
+      create: (data: import('@vyora/types').CreateUnitInput) =>
+        ipcRenderer.invoke('db:units:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateUnitInput) =>
+        ipcRenderer.invoke('db:units:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:units:delete', id),
+    },
     products: {
       getAll: () => ipcRenderer.invoke('db:products:getAll'),
+      search: (options: SearchProductsOptions) => ipcRenderer.invoke('db:products:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:products:getById', id),
       create: (data: CreateProductInput) => ipcRenderer.invoke('db:products:create', data),
+      update: (id: string, data: UpdateProductInput) =>
+        ipcRenderer.invoke('db:products:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:products:delete', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
@@ -162,7 +181,11 @@ export type VyoraDatabaseAPI = {
   };
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;
+    search: (options: SearchProductsOptions) => Promise<ApiResponse<ProductListDto>>;
+    getById: (id: string) => Promise<ApiResponse<ProductDto | null>>;
     create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
+    update: (id: string, data: UpdateProductInput) => Promise<ApiResponse<ProductDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;

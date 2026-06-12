@@ -9,3 +9,4 @@ export * from './master/tax.dto';
 export * from './system/financial-year.dto';
 export * from './directories/pincode.dto';
 export * from './supplier/supplier.dto';
+export * from './master/unit.dto';
