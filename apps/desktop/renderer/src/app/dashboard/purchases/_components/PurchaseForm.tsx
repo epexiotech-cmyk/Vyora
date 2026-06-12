@@ -51,9 +51,10 @@ type PurchaseUiValues = z.infer<typeof purchaseUiSchema>;
 interface PurchaseFormProps {
   isEditMode?: boolean;
   initialData?: PurchaseDto;
+  forceReadOnly?: boolean;
 }
 
-export function PurchaseForm({ isEditMode, initialData }: PurchaseFormProps) {
+export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: PurchaseFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
@@ -178,9 +179,18 @@ export function PurchaseForm({ isEditMode, initialData }: PurchaseFormProps) {
       };
 
       if (isEditMode && initialData) {
-        // Edit mode (assuming IPC supports updating a draft purchase, adjust if necessary)
-        // const res = await window.vyora.db.purchases.update(initialData.id, payload, status);
-        setErrorMsg('Edit logic not implemented in Phase 5.5.9C');
+        // Edit mode
+        const res = await window.vyora.db.purchases.update({
+          id: initialData.id,
+          ...payload,
+        });
+
+        if (res.success) {
+          setSuccessMsg(`Purchase updated successfully!`);
+          router.push('/dashboard/purchases');
+        } else {
+          setErrorMsg(res.error || 'Failed to update purchase');
+        }
       } else {
         // Create mode
         // For phase 5.5.9C, we simulate the backend call or pass it properly
@@ -212,7 +222,7 @@ export function PurchaseForm({ isEditMode, initialData }: PurchaseFormProps) {
     methods.handleSubmit((data) => onSubmit(data as PurchaseUiValues, status));
 
   const currentStatus = initialData?.status || 'DRAFT';
-  const isReadOnly = currentStatus !== 'DRAFT';
+  const isReadOnly = forceReadOnly || currentStatus !== 'DRAFT';
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
