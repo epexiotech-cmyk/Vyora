@@ -58,8 +58,8 @@ export function CommandPalette() {
             <Command.Item onSelect={() => runCommand(() => router.push('/sales'))}>
               Sales
             </Command.Item>
-            <Command.Item onSelect={() => runCommand(() => router.push('/purchase'))}>
-              Purchase
+            <Command.Item onSelect={() => runCommand(() => router.push('/dashboard/purchases'))}>
+              Purchases
             </Command.Item>
             <Command.Item onSelect={() => runCommand(() => router.push('/inventory'))}>
               Inventory

@@ -53,7 +53,7 @@ export function Sidebar() {
 
         <SidebarGroup label="Business">
           <SidebarItem icon={ShoppingCart} label="Sales" href="/dashboard/sales" />
-          <SidebarItem icon={Package} label="Purchase" href="/dashboard/purchase" />
+          <SidebarItem icon={Package} label="Purchases" href="/dashboard/purchases" />
           <SidebarItem icon={Box} label="Inventory" href="/dashboard/inventory" />
         </SidebarGroup>
 
