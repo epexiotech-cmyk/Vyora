@@ -218,8 +218,7 @@ export function PurchaseLineGrid() {
       // or retrieve it if cached in the parent. The parent can hydrate _uiTaxPercentage.
       // But for now, we leave it at 0 unless injected.
 
-      // We convert from paise (DB) to float money (UI)
-      setValue(`lines.${index}.rate`, (product.purchasePrice || 0) / 100);
+      setValue(`lines.${index}.rate`, paiseToMoney(product.purchasePrice || 0));
       setValue(`lines.${index}.quantity`, 1);
 
       // Auto-add new empty row if this was the last row

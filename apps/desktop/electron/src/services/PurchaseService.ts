@@ -59,7 +59,7 @@ export class PurchaseService {
         purchaseNumber,
         supplierName: supplier.name,
         supplierGstin: supplier.gstin,
-        status: 'DRAFT' as const,
+        status: parsedPayload.status ?? 'DRAFT',
         isActive: true,
         createdAt: now,
         updatedAt: now,
@@ -123,8 +123,14 @@ export class PurchaseService {
           let taxPercentage: number | undefined = undefined;
           let hsnCode: string | null | undefined = undefined;
 
-          if (!line.id || line.productId) {
-            const pId = line.productId || existing.lines.find((l) => l.id === line.id)?.productId;
+          const existingLine = line.id ? existing.lines.find((l) => l.id === line.id) : undefined;
+
+          // Product Snapshot
+          const isNewProduct =
+            !existingLine ||
+            (line.productId !== undefined && line.productId !== existingLine.productId);
+          if (isNewProduct) {
+            const pId = line.productId || existingLine?.productId;
             if (pId) {
               const item = await tx.select().from(products).where(eq(products.id, pId)).get();
               if (item) {
@@ -135,8 +141,11 @@ export class PurchaseService {
             }
           }
 
-          if (!line.id || line.unitId) {
-            const uId = line.unitId || existing.lines.find((l) => l.id === line.id)?.unitId;
+          // Unit Snapshot
+          const isNewUnit =
+            !existingLine || (line.unitId !== undefined && line.unitId !== existingLine.unitId);
+          if (isNewUnit) {
+            const uId = line.unitId || existingLine?.unitId;
             if (uId) {
               const unit = await tx.select().from(units).where(eq(units.id, uId)).get();
               if (unit) {
@@ -145,8 +154,11 @@ export class PurchaseService {
             }
           }
 
-          if (!line.id || line.taxId) {
-            const tId = line.taxId || existing.lines.find((l) => l.id === line.id)?.taxId;
+          // Tax Snapshot
+          const isNewTax =
+            !existingLine || (line.taxId !== undefined && line.taxId !== existingLine.taxId);
+          if (isNewTax) {
+            const tId = line.taxId || existingLine?.taxId;
             if (tId) {
               const tax = await tx.select().from(taxes).where(eq(taxes.id, tId)).get();
               if (tax) {

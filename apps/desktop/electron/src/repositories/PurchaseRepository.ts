@@ -205,12 +205,24 @@ export class PurchaseRepository extends BaseRepository {
   }
 
   public async deactivate(id: string, companyId: string): Promise<void> {
-    await this.db
-      .update(purchase_invoices)
-      .set({
-        deletedAt: new Date(),
-        syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
-      })
-      .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
+    return this.transaction(async (tx) => {
+      // 1. Deactivate Header
+      await tx
+        .update(purchase_invoices)
+        .set({
+          deletedAt: new Date(),
+          syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+        })
+        .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
+
+      // 2. Cascade Deactivate Lines
+      await tx
+        .update(purchase_invoice_items)
+        .set({
+          deletedAt: new Date(),
+          syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+        })
+        .where(eq(purchase_invoice_items.purchaseInvoiceId, id));
+    });
   }
 }

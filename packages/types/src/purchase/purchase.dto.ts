@@ -109,6 +109,7 @@ export const createPurchaseSchema = purchaseSchema
     lines: true,
   })
   .extend({
+    status: PurchaseStatus.optional(),
     lines: z.array(createPurchaseLineSchema).min(1, 'At least one line item is required'),
   });
 
