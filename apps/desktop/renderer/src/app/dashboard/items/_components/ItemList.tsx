@@ -1,6 +1,7 @@
 'use client';
 
 import { ProductListDto, TaxDto, UnitDto } from '@vyora/types';
+import { formatCurrency } from '@vyora/utils';
 import { Plus, Search, Filter, Edit2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -193,9 +194,9 @@ export function ItemList() {
                     </div>
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <div className="font-medium">₹{item.salePrice.toFixed(2)}</div>
+                    <div className="font-medium">{formatCurrency(item.salePrice)}</div>
                     <div className="text-muted-foreground text-xs">
-                      Pur: ₹{item.purchasePrice.toFixed(2)}
+                      Pur: {formatCurrency(item.purchasePrice)}
                     </div>
                   </td>
                   <td className="px-6 py-3">

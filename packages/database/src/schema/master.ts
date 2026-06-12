@@ -78,9 +78,9 @@ export const customers = sqliteTable(
     }),
 
     // Accounting
-    openingBalance: real('opening_balance').default(0).notNull(),
+    openingBalance: integer('opening_balance').default(0).notNull(),
     openingType: text('opening_type', { enum: ['Dr', 'Cr'] }),
-    creditLimit: real('credit_limit').default(0).notNull(),
+    creditLimit: integer('credit_limit').default(0).notNull(),
     creditDays: integer('credit_days').default(0).notNull(),
 
     // Metadata & Sync
@@ -134,9 +134,9 @@ export const suppliers = sqliteTable(
     }),
 
     // Accounting
-    openingBalance: real('opening_balance').default(0).notNull(),
+    openingBalance: integer('opening_balance').default(0).notNull(),
     openingType: text('opening_type', { enum: ['Dr', 'Cr'] }),
-    creditLimit: real('credit_limit').default(0).notNull(),
+    creditLimit: integer('credit_limit').default(0).notNull(),
     creditDays: integer('credit_days').default(0).notNull(),
 
     // Metadata & Sync
@@ -178,8 +178,8 @@ export const products = sqliteTable(
     taxId: text('tax_id')
       .references(() => taxes.id)
       .notNull(),
-    salePrice: real('sale_price').default(0).notNull(),
-    purchasePrice: real('purchase_price').default(0).notNull(),
+    salePrice: integer('sale_price').default(0).notNull(),
+    purchasePrice: integer('purchase_price').default(0).notNull(),
     stock: real('stock').default(0).notNull(),
     reorderLevel: real('reorder_level').default(0).notNull(),
     isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),

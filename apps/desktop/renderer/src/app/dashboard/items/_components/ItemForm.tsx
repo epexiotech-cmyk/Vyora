@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateProductInput, createProductSchema, TaxDto, UnitDto } from '@vyora/types';
+import { paiseToMoney, moneyToPaise } from '@vyora/utils';
 import { Save, Package, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -51,20 +52,26 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
 
   const methods = useForm<CreateProductInput>({
     resolver: zodResolver(createProductSchema) as unknown as Resolver<CreateProductInput>,
-    defaultValues: initialData || {
-      companyId: '',
-      name: '',
-      itemType: 'INVENTORY_ITEM',
-      description: '',
-      hsnCode: '',
-      unitId: '',
-      taxId: '',
-      salePrice: 0,
-      purchasePrice: 0,
-      stock: 0,
-      reorderLevel: 0,
-      isActive: true,
-    },
+    defaultValues: initialData
+      ? {
+          ...initialData,
+          salePrice: paiseToMoney(initialData.salePrice),
+          purchasePrice: paiseToMoney(initialData.purchasePrice),
+        }
+      : {
+          companyId: '',
+          name: '',
+          itemType: 'INVENTORY_ITEM',
+          description: '',
+          hsnCode: '',
+          unitId: '',
+          taxId: '',
+          salePrice: 0,
+          purchasePrice: 0,
+          stock: 0,
+          reorderLevel: 0,
+          isActive: true,
+        },
   });
 
   React.useEffect(() => {
@@ -79,9 +86,15 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
       setErrorMsg(null);
 
       // Clean payload for API
-      const payload = Object.fromEntries(
+      const cleanedData = Object.fromEntries(
         Object.entries(data).map(([key, val]) => [key, val === '' ? null : val]),
       ) as unknown as CreateProductInput;
+
+      const payload = {
+        ...cleanedData,
+        salePrice: moneyToPaise(cleanedData.salePrice as unknown as number),
+        purchasePrice: moneyToPaise(cleanedData.purchasePrice as unknown as number),
+      };
 
       if (!payload.companyId && activeCompanyId) {
         payload.companyId = activeCompanyId;

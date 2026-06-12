@@ -1,4 +1,5 @@
 import { ProductDto } from '@vyora/types';
+import { formatCurrency } from '@vyora/utils';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -241,7 +242,7 @@ export function SalesProductSelector({
                     </div>
                     <div className="flex shrink-0 flex-col items-end pl-2 text-xs">
                       <span className="text-foreground font-semibold">
-                        ₹{product.salePrice.toFixed(2)}
+                        {formatCurrency(product.salePrice)}
                       </span>
                       <span className="text-muted-foreground">Stock: {product.stock}</span>
                     </div>

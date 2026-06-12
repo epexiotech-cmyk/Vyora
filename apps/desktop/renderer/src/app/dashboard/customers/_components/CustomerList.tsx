@@ -1,6 +1,7 @@
 'use client';
 
 import { CustomerListDto } from '@vyora/types';
+import { formatCurrency } from '@vyora/utils';
 import { Plus, Search, Filter, Edit2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -141,7 +142,7 @@ export function CustomerList() {
                     {customer.gstin || <span className="text-muted-foreground">-</span>}
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <div className="font-medium">₹{customer.openingBalance.toFixed(2)}</div>
+                    <div className="font-medium">{formatCurrency(customer.openingBalance)}</div>
                     {customer.openingBalance > 0 && customer.openingType && (
                       <div className="text-muted-foreground text-xs">{customer.openingType}</div>
                     )}

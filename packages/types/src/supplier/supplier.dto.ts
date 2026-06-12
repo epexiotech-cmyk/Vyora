@@ -49,9 +49,9 @@ export const createSupplierSchema = z.object({
     .optional()
     .nullable(),
 
-  openingBalance: z.coerce.number().min(0, 'Opening Balance cannot be negative').default(0),
+  openingBalance: z.coerce.number().int().min(0, 'Opening Balance cannot be negative').default(0),
   openingType: z.enum(['Dr', 'Cr']).optional().nullable(),
-  creditLimit: z.coerce.number().min(0).default(0),
+  creditLimit: z.coerce.number().int().min(0).default(0),
   creditDays: z.coerce.number().int().min(0).default(0),
 
   notes: z.string().optional().nullable(),

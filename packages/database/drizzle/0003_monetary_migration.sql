@@ -1,0 +1,3 @@
+UPDATE products SET purchase_price = CAST(ROUND(purchase_price * 100) AS INTEGER), sale_price = CAST(ROUND(sale_price * 100) AS INTEGER);
+UPDATE customers SET opening_balance = CAST(ROUND(opening_balance * 100) AS INTEGER), credit_limit = CAST(ROUND(credit_limit * 100) AS INTEGER);
+UPDATE suppliers SET opening_balance = CAST(ROUND(opening_balance * 100) AS INTEGER), credit_limit = CAST(ROUND(credit_limit * 100) AS INTEGER);

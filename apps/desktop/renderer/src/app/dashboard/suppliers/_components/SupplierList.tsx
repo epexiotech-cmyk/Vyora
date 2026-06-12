@@ -1,6 +1,7 @@
 'use client';
 
 import { SupplierListDto } from '@vyora/types';
+import { formatCurrency } from '@vyora/utils';
 import { Plus, Search, Filter, Edit2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -141,7 +142,7 @@ export function SupplierList() {
                     {supplier.gstin || <span className="text-muted-foreground">-</span>}
                   </td>
                   <td className="px-6 py-3 text-right">
-                    <div className="font-medium">₹{supplier.openingBalance.toFixed(2)}</div>
+                    <div className="font-medium">{formatCurrency(supplier.openingBalance)}</div>
                     {supplier.openingBalance > 0 && supplier.openingType && (
                       <div className="text-muted-foreground text-xs">{supplier.openingType}</div>
                     )}

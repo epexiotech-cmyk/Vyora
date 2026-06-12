@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateCustomerInput } from '@vyora/types';
 import { extractPanFromGstin, extractStateCodeFromGstin } from '@vyora/utils';
+import { paiseToMoney, moneyToPaise } from '@vyora/utils';
 import { Save, User, MapPin, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -25,30 +26,38 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
   const [isSaving, setIsSaving] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  const defaultData = initialData
+    ? {
+        ...initialData,
+        openingBalance: paiseToMoney(initialData.openingBalance),
+        creditLimit: paiseToMoney(initialData.creditLimit),
+      }
+    : {
+        name: '',
+        contactPerson: '',
+        mobile: '',
+        alternateMobile: '',
+        email: '',
+        addressLine1: '',
+        addressLine2: '',
+        area: '',
+        city: '',
+        state: '',
+        pincode: '',
+        gstin: '',
+        pan: '',
+        registrationType: 'Unregistered',
+        openingBalance: 0,
+        openingType: null,
+        creditLimit: 0,
+        creditDays: 0,
+        notes: '',
+        isActive: true,
+      };
+
   const methods = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema) as unknown as Resolver<CustomerFormValues>,
-    defaultValues: initialData || {
-      name: '',
-      contactPerson: '',
-      mobile: '',
-      alternateMobile: '',
-      email: '',
-      addressLine1: '',
-      addressLine2: '',
-      area: '',
-      city: '',
-      state: '',
-      pincode: '',
-      gstin: '',
-      pan: '',
-      registrationType: 'Unregistered',
-      openingBalance: 0,
-      openingType: null,
-      creditLimit: 0,
-      creditDays: 0,
-      notes: '',
-      isActive: true,
-    },
+    defaultValues: defaultData as unknown as CustomerFormValues,
   });
 
   // Watch for smart extractions
@@ -124,9 +133,15 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
       setErrorMsg(null);
 
       // Clean payload for API
-      const payload = Object.fromEntries(
+      const cleanedData = Object.fromEntries(
         Object.entries(data).map(([key, val]) => [key, val === '' ? null : val]),
-      ) as unknown as CreateCustomerInput;
+      ) as unknown as CustomerFormValues;
+
+      const payload = {
+        ...cleanedData,
+        openingBalance: moneyToPaise(cleanedData.openingBalance as unknown as number),
+        creditLimit: moneyToPaise(cleanedData.creditLimit as unknown as number),
+      } as unknown as CreateCustomerInput;
 
       if (isEditMode && initialData?.id) {
         const res = await window.vyora.db.customers.update(initialData.id, payload);

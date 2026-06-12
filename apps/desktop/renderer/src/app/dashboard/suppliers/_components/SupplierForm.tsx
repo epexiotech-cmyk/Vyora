@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateSupplierInput, createSupplierSchema } from '@vyora/types';
 import { extractPanFromGstin, extractStateCodeFromGstin } from '@vyora/utils';
+import { paiseToMoney, moneyToPaise } from '@vyora/utils';
 import { Save, User, MapPin, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -24,30 +25,38 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
   const [isSaving, setIsSaving] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  const defaultData = initialData
+    ? {
+        ...initialData,
+        openingBalance: paiseToMoney(initialData.openingBalance),
+        creditLimit: paiseToMoney(initialData.creditLimit),
+      }
+    : {
+        name: '',
+        contactPerson: '',
+        mobile: '',
+        alternateMobile: '',
+        email: '',
+        addressLine1: '',
+        addressLine2: '',
+        area: '',
+        city: '',
+        state: '',
+        pincode: '',
+        gstin: '',
+        pan: '',
+        registrationType: 'Unregistered',
+        openingBalance: 0,
+        openingType: null,
+        creditLimit: 0,
+        creditDays: 0,
+        notes: '',
+        isActive: true,
+      };
+
   const methods = useForm<CreateSupplierInput>({
     resolver: zodResolver(createSupplierSchema) as unknown as Resolver<CreateSupplierInput>,
-    defaultValues: initialData || {
-      name: '',
-      contactPerson: '',
-      mobile: '',
-      alternateMobile: '',
-      email: '',
-      addressLine1: '',
-      addressLine2: '',
-      area: '',
-      city: '',
-      state: '',
-      pincode: '',
-      gstin: '',
-      pan: '',
-      registrationType: 'Unregistered',
-      openingBalance: 0,
-      openingType: null,
-      creditLimit: 0,
-      creditDays: 0,
-      notes: '',
-      isActive: true,
-    },
+    defaultValues: defaultData as unknown as CreateSupplierInput,
   });
 
   // Watch for smart extractions
@@ -121,9 +130,15 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
       setErrorMsg(null);
 
       // Clean payload for API
-      const payload = Object.fromEntries(
+      const cleanedData = Object.fromEntries(
         Object.entries(data).map(([key, val]) => [key, val === '' ? null : val]),
       ) as unknown as CreateSupplierInput;
+
+      const payload = {
+        ...cleanedData,
+        openingBalance: moneyToPaise(cleanedData.openingBalance as unknown as number),
+        creditLimit: moneyToPaise(cleanedData.creditLimit as unknown as number),
+      };
 
       if (isEditMode && initialData?.id) {
         const res = await window.vyora.db.suppliers.update(initialData.id, payload);
