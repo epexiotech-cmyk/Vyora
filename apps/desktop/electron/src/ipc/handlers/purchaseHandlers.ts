@@ -1,21 +1,70 @@
-import { ApiResponse, CreatePurchaseInvoiceInput } from '@vyora/types';
+import {
+  CreatePurchaseInput,
+  UpdatePurchaseInput,
+  SearchPurchasesOptions,
+  PurchaseDto,
+  PurchaseListDto,
+  ApiResponse,
+} from '@vyora/types';
 import { ipcMain } from 'electron';
 
-import { purchaseInvoiceService } from '../../services/PurchaseInvoiceService';
+import { purchaseService } from '../../services/PurchaseService';
 
 export function registerPurchaseHandlers() {
   ipcMain.handle(
-    'purchase:invoice:create',
-    async (
-      _event,
-      data: CreatePurchaseInvoiceInput,
-    ): Promise<ApiResponse<{ invoiceId: string }>> => {
+    'db:purchases:create',
+    async (_, payload: CreatePurchaseInput): Promise<ApiResponse<string>> => {
       try {
-        const result = await purchaseInvoiceService.createInvoice(data);
-        return { success: true, data: result };
+        const id = await purchaseService.create(payload);
+        return { success: true, data: id };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }
     },
   );
+
+  ipcMain.handle(
+    'db:purchases:update',
+    async (_, payload: UpdatePurchaseInput): Promise<ApiResponse<void>> => {
+      try {
+        await purchaseService.update(payload);
+        return { success: true, data: undefined };
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'db:purchases:getById',
+    async (_, id: string): Promise<ApiResponse<PurchaseDto | null>> => {
+      try {
+        const data = await purchaseService.getById(id);
+        return { success: true, data };
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'db:purchases:search',
+    async (_, options: SearchPurchasesOptions): Promise<ApiResponse<PurchaseListDto>> => {
+      try {
+        const data = await purchaseService.search(options);
+        return { success: true, data };
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle('db:purchases:delete', async (_, id: string): Promise<ApiResponse<void>> => {
+    try {
+      await purchaseService.delete(id);
+      return { success: true, data: undefined };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
 }

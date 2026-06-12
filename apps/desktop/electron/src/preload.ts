@@ -10,6 +10,11 @@ import type {
   ProductListDto,
   ApiResponse,
   ProductDto,
+  CreatePurchaseInput,
+  UpdatePurchaseInput,
+  SearchPurchasesOptions,
+  PurchaseListDto,
+  PurchaseDto,
   CreateSalesInvoiceInput,
   FinancialYearDto,
   SalesInvoiceDto,
@@ -74,6 +79,14 @@ contextBridge.exposeInMainWorld('vyora', {
       update: (id: string, data: UpdateProductInput) =>
         ipcRenderer.invoke('db:products:update', id, data),
       delete: (id: string) => ipcRenderer.invoke('db:products:delete', id),
+    },
+    purchases: {
+      search: (options: SearchPurchasesOptions) =>
+        ipcRenderer.invoke('db:purchases:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:purchases:getById', id),
+      create: (data: CreatePurchaseInput) => ipcRenderer.invoke('db:purchases:create', data),
+      update: (data: UpdatePurchaseInput) => ipcRenderer.invoke('db:purchases:update', data),
+      delete: (id: string) => ipcRenderer.invoke('db:purchases:delete', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
@@ -185,6 +198,13 @@ export type VyoraDatabaseAPI = {
     getById: (id: string) => Promise<ApiResponse<ProductDto | null>>;
     create: (data: CreateProductInput) => Promise<ApiResponse<ProductDto>>;
     update: (id: string, data: UpdateProductInput) => Promise<ApiResponse<ProductDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  purchases: {
+    search: (options: SearchPurchasesOptions) => Promise<ApiResponse<PurchaseListDto>>;
+    getById: (id: string) => Promise<ApiResponse<PurchaseDto | null>>;
+    create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
+    update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {

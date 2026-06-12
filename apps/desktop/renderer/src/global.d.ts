@@ -12,6 +12,11 @@ import type {
   SupplierListDto,
   ProductDto,
   CreateProductInput,
+  PurchaseDto,
+  PurchaseListDto,
+  CreatePurchaseInput,
+  UpdatePurchaseInput,
+  SearchPurchasesOptions,
   CreateSalesInvoiceInput,
   FinancialYearDto,
   SalesInvoiceDto,
@@ -71,6 +76,13 @@ export type VyoraDatabaseAPI = {
       id: string,
       data: import('@vyora/types').UpdateProductInput,
     ) => Promise<ApiResponse<ProductDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  purchases: {
+    search: (options: SearchPurchasesOptions) => Promise<ApiResponse<PurchaseListDto>>;
+    getById: (id: string) => Promise<ApiResponse<PurchaseDto | null>>;
+    create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
+    update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
