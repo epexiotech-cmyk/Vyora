@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "17d76930-fb78-4fc9-bc5c-11e0f7ccc158",
-  "prevId": "492ea64b-14f6-428f-8240-d54b156d0d34",
+  "id": "492ea64b-14f6-428f-8240-d54b156d0d34",
+  "prevId": "82c12f4d-6b87-40df-8aec-4f149a4a02bb",
   "tables": {
     "stock_movements": {
       "name": "stock_movements",
@@ -1120,111 +1120,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
-        },
-        "billing_name": {
-          "name": "billing_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_gstin": {
-          "name": "billing_gstin",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_address": {
-          "name": "billing_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_city": {
-          "name": "billing_city",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_state_code": {
-          "name": "billing_state_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_state_name": {
-          "name": "billing_state_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "billing_pincode": {
-          "name": "billing_pincode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_name": {
-          "name": "shipping_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_gstin": {
-          "name": "shipping_gstin",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_address": {
-          "name": "shipping_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_city": {
-          "name": "shipping_city",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_state_code": {
-          "name": "shipping_state_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_state_name": {
-          "name": "shipping_state_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "shipping_pincode": {
-          "name": "shipping_pincode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "place_of_supply_code": {
-          "name": "place_of_supply_code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         },
         "notes": {
           "name": "notes",

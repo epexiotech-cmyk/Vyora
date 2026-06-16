@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9677bbba-b292-4731-979b-9c215fe30bbe",
-  "prevId": "3fbf5385-e165-4ac2-9cf0-aa2913149f7b",
+  "id": "3fbf5385-e165-4ac2-9cf0-aa2913149f7b",
+  "prevId": "899a926d-e26c-442c-81cf-69d98d91e1b9",
   "tables": {
     "stock_movements": {
       "name": "stock_movements",
@@ -1661,22 +1661,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'YEARLY'"
-        },
-        "allow_negative_stock": {
-          "name": "allow_negative_stock",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "negative_stock_warning_only": {
-          "name": "negative_stock_warning_only",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
         },
         "default_invoice_notes": {
           "name": "default_invoice_notes",

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "899a926d-e26c-442c-81cf-69d98d91e1b9",
-  "prevId": "0ea02fae-19b4-43a2-95db-e8ea5c5acf6e",
+  "id": "0ea02fae-19b4-43a2-95db-e8ea5c5acf6e",
+  "prevId": "17d76930-fb78-4fc9-bc5c-11e0f7ccc158",
   "tables": {
     "stock_movements": {
       "name": "stock_movements",
@@ -752,7 +752,7 @@
           "name": "invoice_number",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "supplier_invoice_number": {
@@ -1436,37 +1436,6 @@
           "autoincrement": false,
           "default": "'INV'"
         },
-        "sales_suffix": {
-          "name": "sales_suffix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sales_padding": {
-          "name": "sales_padding",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 4
-        },
-        "sales_start_from": {
-          "name": "sales_start_from",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "sales_reset_policy": {
-          "name": "sales_reset_policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'YEARLY'"
-        },
         "purchase_prefix": {
           "name": "purchase_prefix",
           "type": "text",
@@ -1474,37 +1443,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'PUR'"
-        },
-        "purchase_suffix": {
-          "name": "purchase_suffix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "purchase_padding": {
-          "name": "purchase_padding",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 4
-        },
-        "purchase_start_from": {
-          "name": "purchase_start_from",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "purchase_reset_policy": {
-          "name": "purchase_reset_policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'YEARLY'"
         },
         "default_invoice_notes": {
           "name": "default_invoice_notes",
@@ -1535,78 +1473,6 @@
           "tableFrom": "company_settings",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "document_sequences": {
-      "name": "document_sequences",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "financial_year_id": {
-          "name": "financial_year_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "document_type": {
-          "name": "document_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "current_value": {
-          "name": "current_value",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "document_sequences_company_id_companies_id_fk": {
-          "name": "document_sequences_company_id_companies_id_fk",
-          "tableFrom": "document_sequences",
-          "tableTo": "companies",
-          "columnsFrom": ["company_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "document_sequences_financial_year_id_financial_years_id_fk": {
-          "name": "document_sequences_financial_year_id_financial_years_id_fk",
-          "tableFrom": "document_sequences",
-          "tableTo": "financial_years",
-          "columnsFrom": ["financial_year_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"

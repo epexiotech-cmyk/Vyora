@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0ea02fae-19b4-43a2-95db-e8ea5c5acf6e",
-  "prevId": "17d76930-fb78-4fc9-bc5c-11e0f7ccc158",
+  "id": "17d76930-fb78-4fc9-bc5c-11e0f7ccc158",
+  "prevId": "492ea64b-14f6-428f-8240-d54b156d0d34",
   "tables": {
     "stock_movements": {
       "name": "stock_movements",
@@ -1071,7 +1071,7 @@
           "name": "invoice_number",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "invoice_date": {
