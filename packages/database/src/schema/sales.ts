@@ -27,16 +27,11 @@ export const sales_invoices = sqliteTable(
     status: text('status').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
-  (table) => {
-    return {
-      companyFyIdx: index('sales_invoices_company_fy_idx').on(
-        table.companyId,
-        table.financialYearId,
-      ),
-      invoiceDateIdx: index('sales_invoices_date_idx').on(table.invoiceDate),
-      customerIdx: index('sales_invoices_customer_idx').on(table.customerId),
-    };
-  },
+  (table) => [
+    index('sales_invoices_company_fy_idx').on(table.companyId, table.financialYearId),
+    index('sales_invoices_date_idx').on(table.invoiceDate),
+    index('sales_invoices_customer_idx').on(table.customerId),
+  ],
 );
 
 export const sales_invoice_items = sqliteTable(
@@ -64,10 +59,8 @@ export const sales_invoice_items = sqliteTable(
     taxAmount: integer('tax_amount').default(0).notNull(),
     lineTotal: integer('line_total').default(0).notNull(),
   },
-  (table) => {
-    return {
-      salesInvoiceIdx: index('sales_items_invoice_idx').on(table.salesInvoiceId),
-      productIdx: index('sales_items_product_idx').on(table.productId),
-    };
-  },
+  (table) => [
+    index('sales_items_invoice_idx').on(table.salesInvoiceId),
+    index('sales_items_product_idx').on(table.productId),
+  ],
 );

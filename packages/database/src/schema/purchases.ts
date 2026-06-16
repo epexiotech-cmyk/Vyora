@@ -35,26 +35,18 @@ export const purchase_invoices = sqliteTable(
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
     syncVersion: integer('sync_version').default(1).notNull(),
   },
-  (table) => {
-    return {
-      companyFyIdx: index('purchase_invoices_company_fy_idx').on(
-        table.companyId,
-        table.financialYearId,
-      ),
-      purchaseDateIdx: index('purchase_invoices_date_idx').on(table.companyId, table.purchaseDate),
-      supplierIdx: index('purchase_invoices_supplier_idx').on(table.companyId, table.supplierId),
-      suppInvIdx: index('purchase_invoices_supp_inv_idx').on(
-        table.companyId,
-        table.supplierInvoiceNumber,
-      ),
-      statusIdx: index('purchase_invoices_status_idx').on(table.companyId, table.status),
-      deletedIdx: index('purchase_invoices_deleted_idx').on(table.companyId, table.deletedAt),
-      companyPurchaseNumberUnique: unique('purchase_invoices_company_purchase_number_idx').on(
-        table.companyId,
-        table.purchaseNumber,
-      ),
-    };
-  },
+  (table) => [
+    index('purchase_invoices_company_fy_idx').on(table.companyId, table.financialYearId),
+    index('purchase_invoices_date_idx').on(table.companyId, table.purchaseDate),
+    index('purchase_invoices_supplier_idx').on(table.companyId, table.supplierId),
+    index('purchase_invoices_supp_inv_idx').on(table.companyId, table.supplierInvoiceNumber),
+    index('purchase_invoices_status_idx').on(table.companyId, table.status),
+    index('purchase_invoices_deleted_idx').on(table.companyId, table.deletedAt),
+    unique('purchase_invoices_company_purchase_number_idx').on(
+      table.companyId,
+      table.purchaseNumber,
+    ),
+  ],
 );
 
 export const purchase_invoice_items = sqliteTable(
@@ -91,11 +83,9 @@ export const purchase_invoice_items = sqliteTable(
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
     syncVersion: integer('sync_version').default(1).notNull(),
   },
-  (table) => {
-    return {
-      purchaseInvoiceIdx: index('purchase_items_invoice_idx').on(table.purchaseInvoiceId),
-      productIdx: index('purchase_items_product_idx').on(table.productId),
-      taxIdx: index('purchase_items_tax_idx').on(table.taxId),
-    };
-  },
+  (table) => [
+    index('purchase_items_invoice_idx').on(table.purchaseInvoiceId),
+    index('purchase_items_product_idx').on(table.productId),
+    index('purchase_items_tax_idx').on(table.taxId),
+  ],
 );

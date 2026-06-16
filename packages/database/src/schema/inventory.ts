@@ -26,14 +26,9 @@ export const stock_movements = sqliteTable(
     remarks: text('remarks'),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
-  (table) => {
-    return {
-      productIdx: index('stock_movements_product_idx').on(table.productId),
-      movementDateIdx: index('stock_movements_date_idx').on(table.movementDate),
-      productDateIdx: index('stock_movements_product_date_idx').on(
-        table.productId,
-        table.movementDate,
-      ),
-    };
-  },
+  (table) => [
+    index('stock_movements_product_idx').on(table.productId),
+    index('stock_movements_date_idx').on(table.movementDate),
+    index('stock_movements_product_date_idx').on(table.productId, table.movementDate),
+  ],
 );

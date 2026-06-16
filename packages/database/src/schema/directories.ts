@@ -17,11 +17,11 @@ export const pincodeMaster = sqliteTable(
     longitude: real('longitude'),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    pincodeIdx: index('idx_pincode_master_pincode').on(table.pincode),
-    districtIdx: index('idx_pincode_master_district').on(table.district),
-    stateIdx: index('idx_pincode_master_state').on(table.stateName),
-  }),
+  (table) => [
+    index('idx_pincode_master_pincode').on(table.pincode),
+    index('idx_pincode_master_district').on(table.district),
+    index('idx_pincode_master_state').on(table.stateName),
+  ],
 );
 export const countryMaster = sqliteTable(
   'country_master',
@@ -36,10 +36,10 @@ export const countryMaster = sqliteTable(
     sortOrder: integer('sort_order').default(0),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    countryNameIdx: index('idx_country_master_name').on(table.countryName),
-    currencyCodeIdx: index('idx_country_master_currency').on(table.currencyCode),
-  }),
+  (table) => [
+    index('idx_country_master_name').on(table.countryName),
+    index('idx_country_master_currency').on(table.currencyCode),
+  ],
 );
 
 export const currencyMaster = sqliteTable(
@@ -54,9 +54,7 @@ export const currencyMaster = sqliteTable(
     sortOrder: integer('sort_order').default(0),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    currencyNameIdx: index('idx_currency_master_name').on(table.currencyName),
-  }),
+  (table) => [index('idx_currency_master_name').on(table.currencyName)],
 );
 
 export const stateMaster = sqliteTable(
@@ -71,11 +69,11 @@ export const stateMaster = sqliteTable(
     sortOrder: integer('sort_order').default(0),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    stateCodeIdx: index('idx_state_master_code').on(table.stateCode),
-    stateNameIdx: index('idx_state_master_name').on(table.stateName),
-    countryCodeIdx: index('idx_state_master_country').on(table.countryCode),
-  }),
+  (table) => [
+    index('idx_state_master_code').on(table.stateCode),
+    index('idx_state_master_name').on(table.stateName),
+    index('idx_state_master_country').on(table.countryCode),
+  ],
 );
 
 export const uqcMaster = sqliteTable(
@@ -89,10 +87,10 @@ export const uqcMaster = sqliteTable(
     sortOrder: integer('sort_order').default(0),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    gstUqcCodeIdx: index('idx_uqc_master_code').on(table.gstUqcCode),
-    displayNameIdx: index('idx_uqc_master_name').on(table.displayName),
-  }),
+  (table) => [
+    index('idx_uqc_master_code').on(table.gstUqcCode),
+    index('idx_uqc_master_name').on(table.displayName),
+  ],
 );
 
 export const hsnMaster = sqliteTable(
@@ -106,10 +104,10 @@ export const hsnMaster = sqliteTable(
     isActive: integer('is_active', { mode: 'boolean' }).default(true),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    hsnCodeIdx: index('idx_hsn_master_code').on(table.hsnCode),
-    hsnSelectableIdx: index('idx_hsn_master_selectable').on(table.isInvoiceSelectable),
-  }),
+  (table) => [
+    index('idx_hsn_master_code').on(table.hsnCode),
+    index('idx_hsn_master_selectable').on(table.isInvoiceSelectable),
+  ],
 );
 
 export const sacMaster = sqliteTable(
@@ -123,8 +121,8 @@ export const sacMaster = sqliteTable(
     isActive: integer('is_active', { mode: 'boolean' }).default(true),
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    sacCodeIdx: index('idx_sac_master_code').on(table.sacCode),
-    sacSelectableIdx: index('idx_sac_master_selectable').on(table.isInvoiceSelectable),
-  }),
+  (table) => [
+    index('idx_sac_master_code').on(table.sacCode),
+    index('idx_sac_master_selectable').on(table.isInvoiceSelectable),
+  ],
 );

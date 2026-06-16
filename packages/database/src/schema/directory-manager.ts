@@ -43,8 +43,8 @@ export const pincodeDynamicCache = sqliteTable(
     createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => ({
-    pincodeIdx: index('idx_pincode_cache_pincode').on(table.pincode),
-    lastUsedIdx: index('idx_pincode_cache_last_used').on(table.lastUsedAt),
-  }),
+  (table) => [
+    index('idx_pincode_cache_pincode').on(table.pincode),
+    index('idx_pincode_cache_last_used').on(table.lastUsedAt),
+  ],
 );

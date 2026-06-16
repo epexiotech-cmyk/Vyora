@@ -30,20 +30,15 @@ export const units = sqliteTable(
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   },
-  (table) => {
-    return {
-      companyIdIdx: index('idx_units_company_id').on(table.companyId),
-      nameIdx: index('idx_units_name').on(table.companyId, table.name),
-      shortNameIdx: index('idx_units_short_name').on(table.companyId, table.shortName),
-      isActiveIdx: index('idx_units_is_active').on(table.companyId, table.isActive),
-      deletedAtIdx: index('idx_units_deleted_at').on(table.companyId, table.deletedAt),
-      nameUniqueIdx: uniqueIndex('idx_units_name_unique').on(table.companyId, table.name),
-      shortNameUniqueIdx: uniqueIndex('idx_units_short_name_unique').on(
-        table.companyId,
-        table.shortName,
-      ),
-    };
-  },
+  (table) => [
+    index('idx_units_company_id').on(table.companyId),
+    index('idx_units_name').on(table.companyId, table.name),
+    index('idx_units_short_name').on(table.companyId, table.shortName),
+    index('idx_units_is_active').on(table.companyId, table.isActive),
+    index('idx_units_deleted_at').on(table.companyId, table.deletedAt),
+    uniqueIndex('idx_units_name_unique').on(table.companyId, table.name),
+    uniqueIndex('idx_units_short_name_unique').on(table.companyId, table.shortName),
+  ],
 );
 
 export const customers = sqliteTable(
@@ -91,15 +86,13 @@ export const customers = sqliteTable(
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   },
-  (table) => {
-    return {
-      companyIdIdx: index('idx_customers_company_id').on(table.companyId),
-      customerCodeIdx: uniqueIndex('idx_customers_code').on(table.companyId, table.customerCode),
-      nameIdx: index('idx_customers_name').on(table.companyId, table.name),
-      mobileIdx: index('idx_customers_mobile').on(table.companyId, table.mobile),
-      gstinIdx: index('idx_customers_gstin').on(table.companyId, table.gstin),
-    };
-  },
+  (table) => [
+    index('idx_customers_company_id').on(table.companyId),
+    uniqueIndex('idx_customers_code').on(table.companyId, table.customerCode),
+    index('idx_customers_name').on(table.companyId, table.name),
+    index('idx_customers_mobile').on(table.companyId, table.mobile),
+    index('idx_customers_gstin').on(table.companyId, table.gstin),
+  ],
 );
 
 export const suppliers = sqliteTable(
@@ -147,15 +140,13 @@ export const suppliers = sqliteTable(
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   },
-  (table) => {
-    return {
-      companyIdIdx: index('idx_suppliers_company_id').on(table.companyId),
-      supplierCodeIdx: uniqueIndex('idx_suppliers_code').on(table.companyId, table.supplierCode),
-      nameIdx: index('idx_suppliers_name').on(table.companyId, table.name),
-      mobileIdx: index('idx_suppliers_mobile').on(table.companyId, table.mobile),
-      gstinIdx: index('idx_suppliers_gstin').on(table.companyId, table.gstin),
-    };
-  },
+  (table) => [
+    index('idx_suppliers_company_id').on(table.companyId),
+    uniqueIndex('idx_suppliers_code').on(table.companyId, table.supplierCode),
+    index('idx_suppliers_name').on(table.companyId, table.name),
+    index('idx_suppliers_mobile').on(table.companyId, table.mobile),
+    index('idx_suppliers_gstin').on(table.companyId, table.gstin),
+  ],
 );
 
 export const products = sqliteTable(
@@ -188,16 +179,14 @@ export const products = sqliteTable(
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
     deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   },
-  (table) => {
-    return {
-      companyIdIdx: index('idx_products_company_id').on(table.companyId),
-      skuIdx: uniqueIndex('idx_products_sku').on(table.companyId, table.sku),
-      nameIdx: index('idx_products_name').on(table.companyId, table.name),
-      hsnCodeIdx: index('idx_products_hsn_code').on(table.companyId, table.hsnCode),
-      isActiveIdx: index('idx_products_is_active').on(table.companyId, table.isActive),
-      deletedAtIdx: index('idx_products_deleted_at').on(table.companyId, table.deletedAt),
-    };
-  },
+  (table) => [
+    index('idx_products_company_id').on(table.companyId),
+    uniqueIndex('idx_products_sku').on(table.companyId, table.sku),
+    index('idx_products_name').on(table.companyId, table.name),
+    index('idx_products_hsn_code').on(table.companyId, table.hsnCode),
+    index('idx_products_is_active').on(table.companyId, table.isActive),
+    index('idx_products_deleted_at').on(table.companyId, table.deletedAt),
+  ],
 );
 
 export type Customer = typeof customers.$inferSelect;
