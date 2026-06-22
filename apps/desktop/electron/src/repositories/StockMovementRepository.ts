@@ -86,28 +86,28 @@ export class StockMovementRepository extends BaseRepository {
   }
 
   public async getMovementByReference(
-    referenceType: string,
-    referenceId: string,
-    productId: string,
-    tx?: DbTransaction,
+    _referenceType: string,
+    _referenceId: string,
+    _productId: string,
+    _tx?: DbTransaction,
   ): Promise<StockMovementDto | null> {
     throw new Error('Not implemented');
   }
 
   public async getReturnedTotalsForMovement(
-    referenceType: string,
-    referenceId: string,
-    productId: string,
-    tx?: DbTransaction,
+    _referenceType: string,
+    _referenceId: string,
+    _productId: string,
+    _tx?: DbTransaction,
   ): Promise<{ returnedQty: number; returnedAmount: number }> {
     throw new Error('Not implemented');
   }
 
   public async getPurchaseReturnedTotalsForMovement(
-    referenceType: string,
-    referenceId: string,
-    productId: string,
-    tx?: DbTransaction,
+    _referenceType: string,
+    _referenceId: string,
+    _productId: string,
+    _tx?: DbTransaction,
   ): Promise<{ returnedQty: number; returnedAmount: number }> {
     throw new Error('Not implemented');
   }
