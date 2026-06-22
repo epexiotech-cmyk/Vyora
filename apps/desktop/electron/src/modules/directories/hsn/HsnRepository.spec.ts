@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 
 import { DirectoryDatabaseService } from '../../../services/database/DirectoryDatabaseService';
 
@@ -8,8 +8,8 @@ vi.mock('../../../services/database/DirectoryDatabaseService');
 
 describe('HsnRepository', () => {
   let repository: HsnRepository;
-  let mockDbService: any;
-  let mockDb: any;
+  let mockDbService: Mocked<DirectoryDatabaseService>;
+  let mockDb: Record<string, ReturnType<typeof vi.fn>>;
 
   beforeEach(() => {
     mockDb = {
@@ -21,13 +21,13 @@ describe('HsnRepository', () => {
 
     mockDbService = {
       getDb: vi.fn().mockReturnValue(mockDb),
-    } as any;
+    } as unknown as Mocked<DirectoryDatabaseService>;
 
     repository = new HsnRepository(mockDbService);
   });
 
   it('should throw error if db is not initialized', async () => {
-    mockDbService.getDb.mockReturnValue(null as any);
+    mockDbService.getDb.mockReturnValue(null as never);
     await expect(repository.getByCode('1234')).rejects.toThrow(
       'Directory database is not initialized',
     );
