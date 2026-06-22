@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import { suppliers, products, units, taxes } from '@vyora/database';
+import { suppliers, products, units, taxes, purchase_invoices } from '@vyora/database';
 import {
   CreatePurchaseInput,
   UpdatePurchaseInput,
@@ -15,6 +15,8 @@ import { eq } from 'drizzle-orm';
 import { PurchaseRepository } from '../repositories/PurchaseRepository';
 
 import { companyContextService } from './CompanyContextService';
+import { inventoryEngine } from './InventoryEngine';
+import { journalService } from './JournalService';
 import { numberingEngineService } from './NumberingEngineService';
 
 export class PurchaseService {
@@ -96,7 +98,49 @@ export class PurchaseService {
         });
       }
 
-      await this.purchaseRepo.create(companyId, headerPayload, linesPayload);
+      await this.purchaseRepo.create(companyId, headerPayload, linesPayload, tx);
+
+      const totalCgst = 0;
+      const totalSgst = 0;
+      let totalIgst = 0;
+
+      for (const line of linesPayload) {
+        await inventoryEngine.postInbound(
+          {
+            companyId,
+            financialYearId: parsedPayload.financialYearId,
+            productId: line.productId,
+            movementType: 'PURCHASE',
+            referenceType: 'PURCHASE_BILL',
+            referenceId: id,
+            quantityIn: line.quantity,
+            quantityOut: 0,
+            rate: line.rate,
+            movementDate: new Date(),
+            remarks: line.description || '',
+          },
+          tx,
+        );
+        totalIgst += line.taxAmount;
+      }
+
+      await journalService.postPurchaseBill(
+        {
+          companyId,
+          financialYearId: parsedPayload.financialYearId,
+          invoiceId: id,
+          invoiceDate: new Date(),
+          supplierId: parsedPayload.supplierId,
+          totalTaxableAmount: parsedPayload.subtotal - (parsedPayload.discountAmount || 0),
+          totalCgst,
+          totalSgst,
+          totalIgst,
+          totalInvoiceAmount: parsedPayload.grandTotal,
+          roundOffAmount: parsedPayload.roundOffAmount || 0,
+        },
+        tx,
+      );
+
       return id;
     });
   }
@@ -180,7 +224,7 @@ export class PurchaseService {
         }
       }
 
-      await this.purchaseRepo.update(id, companyId, headerUpdates, processedLines);
+      await this.purchaseRepo.update(id, companyId, headerUpdates, processedLines, tx);
     });
   }
 
@@ -200,7 +244,32 @@ export class PurchaseService {
   public async delete(id: string): Promise<void> {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company found');
-    await this.purchaseRepo.deactivate(id, companyId);
+
+    const existing = await this.purchaseRepo.getById(id, companyId);
+    if (!existing) throw new Error('Purchase Invoice not found');
+    if (existing.status === 'CANCELLED') throw new Error('Purchase Invoice already cancelled');
+
+    await this.purchaseRepo.transaction(async (tx) => {
+      // 1. Inventory Reversal
+      for (const line of existing.lines) {
+        await inventoryEngine.processPurchaseReturn(
+          'PURCHASE_BILL',
+          id,
+          line.productId,
+          line.quantity,
+          tx,
+        );
+      }
+
+      // 2. Accounting Reversal
+      await journalService.reversePurchaseBill(id, tx);
+
+      // 3. Status Cancellation
+      await tx
+        .update(purchase_invoices)
+        .set({ status: 'CANCELLED', updatedAt: new Date() })
+        .where(eq(purchase_invoices.id, id));
+    });
   }
 }
 

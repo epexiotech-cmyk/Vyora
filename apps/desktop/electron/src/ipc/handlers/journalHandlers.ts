@@ -10,8 +10,8 @@ export function registerJournalHandlers() {
     'journal:postVoucher',
     async (_event, input: CreateVoucherInput) => {
       const db = dbService.getDb();
-      return db.transaction((tx: DbTransaction) => {
-        const result = journalService.createVoucherSync(input, tx);
+      return db.transaction(async (tx: DbTransaction) => {
+        const result = await journalService.createVoucher(input, tx);
         return { success: true, data: result };
       });
     },

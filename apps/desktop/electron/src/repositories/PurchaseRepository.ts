@@ -4,29 +4,29 @@ import { purchase_invoices, purchase_invoice_items } from '@vyora/database';
 import { PurchaseDto, SearchPurchasesOptions, PurchaseListDto } from '@vyora/types';
 import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 
-import { BaseRepository } from './BaseRepository';
+import { BaseRepository, DbTransaction } from './BaseRepository';
 
 export class PurchaseRepository extends BaseRepository {
   public async create(
     companyId: string,
     payload: Omit<PurchaseDto, 'lines'>,
     lines: Omit<PurchaseDto['lines'][0], 'purchaseInvoiceId'>[],
+    tx?: DbTransaction,
   ): Promise<string> {
-    return this.transaction(async (tx) => {
-      // Insert Header
-      await tx.insert(purchase_invoices).values(payload);
+    const executor = tx ?? this.db;
+    // Insert Header
+    await executor.insert(purchase_invoices).values(payload);
 
-      // Insert Lines
-      if (lines.length > 0) {
-        const linesWithHeaderId = lines.map((line) => ({
-          ...line,
-          purchaseInvoiceId: payload.id,
-        }));
-        await tx.insert(purchase_invoice_items).values(linesWithHeaderId);
-      }
+    // Insert Lines
+    if (lines.length > 0) {
+      const linesWithHeaderId = lines.map((line) => ({
+        ...line,
+        purchaseInvoiceId: payload.id,
+      }));
+      await executor.insert(purchase_invoice_items).values(linesWithHeaderId);
+    }
 
-      return payload.id;
-    });
+    return payload.id;
   }
 
   public async update(
@@ -34,105 +34,26 @@ export class PurchaseRepository extends BaseRepository {
     companyId: string,
     headerPayload: Partial<Omit<PurchaseDto, 'lines' | 'id' | 'companyId'>>,
     lines?: Partial<PurchaseDto['lines'][0]>[],
+    tx?: DbTransaction,
   ): Promise<void> {
-    return this.transaction(async (tx) => {
-      // 1. Update Header
-      if (Object.keys(headerPayload).length > 0) {
-        await tx
-          .update(purchase_invoices)
-          .set({
-            ...headerPayload,
-            updatedAt: new Date(),
-            syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
-          })
-          .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
-      }
+    const executor = tx ?? this.db;
+    // 1. Update Header
+    if (Object.keys(headerPayload).length > 0) {
+      await executor
+        .update(purchase_invoices)
+        .set({
+          ...headerPayload,
+          updatedAt: new Date(),
+          syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+        })
+        .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
+    }
 
-      // 2. Process Lines Diffs (Full Replacement Strategy for simplicity in standard offline-first)
-      // Standard practice: Delete existing active lines and re-insert new ones to avoid complex diffing logic
-      // Alternatively, we could do soft-deletes on lines, but for simplicity we will soft-delete omitted lines if explicitly needed.
-      // Since it's a bulk operation, we'll implement full sync based on IDs provided.
-      if (lines) {
-        // Find existing lines
-        const existingLines = await tx
-          .select({ id: purchase_invoice_items.id })
-          .from(purchase_invoice_items)
-          .where(
-            and(
-              eq(purchase_invoice_items.purchaseInvoiceId, id),
-              isNull(purchase_invoice_items.deletedAt),
-            ),
-          )
-          .all();
-
-        const existingLineIds = existingLines.map((l) => l.id);
-        const incomingLineIds = lines.filter((l) => l.id).map((l) => l.id as string);
-
-        // Lines to soft delete
-        const linesToDelete = existingLineIds.filter((extId) => !incomingLineIds.includes(extId));
-
-        if (linesToDelete.length > 0) {
-          for (const lineId of linesToDelete) {
-            await tx
-              .update(purchase_invoice_items)
-              .set({
-                deletedAt: new Date(),
-                syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
-              })
-              .where(eq(purchase_invoice_items.id, lineId));
-          }
-        }
-
-        // Process incoming lines (Update existing, Insert new)
-        for (const line of lines) {
-          if (line.id && existingLineIds.includes(line.id)) {
-            // Update
-            await tx
-              .update(purchase_invoice_items)
-              .set({
-                ...line,
-                updatedAt: new Date(),
-                syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
-              })
-              .where(eq(purchase_invoice_items.id, line.id));
-          } else {
-            // Insert new line
-            const newLine = {
-              ...line,
-              id: randomUUID(),
-              purchaseInvoiceId: id,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              syncVersion: 1,
-              isActive: true,
-            };
-            await tx
-              .insert(purchase_invoice_items)
-              .values(newLine as typeof purchase_invoice_items.$inferInsert);
-          }
-        }
-      }
-    });
-  }
-
-  public async getById(id: string, companyId: string): Promise<PurchaseDto | null> {
-    return this.transaction(async (tx) => {
-      const header = await tx
-        .select()
-        .from(purchase_invoices)
-        .where(
-          and(
-            eq(purchase_invoices.id, id),
-            eq(purchase_invoices.companyId, companyId),
-            isNull(purchase_invoices.deletedAt),
-          ),
-        )
-        .get();
-
-      if (!header) return null;
-
-      const lines = await tx
-        .select()
+    // 2. Process Lines Diffs (Full Replacement Strategy for simplicity in standard offline-first)
+    if (lines) {
+      // Find existing lines
+      const existingLines = await executor
+        .select({ id: purchase_invoice_items.id })
         .from(purchase_invoice_items)
         .where(
           and(
@@ -142,14 +63,93 @@ export class PurchaseRepository extends BaseRepository {
         )
         .all();
 
-      return {
-        ...header,
-        status: header.status as PurchaseDto['status'],
-        lines: lines.map((line) => ({
-          ...line,
-        })),
-      } as PurchaseDto;
-    });
+      const existingLineIds = existingLines.map((l) => l.id);
+      const incomingLineIds = lines.filter((l) => l.id).map((l) => l.id as string);
+
+      // Lines to soft delete
+      const linesToDelete = existingLineIds.filter((extId) => !incomingLineIds.includes(extId));
+
+      if (linesToDelete.length > 0) {
+        for (const lineId of linesToDelete) {
+          await executor
+            .update(purchase_invoice_items)
+            .set({
+              deletedAt: new Date(),
+              syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+            })
+            .where(eq(purchase_invoice_items.id, lineId));
+        }
+      }
+
+      // Process incoming lines (Update existing, Insert new)
+      for (const line of lines) {
+        if (line.id && existingLineIds.includes(line.id)) {
+          // Update
+          await executor
+            .update(purchase_invoice_items)
+            .set({
+              ...line,
+              updatedAt: new Date(),
+              syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+            })
+            .where(eq(purchase_invoice_items.id, line.id));
+        } else {
+          // Insert new line
+          const newLine = {
+            ...line,
+            id: randomUUID(),
+            purchaseInvoiceId: id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            syncVersion: 1,
+            isActive: true,
+          };
+          await executor
+            .insert(purchase_invoice_items)
+            .values(newLine as typeof purchase_invoice_items.$inferInsert);
+        }
+      }
+    }
+  }
+
+  public async getById(
+    id: string,
+    companyId: string,
+    tx?: DbTransaction,
+  ): Promise<PurchaseDto | null> {
+    const executor = tx ?? this.db;
+    const header = await executor
+      .select()
+      .from(purchase_invoices)
+      .where(
+        and(
+          eq(purchase_invoices.id, id),
+          eq(purchase_invoices.companyId, companyId),
+          isNull(purchase_invoices.deletedAt),
+        ),
+      )
+      .get();
+
+    if (!header) return null;
+
+    const lines = await executor
+      .select()
+      .from(purchase_invoice_items)
+      .where(
+        and(
+          eq(purchase_invoice_items.purchaseInvoiceId, id),
+          isNull(purchase_invoice_items.deletedAt),
+        ),
+      )
+      .all();
+
+    return {
+      ...header,
+      status: header.status as PurchaseDto['status'],
+      lines: lines.map((line) => ({
+        ...line,
+      })),
+    } as PurchaseDto;
   }
 
   public async search(
@@ -204,25 +204,24 @@ export class PurchaseRepository extends BaseRepository {
     return { data: data as PurchaseListDto['data'], total };
   }
 
-  public async deactivate(id: string, companyId: string): Promise<void> {
-    return this.transaction(async (tx) => {
-      // 1. Deactivate Header
-      await tx
-        .update(purchase_invoices)
-        .set({
-          deletedAt: new Date(),
-          syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
-        })
-        .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
+  public async deactivate(id: string, companyId: string, tx?: DbTransaction): Promise<void> {
+    const executor = tx ?? this.db;
+    // 1. Deactivate Header
+    await executor
+      .update(purchase_invoices)
+      .set({
+        deletedAt: new Date(),
+        syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+      })
+      .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
 
-      // 2. Cascade Deactivate Lines
-      await tx
-        .update(purchase_invoice_items)
-        .set({
-          deletedAt: new Date(),
-          syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
-        })
-        .where(eq(purchase_invoice_items.purchaseInvoiceId, id));
-    });
+    // 2. Cascade Deactivate Lines
+    await executor
+      .update(purchase_invoice_items)
+      .set({
+        deletedAt: new Date(),
+        syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+      })
+      .where(eq(purchase_invoice_items.purchaseInvoiceId, id));
   }
 }

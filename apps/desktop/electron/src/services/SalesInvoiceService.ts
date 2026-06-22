@@ -1,9 +1,13 @@
+import { sales_invoices } from '@vyora/database';
 import { CreateSalesInvoiceInput } from '@vyora/types';
+import { eq } from 'drizzle-orm';
 
 import { SalesInvoiceRepository, StockMovementRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
+import { inventoryEngine } from './InventoryEngine';
 import { inventoryService } from './InventoryService';
+import { journalService } from './JournalService';
 
 export class StockValidationError extends Error {
   public validations: unknown[] = [];
@@ -35,8 +39,9 @@ export class SalesInvoiceService {
     return await dbService.getDb().transaction(async (tx) => {
       const { invoiceId } = await this.salesInvoiceRepo.createInvoice(data, tx);
 
+      let totalCogsAmount = 0;
       for (const item of data.items) {
-        await this.stockMovementRepo.createMovement(
+        const { wacApplied } = await inventoryEngine.postOutbound(
           {
             companyId: data.companyId,
             financialYearId: data.financialYearId,
@@ -48,11 +53,29 @@ export class SalesInvoiceService {
             quantityOut: item.quantity,
             rate: item.rate,
             movementDate: data.invoiceDate,
-            remarks: item.description,
+            remarks: item.description || '',
           },
           tx,
         );
+        totalCogsAmount += wacApplied * item.quantity;
       }
+
+      await journalService.postSalesInvoice(
+        {
+          companyId: data.companyId,
+          financialYearId: data.financialYearId,
+          invoiceId,
+          invoiceDate: data.invoiceDate,
+          customerId: data.customerId,
+          totalTaxableAmount: data.subtotal - data.discountAmount,
+          totalCgst: 0,
+          totalSgst: 0,
+          totalIgst: data.taxAmount,
+          totalInvoiceAmount: data.grandTotal,
+          totalCogsAmount,
+        },
+        tx,
+      );
 
       return { invoiceId };
     });
@@ -74,8 +97,32 @@ export class SalesInvoiceService {
     throw new Error('Not implemented');
   }
 
-  public async cancelInvoice(_invoiceId: string): Promise<void> {
-    throw new Error('Not implemented');
+  public async cancelInvoice(invoiceId: string): Promise<void> {
+    const invoice = await this.salesInvoiceRepo.getById(invoiceId);
+    if (!invoice) throw new Error('Invoice not found');
+    if (invoice.status === 'CANCELLED') throw new Error('Invoice already cancelled');
+
+    await dbService.getDb().transaction(async (tx) => {
+      if (invoice.items) {
+        for (const item of invoice.items) {
+          await inventoryEngine.processSalesReturn(
+            'SALES_INVOICE',
+            invoiceId,
+            item.productId,
+            item.quantity,
+            tx,
+          );
+        }
+      }
+
+      await journalService.reverseSalesInvoice(invoiceId, tx);
+
+      await tx
+        .update(sales_invoices)
+        .set({ status: 'CANCELLED' })
+        .where(eq(sales_invoices.id, invoiceId))
+        .run();
+    });
   }
 }
 

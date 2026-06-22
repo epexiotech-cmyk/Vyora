@@ -12,6 +12,7 @@ import { SupplierRepository } from '../repositories/SupplierRepository';
 
 import { companyContextService } from './CompanyContextService';
 import { numberingEngineService } from './NumberingEngineService';
+import { partyLedgerIntegrationService } from './PartyLedgerIntegrationService';
 
 export class SupplierService {
   private supplierRepo = new SupplierRepository();
@@ -41,7 +42,7 @@ export class SupplierService {
         tx,
       );
 
-      return await this.supplierRepo.create(
+      const supplier = await this.supplierRepo.create(
         companyId,
         {
           ...validatedData,
@@ -49,6 +50,10 @@ export class SupplierService {
         },
         tx,
       );
+
+      partyLedgerIntegrationService.createSupplierLedgerSync(companyId, supplier, tx);
+
+      return supplier;
     });
   }
 

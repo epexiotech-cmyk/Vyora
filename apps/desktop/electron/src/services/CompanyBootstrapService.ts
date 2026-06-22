@@ -5,6 +5,7 @@ import { dbService } from './database/DatabaseService';
 import { CreateCompanyInput } from '@vyora/types';
 
 import { companyContextService } from './CompanyContextService';
+import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
 
 export class CompanyBootstrapService {
   private companyRepo = new CompanyRepository();
@@ -49,6 +50,8 @@ export class CompanyBootstrapService {
       // Set global flags
       await this.settingsRepo.setAppSetting('setup_completed', 'true', tx);
       await this.settingsRepo.setAppSetting('active_company_id', company.id, tx);
+
+      systemLedgerSeeder.seedSystemLedgers(company.id, tx);
 
       return company.id;
     });

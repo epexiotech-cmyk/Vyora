@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { stock_movements } from '@vyora/database';
 import { CreateStockMovementInput, StockMovementDto, InventoryStockDto } from '@vyora/types';
-import { eq, asc, sql } from 'drizzle-orm';
+import { eq, and, asc, sql } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -86,29 +86,88 @@ export class StockMovementRepository extends BaseRepository {
   }
 
   public async getMovementByReference(
-    _referenceType: string,
-    _referenceId: string,
-    _productId: string,
-    _tx?: DbTransaction,
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
   ): Promise<StockMovementDto | null> {
-    throw new Error('Not implemented');
+    const executor = tx || this.db;
+    const movement = await executor
+      .select()
+      .from(stock_movements)
+      .where(
+        and(
+          eq(
+            stock_movements.referenceType,
+            referenceType as unknown as (typeof stock_movements.$inferSelect)['referenceType'],
+          ),
+          eq(stock_movements.referenceId, referenceId),
+          eq(stock_movements.productId, productId),
+        ),
+      )
+      .get();
+    return movement ? mapToDto(movement) : null;
   }
 
   public async getReturnedTotalsForMovement(
-    _referenceType: string,
-    _referenceId: string,
-    _productId: string,
-    _tx?: DbTransaction,
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
   ): Promise<{ returnedQty: number; returnedAmount: number }> {
-    throw new Error('Not implemented');
+    const executor = tx || this.db;
+    const result = await executor
+      .select({
+        returnedQty: sql<number>`SUM(${stock_movements.quantityIn})`,
+      })
+      .from(stock_movements)
+      .where(
+        and(
+          eq(
+            stock_movements.referenceType,
+            referenceType as unknown as (typeof stock_movements.$inferSelect)['referenceType'],
+          ),
+          eq(stock_movements.referenceId, referenceId),
+          eq(stock_movements.productId, productId),
+          eq(stock_movements.movementType, 'SALE_RETURN'),
+        ),
+      )
+      .get();
+
+    return {
+      returnedQty: result?.returnedQty ? Number(result.returnedQty) : 0,
+      returnedAmount: 0,
+    };
   }
 
   public async getPurchaseReturnedTotalsForMovement(
-    _referenceType: string,
-    _referenceId: string,
-    _productId: string,
-    _tx?: DbTransaction,
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
   ): Promise<{ returnedQty: number; returnedAmount: number }> {
-    throw new Error('Not implemented');
+    const executor = tx || this.db;
+    const result = await executor
+      .select({
+        returnedQty: sql<number>`SUM(${stock_movements.quantityOut})`,
+      })
+      .from(stock_movements)
+      .where(
+        and(
+          eq(
+            stock_movements.referenceType,
+            referenceType as unknown as (typeof stock_movements.$inferSelect)['referenceType'],
+          ),
+          eq(stock_movements.referenceId, referenceId),
+          eq(stock_movements.productId, productId),
+          eq(stock_movements.movementType, 'PURCHASE_RETURN'),
+        ),
+      )
+      .get();
+
+    return {
+      returnedQty: result?.returnedQty ? Number(result.returnedQty) : 0,
+      returnedAmount: 0,
+    };
   }
 }

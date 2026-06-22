@@ -14,7 +14,8 @@ export type DocumentType =
   | 'RECEIPT_VOUCHER'
   | 'CUSTOMER'
   | 'SUPPLIER'
-  | 'ITEM';
+  | 'ITEM'
+  | 'JOURNAL_VOUCHER';
 
 export class NumberingEngineService {
   /**
@@ -72,6 +73,11 @@ export class NumberingEngineService {
       padding = 5;
       startFrom = 1;
       resetPolicy = 'NEVER';
+    } else if (documentType === 'JOURNAL_VOUCHER') {
+      prefix = 'JV';
+      padding = 5;
+      startFrom = 1;
+      resetPolicy = 'YEARLY';
     } else {
       // Fallbacks for future document types
       prefix = documentType.split('_')[0];

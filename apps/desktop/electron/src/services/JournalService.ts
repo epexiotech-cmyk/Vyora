@@ -10,6 +10,7 @@ import { journalRepository } from '../repositories/JournalRepository';
 
 import { companyContextService } from './CompanyContextService';
 import { financialYearContextService } from './FinancialYearContextService';
+import { numberingEngineService } from './NumberingEngineService';
 import { systemLedgerResolver } from './SystemLedgerResolverService';
 
 export class JournalService {
@@ -21,10 +22,10 @@ export class JournalService {
    * @param tx The transaction object mandatory for atomic integration.
    * @returns Created Voucher details.
    */
-  public createVoucherSync(
+  public async createVoucher(
     input: CreateVoucherInput,
     tx: DbTransaction,
-  ): { voucherId: string; voucherNumber: string } {
+  ): Promise<{ voucherId: string; voucherNumber: string }> {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company found');
 
@@ -101,7 +102,7 @@ export class JournalService {
     }));
 
     // Perform Insertion
-    journalRepository.createVoucher(insertVoucher, insertEntries, tx);
+    await journalRepository.createVoucher(insertVoucher, insertEntries, tx);
 
     return {
       voucherId,
@@ -109,7 +110,7 @@ export class JournalService {
     };
   }
 
-  public postSalesInvoiceSync(
+  public async postSalesInvoice(
     payload: {
       companyId: string;
       branchId?: string;
@@ -123,10 +124,9 @@ export class JournalService {
       totalIgst: number;
       totalInvoiceAmount: number;
       totalCogsAmount: number;
-      voucherNumber: string;
     },
     tx: DbTransaction,
-  ): { voucherId: string } {
+  ): Promise<{ voucherId: string }> {
     // 1. Resolve Ledgers
     const customerLedger = tx
       .select()
@@ -164,7 +164,7 @@ export class JournalService {
       ledgerId: customerLedger.id,
       debitAmount: payload.totalInvoiceAmount,
       creditAmount: 0,
-      narration: `Sales Invoice ${payload.voucherNumber}`,
+      narration: `Sales Invoice ${payload.invoiceId}`,
     });
 
     // Sales Credit
@@ -172,7 +172,7 @@ export class JournalService {
       ledgerId: salesLedger.id,
       debitAmount: 0,
       creditAmount: payload.totalTaxableAmount,
-      narration: `Sales Invoice ${payload.voucherNumber}`,
+      narration: `Sales Invoice ${payload.invoiceId}`,
     });
 
     // Output GST Credits
@@ -204,20 +204,28 @@ export class JournalService {
         ledgerId: cogsLedger.id,
         debitAmount: payload.totalCogsAmount,
         creditAmount: 0,
-        narration: `COGS for Invoice ${payload.voucherNumber}`,
+        narration: `COGS for Invoice ${payload.invoiceId}`,
       });
       entries.push({
         ledgerId: inventoryLedger.id,
         debitAmount: 0,
         creditAmount: payload.totalCogsAmount,
-        narration: `Inventory asset reduction for Invoice ${payload.voucherNumber}`,
+        narration: `Inventory asset reduction for Invoice ${payload.invoiceId}`,
       });
     }
 
-    // 3. Delegate to createVoucherSync
+    // Generate Voucher Number
+    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+      payload.companyId,
+      payload.financialYearId,
+      'JOURNAL_VOUCHER',
+      tx,
+    );
+
+    // 3. Delegate to createVoucher
     const voucherInput: CreateVoucherInput = {
       voucherType: 'Sales',
-      voucherNumber: payload.voucherNumber,
+      voucherNumber: generatedVoucherNumber,
       voucherDate: payload.invoiceDate,
       sourceModule: 'SalesInvoiceService',
       referenceType: 'SALES_INVOICE',
@@ -226,12 +234,12 @@ export class JournalService {
       entries,
     };
 
-    const { voucherId } = this.createVoucherSync(voucherInput, tx);
+    const { voucherId } = await this.createVoucher(voucherInput, tx);
 
     return { voucherId };
   }
 
-  public postPurchaseBillSync(
+  public async postPurchaseBill(
     payload: {
       companyId: string;
       financialYearId: string;
@@ -244,10 +252,9 @@ export class JournalService {
       totalIgst: number;
       totalInvoiceAmount: number;
       roundOffAmount: number;
-      voucherNumber: string;
     },
     tx: DbTransaction,
-  ): { voucherId: string } {
+  ): Promise<{ voucherId: string }> {
     // 1. Resolve Ledgers
     const supplierLedger = tx
       .select()
@@ -284,7 +291,7 @@ export class JournalService {
       ledgerId: inventoryLedger.id,
       debitAmount: payload.totalTaxableAmount,
       creditAmount: 0,
-      narration: `Purchase Bill ${payload.voucherNumber}`,
+      narration: `Purchase Bill ${payload.invoiceId}`,
     });
 
     // Input GST Debits
@@ -315,7 +322,7 @@ export class JournalService {
       ledgerId: supplierLedger.id,
       debitAmount: 0,
       creditAmount: payload.totalInvoiceAmount,
-      narration: `Purchase Bill ${payload.voucherNumber}`,
+      narration: `Purchase Bill ${payload.invoiceId}`,
     });
 
     // Round Off Entry
@@ -324,21 +331,29 @@ export class JournalService {
         ledgerId: roundOffLedger.id,
         debitAmount: Math.abs(payload.roundOffAmount),
         creditAmount: 0,
-        narration: `Round off for ${payload.voucherNumber}`,
+        narration: `Round off for ${payload.invoiceId}`,
       });
     } else if (payload.roundOffAmount < 0) {
       entries.push({
         ledgerId: roundOffLedger.id,
         debitAmount: 0,
         creditAmount: Math.abs(payload.roundOffAmount),
-        narration: `Round off for ${payload.voucherNumber}`,
+        narration: `Round off for ${payload.invoiceId}`,
       });
     }
 
-    // 3. Delegate to createVoucherSync
+    // Generate Voucher Number
+    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+      payload.companyId,
+      payload.financialYearId,
+      'JOURNAL_VOUCHER',
+      tx,
+    );
+
+    // 3. Delegate to createVoucher
     const voucherInput: CreateVoucherInput = {
       voucherType: 'Purchase',
-      voucherNumber: payload.voucherNumber,
+      voucherNumber: generatedVoucherNumber,
       voucherDate: payload.invoiceDate,
       sourceModule: 'PurchaseService',
       referenceType: 'PURCHASE_BILL',
@@ -347,15 +362,15 @@ export class JournalService {
       entries,
     };
 
-    const { voucherId } = this.createVoucherSync(voucherInput, tx);
+    const { voucherId } = await this.createVoucher(voucherInput, tx);
 
     return { voucherId };
   }
 
-  public reverseSalesInvoiceSync(
+  public async reverseSalesInvoice(
     invoiceId: string,
     tx: DbTransaction,
-  ): { reversalVoucherId: string } {
+  ): Promise<{ reversalVoucherId: string }> {
     const companyId = companyContextService.getActiveCompany() as string;
 
     // 1. Locate original Sales voucher
@@ -403,10 +418,21 @@ export class JournalService {
       narration: `Reversal for Sales Invoice ${invoiceId}`,
     }));
 
+    // Generate Voucher Number
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!fy) throw new Error('No active financial year context');
+
+    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+      companyId,
+      fy.id,
+      'JOURNAL_VOUCHER',
+      tx,
+    );
+
     // 4. Create Reversal Voucher
     const reversalInput: CreateVoucherInput = {
       voucherType: 'Journal', // Reversals are usually journals
-      voucherNumber: `REV-${originalVoucher.voucherNumber}`,
+      voucherNumber: generatedVoucherNumber,
       voucherDate: new Date(), // Reversal happens today/now
       sourceModule: 'SalesInvoiceService',
       referenceType: 'SALES_INVOICE_CANCELLATION',
@@ -415,7 +441,7 @@ export class JournalService {
       entries: reversalEntries,
     };
 
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(reversalInput, tx);
+    const { voucherId: reversalVoucherId } = await this.createVoucher(reversalInput, tx);
 
     // 5. Optionally, mark original voucher as cancelled (if required by design, though prompt said "DO NOT mutate original voucher entries". Marking the header as cancelled is usually required to link them or just leaving it is fine as long as balances offset. Let's just update header isCancelled)
     tx.update(vouchers)
@@ -425,10 +451,10 @@ export class JournalService {
 
     return { reversalVoucherId };
   }
-  public reversePurchaseBillSync(
+  public async reversePurchaseBill(
     purchaseId: string,
     tx: DbTransaction,
-  ): { reversalVoucherId: string } {
+  ): Promise<{ reversalVoucherId: string }> {
     const companyId = companyContextService.getActiveCompany() as string;
 
     // 1. Locate original Purchase voucher
@@ -476,10 +502,21 @@ export class JournalService {
       narration: `Reversal for Purchase Bill ${purchaseId}`,
     }));
 
+    // Generate Voucher Number
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!fy) throw new Error('No active financial year context');
+
+    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+      companyId,
+      fy.id,
+      'JOURNAL_VOUCHER',
+      tx,
+    );
+
     // 4. Create Reversal Voucher
     const reversalInput: CreateVoucherInput = {
       voucherType: 'Journal',
-      voucherNumber: `REV-${originalVoucher.voucherNumber}`,
+      voucherNumber: generatedVoucherNumber,
       voucherDate: new Date(),
       sourceModule: 'PurchaseService',
       referenceType: 'PURCHASE_BILL_CANCELLATION',
@@ -488,7 +525,7 @@ export class JournalService {
       entries: reversalEntries,
     };
 
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(reversalInput, tx);
+    const { voucherId: reversalVoucherId } = await this.createVoucher(reversalInput, tx);
 
     // 5. Mark original voucher as cancelled
     tx.update(vouchers)

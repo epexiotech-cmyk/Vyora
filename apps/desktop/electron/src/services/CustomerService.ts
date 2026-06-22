@@ -9,6 +9,7 @@ import {
 import { CustomerRepository } from '../repositories';
 
 import { companyContextService } from './CompanyContextService';
+import { partyLedgerIntegrationService } from './PartyLedgerIntegrationService';
 
 export class CustomerService {
   private customerRepo = new CustomerRepository();
@@ -32,7 +33,7 @@ export class CustomerService {
     return await this.customerRepo.transaction(async (tx) => {
       const customerCode = await this.customerRepo.getNextCustomerCode(companyId, tx);
 
-      return await this.customerRepo.create(
+      const customer = await this.customerRepo.create(
         companyId,
         {
           ...data,
@@ -40,6 +41,10 @@ export class CustomerService {
         },
         tx,
       );
+
+      partyLedgerIntegrationService.createCustomerLedgerSync(companyId, customer, tx);
+
+      return customer;
     });
   }
 
