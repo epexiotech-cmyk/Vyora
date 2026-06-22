@@ -169,21 +169,21 @@ Custom sync engine will:
 
 ## Desktop
 
-- Electron
+- Electron Main Process + IPC Architecture
 
 ## Backend
 
-- Node.js
-- Express / Next API
+- Electron Main Process + IPC Architecture (local)
+- Next API (cloud components)
 
 ## Database
 
-- SQLite (local)
+- better-sqlite3 (local)
 - PostgreSQL (cloud)
 
 ## ORM
 
-- Prisma ORM
+- Drizzle ORM
 
 ## State Management
 
@@ -215,80 +215,108 @@ Custom sync engine will:
 
 ---
 
-# Major Modules
+# Core Backend Engines & Subsystems
 
-## Phase 1 — Foundation
+## Company Isolation Architecture
 
-- Monorepo setup
-- Electron setup
-- Next.js setup
-- Database architecture
-- Prisma ORM
-- Authentication system
-- Theme system
-- Folder structure
-- Shared packages
+- **CompanyContextService**: Enforces boundary protection.
+- **Active Company Pattern**: State machine restricting queries to the active company.
+- **Multi-company database isolation**: All critical tables segmented by `companyId`.
+- **Company-scoped repositories**: Data access enforced at the schema level.
+- **Company boundary enforcement**: Strict boundaries preventing data leakage.
 
----
+## Financial Governance Architecture
 
-## Phase 2 — Billing Engine
+- **FinancialYearContextService**: Controls active financial year tracking.
+- **Financial year locking**: Prevents transactions outside the active window.
+- **Voucher posting restrictions**: Strict period bounds.
+- **Period close protection**: Protects finalized statements.
+- **Opening balance governance**: Strict rules around ledger opening entries.
 
-- Customer management
-- Product management
-- GST calculations
-- Invoice creation
-- Invoice editing
-- Thermal printing
-- PDF export
-- QR code support
-- Barcode support
-- Multiple invoice templates
+## Accounting Subsystem
 
-Minimum:
+- **Double-entry enforcement**: Strict Cr/Dr balancing constraints.
+- **JournalService**: Central orchestration engine for accounting execution.
+- **Ledger Groups & Ledgers**: Hierarchical chart of accounts mapping.
+- **Vouchers**: Immutable historical journal entry boundaries.
+- **Settlement records**: Invoice and payment matching.
+- **Reversal architecture**: Safe rollback and nullification using status fields.
+- **Automatic voucher generation**: Direct binding between sales/purchases and the journal.
+  _(Mention: Phase 8.2.8D Settlement Engine & Phase 8.2.8E Accounting Integration)_
 
-- 5 invoice designs
+## Inventory Subsystem
 
----
+- **InventoryEngine**: Core processing logic for stock quantities.
+- **Weighted Average Cost (WAC)**: Algorithmic inventory valuation implementation.
+- **Stock movement ledger**: Immutable record of `quantityIn`, `quantityOut`, and `rate`.
+- **Purchase inbound flow**: Automatic inbound mapping.
+- **Sales outbound flow**: Automatic outbound, WAC cost-of-goods-sold calculation.
+- **Sales return flow**: Return-to-inventory logic.
+- **Purchase return flow**: Return-to-supplier logic.
 
-## Phase 3 — Inventory & Accounts
+## Transaction Architecture
 
-- Stock management
-- Purchase entries
-- Expense management
-- Ledger
-- Profit/loss
-- Reports
-- GST reports
-
----
-
-## Phase 4 — Offline Sync Engine
-
-- Local sync queue
-- Conflict handling
-- Background uploads
-- Cloud reconciliation
-- Backup system
+- **Repository Pattern**: Strict structural separation of concerns:
+  `Renderer → Preload → IPC → Service → Repository → Database`
+- **DbTransaction propagation**: Injection of `tx?: DbTransaction` across services.
+- **No nested transactions**: Flat transaction topology eliminating lock states.
+- **ACID compliance**: Fully guaranteed transaction boundaries.
+- **Rollback guarantees**: System safety on partial failures.
 
 ---
 
-## Phase 5 — Multi-user & Cloud
+# Release History
 
-- Organization accounts
-- Staff accounts
-- Permissions
-- Activity logs
-- Cloud dashboard
+- **v0.5.1** Company GST Profile
+- **v0.5.2** Customer Master
+- **v0.5.3** Supplier Master
+- **v0.5.4** Item Master
+- **v0.5.5** Purchase Backend
+- **v0.5.6** Monetary Migration
+- **v0.5.7** Purchase UI Scaffold
+- **v0.5.8** Purchase Form Foundation
+- **v0.5.9** Purchase Workflow
+- **v0.5.10** Purchase Release Candidate
+- **v0.8.2.8C** Drizzle Recovery
+- **v0.8.2.8D** Settlement Engine IPC
+- **v0.8.2.8E** Accounting Integration
+  - Journal Posting Integration
+  - Inventory Engine Integration
+  - Party Ledger Bootstrap
+  - System Ledger Bootstrap
+  - Purchase Reversal Architecture
 
 ---
 
-## Phase 6 — Mobile App
+# Current Milestone Status
 
-- Android app
-- Dashboard
-- Sales management
-- Invoice sharing
-- Reports
+**Completed Backend**
+
+- Customer Master
+- Supplier Master
+- Item Master
+- Unit Master
+- Purchase Workflow
+- Sales Workflow Backend
+- Inventory Engine
+- Settlement Engine
+- Accounting Engine
+- Party Ledger Integration
+- System Ledger Bootstrap
+- Transaction Architecture
+
+**Pending UI & Reports**
+
+- Sales UI
+- Purchase UI
+- Accounting UI
+- Ledger Reports
+- Trial Balance
+- Profit & Loss
+- Balance Sheet
+- Print Engine Productionization
+- Cloud Sync Engine
+- Mobile Companion
 
 ---
 
@@ -378,7 +406,8 @@ Example:
 - billing
 - shared
 
-/prisma
+/packages/database
+/drizzle
 /docs
 /scripts
 
@@ -459,18 +488,17 @@ The focus should always remain:
 
 ---
 
-# Current Development Stage
+# Current Development Focus
 
-Current Phase:
-Phase 1 — Foundation Setup
+**Phase 8.2.8F**
+**Frontend Integration Layer**
 
-Next Tasks:
+Objectives:
 
-1. Initialize monorepo
-2. Setup Electron
-3. Setup Next.js
-4. Configure TailwindCSS
-5. Setup Prisma
-6. Configure PostgreSQL + SQLite
-7. Setup shared UI package
-8. Setup authentication architecture
+- Sales UI Completion
+- Purchase UI Completion
+- Accounting UI Foundation
+- Voucher Entry Screens
+- Ledger Browser
+- Stock Inquiry Screens
+- Report Infrastructure
