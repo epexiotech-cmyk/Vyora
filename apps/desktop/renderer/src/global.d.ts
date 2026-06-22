@@ -171,6 +171,24 @@ export type VyoraDirectoriesAPI = {
   };
 };
 
+export type VyoraCalculationAPI = {
+  calculateInvoice: (
+    input: import('@vyora/types').CalculationEngineInput,
+  ) => Promise<ApiResponse<import('@vyora/types').InvoiceCalculationResult>>;
+};
+
+export type VyoraJournalAPI = {
+  postVoucher: (
+    input: import('@vyora/types').CreateVoucherInput,
+  ) => Promise<ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+};
+
+export type VyoraInventoryAPI = {
+  getStockSummary: (
+    productId: string,
+  ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -182,6 +200,9 @@ declare global {
       print: VyoraPrintAPI;
       splash: VyoraSplashAPI;
       directories: VyoraDirectoriesAPI;
+      calculation: VyoraCalculationAPI;
+      journal: VyoraJournalAPI;
+      inventory: VyoraInventoryAPI;
     };
   }
 }

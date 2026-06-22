@@ -164,6 +164,18 @@ contextBridge.exposeInMainWorld('vyora', {
         ipcRenderer.invoke('directory:sac:search', query, includeAll),
     },
   },
+  calculation: {
+    calculateInvoice: (input: import('@vyora/types').CalculationEngineInput) =>
+      ipcRenderer.invoke('calculation:calculateInvoice', input),
+  },
+  journal: {
+    postVoucher: (input: import('@vyora/types').CreateVoucherInput) =>
+      ipcRenderer.invoke('journal:postVoucher', input),
+  },
+  inventory: {
+    getStockSummary: (productId: string) =>
+      ipcRenderer.invoke('inventory:getStockSummary', productId),
+  },
 });
 
 export type VyoraSystemAPI = {
@@ -285,6 +297,24 @@ export interface VyoraDirectoriesAPI {
   };
 }
 
+export type VyoraCalculationAPI = {
+  calculateInvoice: (
+    input: import('@vyora/types').CalculationEngineInput,
+  ) => Promise<ApiResponse<import('@vyora/types').InvoiceCalculationResult>>;
+};
+
+export type VyoraJournalAPI = {
+  postVoucher: (
+    input: import('@vyora/types').CreateVoucherInput,
+  ) => Promise<ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+};
+
+export type VyoraInventoryAPI = {
+  getStockSummary: (
+    productId: string,
+  ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -296,6 +326,9 @@ declare global {
       splash: VyoraSplashAPI;
       print: VyoraPrintAPI;
       directories: VyoraDirectoriesAPI;
+      calculation: VyoraCalculationAPI;
+      journal: VyoraJournalAPI;
+      inventory: VyoraInventoryAPI;
     };
   }
 }

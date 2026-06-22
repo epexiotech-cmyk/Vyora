@@ -1,10 +1,12 @@
 export * from './bootstrapHandlers';
+export * from './calculationHandlers';
 export * from './companyHandlers';
 export * from './countryHandlers';
 export * from './currencyHandlers';
 export * from './customerHandlers';
 export * from './financialYearHandlers';
 export * from './inventoryHandlers';
+export * from './journalHandlers';
 export * from './pincodeHandlers';
 export * from './printHandlers';
 export * from './productHandlers';
@@ -18,6 +20,7 @@ export * from './hsnHandlers';
 export * from './sacHandlers';
 
 import { registerBootstrapHandlers } from './bootstrapHandlers';
+import { registerCalculationHandlers } from './calculationHandlers';
 import { registerCompanyHandlers } from './companyHandlers';
 import { registerCountryHandlers } from './countryHandlers';
 import { registerCurrencyHandlers } from './currencyHandlers';
@@ -25,6 +28,7 @@ import { registerCustomerHandlers } from './customerHandlers';
 import { registerFinancialYearHandlers } from './financialYearHandlers';
 import { registerHsnHandlers } from './hsnHandlers';
 import { registerInventoryHandlers } from './inventoryHandlers';
+import { registerJournalHandlers } from './journalHandlers';
 import { registerPincodeHandlers } from './pincodeHandlers';
 import { registerPrintHandlers } from './printHandlers';
 import { registerProductHandlers } from './productHandlers';
@@ -39,10 +43,12 @@ import { registerUqcHandlers } from './uqcHandlers';
 
 export function registerAllHandlers() {
   registerBootstrapHandlers();
+  registerCalculationHandlers();
   registerCompanyHandlers();
   registerCustomerHandlers();
   registerFinancialYearHandlers();
   registerInventoryHandlers();
+  registerJournalHandlers();
   registerProductHandlers();
   registerPurchaseHandlers();
   registerSupplierHandlers();

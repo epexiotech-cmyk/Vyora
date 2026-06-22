@@ -8,6 +8,8 @@ import {
   registerInventoryHandlers,
   registerBootstrapHandlers,
   registerCompanyHandlers,
+  registerCalculationHandlers,
+  registerJournalHandlers,
 } from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
 import { encryptionService } from './main/security/EncryptionService';
@@ -61,6 +63,8 @@ async function bootstrap() {
     registerInventoryHandlers();
     registerBootstrapHandlers();
     registerCompanyHandlers();
+    registerCalculationHandlers();
+    registerJournalHandlers();
 
     // Try to load active company context immediately after DB init
     try {

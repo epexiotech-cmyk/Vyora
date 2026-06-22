@@ -49,3 +49,9 @@ export interface InventorySummaryDto {
   totalItems: number;
   lowStockItems: number;
 }
+
+export interface StockSummaryDto {
+  wac: number;
+  totalQty: number;
+  totalValue: number;
+}
