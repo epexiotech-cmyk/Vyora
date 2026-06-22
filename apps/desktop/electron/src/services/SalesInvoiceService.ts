@@ -58,23 +58,23 @@ export class SalesInvoiceService {
     });
   }
 
-  public async getInvoiceById(): Promise<void> {
+  public async getInvoiceById(_invoiceId?: string): Promise<void> {
     throw new Error('Not implemented');
   }
 
-  public async listInvoices(): Promise<void> {
+  public async listInvoices(_options?: unknown): Promise<void> {
     throw new Error('Not implemented');
   }
 
-  public async updateDraft(invoiceId: string, payload: unknown): Promise<any> {
+  public async updateDraft(_invoiceId: string, _payload: unknown): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
-  public async submitInvoice(invoiceId: string): Promise<{ warnings: unknown[] }> {
+  public async submitInvoice(_invoiceId: string): Promise<{ warnings: unknown[] }> {
     throw new Error('Not implemented');
   }
 
-  public async cancelInvoice(invoiceId: string): Promise<void> {
+  public async cancelInvoice(_invoiceId: string): Promise<void> {
     throw new Error('Not implemented');
   }
 }

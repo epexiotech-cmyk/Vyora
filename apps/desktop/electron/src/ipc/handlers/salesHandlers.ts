@@ -73,7 +73,7 @@ export function registerSalesInvoiceHandlers() {
     'sales:invoice:getById',
     async (_event, invoiceId: string): Promise<ApiResponse<SalesInvoiceDto>> => {
       try {
-        const result = await salesInvoiceService.getInvoiceById();
+        const result = await salesInvoiceService.getInvoiceById(invoiceId);
         return { success: true, data: result as unknown as SalesInvoiceDto };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
@@ -85,7 +85,7 @@ export function registerSalesInvoiceHandlers() {
     'sales:invoice:list',
     async (_event, options?: ListSalesInvoicesOptions): Promise<ApiResponse<SalesInvoiceDto[]>> => {
       try {
-        const result = await salesInvoiceService.listInvoices();
+        const result = await salesInvoiceService.listInvoices(options);
         return { success: true, data: result as unknown as SalesInvoiceDto[] };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
