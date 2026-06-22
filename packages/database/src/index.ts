@@ -8,3 +8,4 @@ export * from './schema/inventory';
 export * from './client/db';
 export * from './utils/password';
 export * from './seed';
+export * from './schema/accounting';

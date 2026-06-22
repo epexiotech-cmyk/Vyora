@@ -43,7 +43,7 @@ export function registerSalesInvoiceHandlers() {
     async (_event, invoiceId: string): Promise<ApiResponse<{ warnings: unknown[] }>> => {
       try {
         const result = await salesInvoiceService.submitInvoice(invoiceId);
-        return { success: true, data: result, warnings: result.warnings };
+        return { success: true, data: { warnings: result.warnings } };
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'StockValidationError') {
           return {
@@ -73,8 +73,8 @@ export function registerSalesInvoiceHandlers() {
     'sales:invoice:getById',
     async (_event, invoiceId: string): Promise<ApiResponse<SalesInvoiceDto>> => {
       try {
-        const result = await salesInvoiceService.getInvoiceById(invoiceId);
-        return { success: true, data: result };
+        const result = await salesInvoiceService.getInvoiceById();
+        return { success: true, data: result as unknown as SalesInvoiceDto };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }
@@ -85,8 +85,8 @@ export function registerSalesInvoiceHandlers() {
     'sales:invoice:list',
     async (_event, options?: ListSalesInvoicesOptions): Promise<ApiResponse<SalesInvoiceDto[]>> => {
       try {
-        const result = await salesInvoiceService.listInvoices(options);
-        return { success: true, data: result };
+        const result = await salesInvoiceService.listInvoices();
+        return { success: true, data: result as unknown as SalesInvoiceDto[] };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }

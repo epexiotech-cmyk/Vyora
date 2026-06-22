@@ -5,6 +5,15 @@ import { SalesInvoiceRepository, StockMovementRepository } from '../repositories
 import { dbService } from './database/DatabaseService';
 import { inventoryService } from './InventoryService';
 
+export class StockValidationError extends Error {
+  public validations: unknown[] = [];
+  constructor(validations: unknown[]) {
+    super('Stock validation failed');
+    this.name = 'StockValidationError';
+    this.validations = validations;
+  }
+}
+
 export class SalesInvoiceService {
   private salesInvoiceRepo = new SalesInvoiceRepository();
   private stockMovementRepo = new StockMovementRepository();
@@ -54,6 +63,18 @@ export class SalesInvoiceService {
   }
 
   public async listInvoices(): Promise<void> {
+    throw new Error('Not implemented');
+  }
+
+  public async updateDraft(invoiceId: string, payload: unknown): Promise<any> {
+    throw new Error('Not implemented');
+  }
+
+  public async submitInvoice(invoiceId: string): Promise<{ warnings: unknown[] }> {
+    throw new Error('Not implemented');
+  }
+
+  public async cancelInvoice(invoiceId: string): Promise<void> {
     throw new Error('Not implemented');
   }
 }

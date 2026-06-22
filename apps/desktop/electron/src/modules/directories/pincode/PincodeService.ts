@@ -9,9 +9,9 @@ export class PincodeService {
 
   async getByPincode(pincode: string): Promise<ApiResponse<PincodeDTO | null>> {
     try {
-      const data = await this.repo.findByPincode(pincode);
-      if (!data) return { success: true, data: null };
-      return { success: true, data: this.mapToDTO(data) };
+      const data = await this.repo.findByPincode(pincode) as any[];
+      if (!data || data.length === 0) return { success: true, data: null };
+      return { success: true, data: this.mapToDTO(data[0] as unknown as Record<string, unknown>) };
     } catch (e) {
       loggerService.error('[PincodeService] getByPincode failed', e);
       return { success: false, error: 'Failed to fetch pincode' };
@@ -25,7 +25,7 @@ export class PincodeService {
   }): Promise<ApiResponse<PincodeSearchResponse>> {
     try {
       const results = await this.repo.search(query);
-      const data = results.map((record) => this.mapToDTO(record));
+      const data = results.map((record) => this.mapToDTO(record as Record<string, unknown>));
       return { success: true, data: { data, total: data.length } };
     } catch (e) {
       loggerService.error('[PincodeService] search failed', e);

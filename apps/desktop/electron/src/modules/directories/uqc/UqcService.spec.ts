@@ -13,7 +13,7 @@ describe('UqcService', () => {
     service = new UqcService();
     vi.spyOn(UqcRepository.prototype, 'findByCode').mockImplementation(async (code: string) => {
       if (code === 'KGS') return { id: 1, gstUqcCode: 'KGS', displayName: 'KILOGRAMS' } as never;
-      return null;
+      return undefined;
     });
     vi.spyOn(UqcRepository.prototype, 'search').mockImplementation(async (query: string) => {
       if (query === 'KG') return [{ id: 1, gstUqcCode: 'KGS', displayName: 'KILOGRAMS' }] as never;

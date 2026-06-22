@@ -36,7 +36,7 @@ describe('StockMovementRepository Integration Tests', () => {
   describe('SECTION F — STOCK MOVEMENTS', () => {
     it('creates movement and affects stock correctly', async () => {
       // 1. Initial stock is 0
-      const initial = await repo.getCurrentStock(seeds.companyId, seeds.productId);
+      const initial = await repo.getCurrentStock(seeds.productId);
       expect(initial.stock).toBe(0);
 
       // 2. Add some stock (PURCHASE)
@@ -53,7 +53,7 @@ describe('StockMovementRepository Integration Tests', () => {
         movementDate: new Date(),
       });
 
-      let current = await repo.getCurrentStock(seeds.companyId, seeds.productId);
+      let current = await repo.getCurrentStock(seeds.productId);
       expect(current.stock).toBe(50);
 
       // 3. Remove stock (SALE)
@@ -70,7 +70,7 @@ describe('StockMovementRepository Integration Tests', () => {
         movementDate: new Date(),
       });
 
-      current = await repo.getCurrentStock(seeds.companyId, seeds.productId);
+      current = await repo.getCurrentStock(seeds.productId);
       expect(current.stock).toBe(35);
 
       // 4. Reverse sale (SALE_RETURN)
@@ -87,11 +87,11 @@ describe('StockMovementRepository Integration Tests', () => {
         movementDate: new Date(),
       });
 
-      current = await repo.getCurrentStock(seeds.companyId, seeds.productId);
+      current = await repo.getCurrentStock(seeds.productId);
       expect(current.stock).toBe(50);
 
       // 5. Verify ledger
-      const ledger = await repo.getProductLedger(seeds.companyId, seeds.productId);
+      const ledger = await repo.getProductLedger(seeds.productId);
       expect(ledger).toHaveLength(3);
       expect(ledger[0].movementType).toBe('PURCHASE');
       expect(ledger[1].movementType).toBe('SALE');
@@ -119,7 +119,7 @@ describe('StockMovementRepository Integration Tests', () => {
           );
 
           // Fetch inside tx
-          const stock = await repo.getCurrentStock(seeds.companyId, seeds.productId, tx);
+          const stock = await repo.getCurrentStock(seeds.productId, tx);
           expect(stock.stock).toBe(100);
 
           // Let's force rollback so it doesn't affect DB
@@ -130,7 +130,7 @@ describe('StockMovementRepository Integration Tests', () => {
         });
 
       // Outside tx, stock should be 0 because we rolled back
-      const current = await repo.getCurrentStock(seeds.companyId, seeds.productId);
+      const current = await repo.getCurrentStock(seeds.productId);
       expect(current.stock).toBe(0);
     });
   });

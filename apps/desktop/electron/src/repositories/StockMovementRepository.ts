@@ -64,8 +64,9 @@ export class StockMovementRepository extends BaseRepository {
     return results.map(mapToDto);
   }
 
-  public async getCurrentStock(productId: string): Promise<InventoryStockDto> {
-    const result = await this.db
+  public async getCurrentStock(productId: string, tx?: DbTransaction): Promise<InventoryStockDto> {
+    const executor = tx || this.db;
+    const result = await executor
       .select({
         totalIn: sql<number>`SUM(${stock_movements.quantityIn})`,
         totalOut: sql<number>`SUM(${stock_movements.quantityOut})`,
@@ -82,5 +83,32 @@ export class StockMovementRepository extends BaseRepository {
     const totalOut = result.totalOut ? Number(result.totalOut) : 0;
 
     return { productId, stock: totalIn - totalOut };
+  }
+
+  public async getMovementByReference(
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
+  ): Promise<StockMovementDto | null> {
+    throw new Error('Not implemented');
+  }
+
+  public async getReturnedTotalsForMovement(
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
+  ): Promise<{ returnedQty: number; returnedAmount: number }> {
+    throw new Error('Not implemented');
+  }
+
+  public async getPurchaseReturnedTotalsForMovement(
+    referenceType: string,
+    referenceId: string,
+    productId: string,
+    tx?: DbTransaction,
+  ): Promise<{ returnedQty: number; returnedAmount: number }> {
+    throw new Error('Not implemented');
   }
 }

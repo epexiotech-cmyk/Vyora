@@ -8,7 +8,7 @@ vi.mock('../../../services/database/DirectoryDatabaseService');
 
 describe('HsnRepository', () => {
   let repository: HsnRepository;
-  let mockDbService: vi.Mocked<DirectoryDatabaseService>;
+  let mockDbService: any;
   let mockDb: any;
 
   beforeEach(() => {

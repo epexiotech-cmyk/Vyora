@@ -13,8 +13,8 @@ export function registerInventoryHandlers() {
     'inventory:getStockSummary',
     async (_event, productId: string) => {
       const db = dbService.getDb();
-      return db.transaction((tx: DbTransaction) => {
-        const result = inventoryEngine.getWacForProductSync(productId, tx);
+      return db.transaction(async (tx: DbTransaction) => {
+        const result = await inventoryEngine.getWacForProduct(productId, tx);
         return { success: true, data: result };
       });
     },

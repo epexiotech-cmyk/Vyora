@@ -1,4 +1,4 @@
-import { BaseResponse } from '@vyora/database';
+import { ApiResponse } from '@vyora/types';
 
 import { directoryDatabaseService } from '../../../services/database/DirectoryDatabaseService';
 
@@ -8,7 +8,7 @@ import { HsnRepository } from './HsnRepository';
 export class HsnService {
   constructor(private readonly repository: HsnRepository) {}
 
-  public async getByCode(hsnCode: string): Promise<BaseResponse<HsnDto>> {
+  public async getByCode(hsnCode: string): Promise<ApiResponse<HsnDto>> {
     try {
       const hsn = await this.repository.getByCode(hsnCode);
       if (!hsn) {
@@ -21,7 +21,7 @@ export class HsnService {
     }
   }
 
-  public async search(query: string, limit?: number): Promise<BaseResponse<HsnDto[]>> {
+  public async search(query: string, limit?: number): Promise<ApiResponse<HsnDto[]>> {
     try {
       const results = await this.repository.search(query, limit);
       return { success: true, data: results };
