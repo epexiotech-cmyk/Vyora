@@ -12,10 +12,10 @@ export class InventoryEngine {
     tx?: DbTransaction,
   ): Promise<{ wac: number; totalQty: number; totalValue: number }> {
     const { stock } = await this.stockMovementRepo.getCurrentStock(productId, tx);
-    
-    // Total value tracking requires ledger traversal which is stubbed out 
+
+    // Total value tracking requires ledger traversal which is stubbed out
     // since 'amountIn' / 'amountOut' are not in schema.
-    const totalValue = 0; 
+    const totalValue = 0;
     let wac = 0;
     if (stock > 0) {
       wac = Math.round(totalValue / stock);
