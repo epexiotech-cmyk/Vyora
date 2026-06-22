@@ -35,7 +35,7 @@ describe('HsnService', () => {
         description: 'Test',
         isActive: true,
         codeLength: 4,
-        isInvoiceSelectable: true,
+        isInvoiceSelectable: 1,
       };
       mockRepository.getByCode.mockResolvedValueOnce(mockHsn);
 
@@ -70,7 +70,7 @@ describe('HsnService', () => {
         description: 'Test',
         isActive: true,
         codeLength: 4,
-        isInvoiceSelectable: true,
+        isInvoiceSelectable: 1,
       };
       mockRepository.search.mockResolvedValueOnce([mockHsn]);
 
