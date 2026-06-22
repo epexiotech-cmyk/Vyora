@@ -9,7 +9,7 @@ export class PincodeService {
 
   async getByPincode(pincode: string): Promise<ApiResponse<PincodeDTO | null>> {
     try {
-      const data = await this.repo.findByPincode(pincode) as any[];
+      const data = (await this.repo.findByPincode(pincode)) as unknown[];
       if (!data || data.length === 0) return { success: true, data: null };
       return { success: true, data: this.mapToDTO(data[0] as unknown as Record<string, unknown>) };
     } catch (e) {
