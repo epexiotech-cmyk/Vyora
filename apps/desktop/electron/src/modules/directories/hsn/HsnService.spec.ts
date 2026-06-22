@@ -29,7 +29,14 @@ describe('HsnService', () => {
 
   describe('getByCode', () => {
     it('should return hsn code if found', async () => {
-      const mockHsn: any = { id: 1, hsnCode: '1234', description: 'Test', isActive: true };
+      const mockHsn = {
+        id: 1,
+        hsnCode: '1234',
+        description: 'Test',
+        isActive: true,
+        codeLength: 4,
+        isInvoiceSelectable: true,
+      };
       mockRepository.getByCode.mockResolvedValueOnce(mockHsn);
 
       const result = await service.getByCode('1234');
@@ -57,7 +64,14 @@ describe('HsnService', () => {
 
   describe('search', () => {
     it('should return search results', async () => {
-      const mockHsn: any = { id: 1, hsnCode: '1234', description: 'Test', isActive: true };
+      const mockHsn = {
+        id: 1,
+        hsnCode: '1234',
+        description: 'Test',
+        isActive: true,
+        codeLength: 4,
+        isInvoiceSelectable: true,
+      };
       mockRepository.search.mockResolvedValueOnce([mockHsn]);
 
       const result = await service.search('123');
