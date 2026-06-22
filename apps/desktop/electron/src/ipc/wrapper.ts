@@ -105,17 +105,19 @@ export function mapErrorToContract(err: unknown): ErrorContract {
  * Creates a centralized IPC handler that automatically catches exceptions
  * and maps them to the standardized ErrorContract.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function createIpcHandler<T, Args extends any[] = any[]>(
   channel: string,
   handler: (event: Electron.IpcMainInvokeEvent, ...args: Args) => Promise<ApiResponse<T>>,
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ipcMain.handle(channel, async (event, ...args: any[]): Promise<ApiResponse<T> | ErrorContract> => {
-    try {
-      return await handler(event, ...(args as Args));
-    } catch (err: unknown) {
-      return mapErrorToContract(err);
-    }
-  });
+  ipcMain.handle(
+    channel,
+    async (event, ...args: any[]): Promise<ApiResponse<T> | ErrorContract> => {
+      try {
+        return await handler(event, ...(args as Args));
+      } catch (err: unknown) {
+        return mapErrorToContract(err);
+      }
+    },
+  );
 }
