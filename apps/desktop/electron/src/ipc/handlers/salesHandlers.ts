@@ -31,7 +31,7 @@ export function registerSalesInvoiceHandlers() {
     ): Promise<ApiResponse<SalesInvoiceDto>> => {
       try {
         const result = await salesInvoiceService.updateDraft(invoiceId, payload);
-        return { success: true, data: result };
+        return { success: true, data: result as unknown as SalesInvoiceDto };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }
