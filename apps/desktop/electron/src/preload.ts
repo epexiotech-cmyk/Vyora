@@ -168,6 +168,17 @@ contextBridge.exposeInMainWorld('vyora', {
     calculateInvoice: (input: import('@vyora/types').CalculationEngineInput) =>
       ipcRenderer.invoke('calculation:calculateInvoice', input),
   },
+
+  accounting: {
+    getVoucherById: (id: string) => ipcRenderer.invoke('accounting:getVoucherById', id),
+    listVouchers: (filter: import('@vyora/types').VoucherFilterDto) =>
+      ipcRenderer.invoke('accounting:listVouchers', filter),
+    getTrialBalance: () => ipcRenderer.invoke('accounting:getTrialBalance'),
+    getLedgerStatement: (ledgerId: string, fromDate: Date, toDate: Date) =>
+      ipcRenderer.invoke('accounting:getLedgerStatement', ledgerId, fromDate, toDate),
+    getDashboardMetrics: () => ipcRenderer.invoke('accounting:getDashboardMetrics'),
+    getActiveLedgers: () => ipcRenderer.invoke('accounting:getActiveLedgers'),
+  },
   journal: {
     postVoucher: (input: import('@vyora/types').CreateVoucherInput) =>
       ipcRenderer.invoke('journal:postVoucher', input),
@@ -301,6 +312,29 @@ export interface VyoraDirectoriesAPI {
   };
 }
 
+export type VyoraAccountingAPI = {
+  getVoucherById: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;
+  listVouchers: (
+    filter: import('@vyora/types').VoucherFilterDto,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherListItemDto[]>>;
+  getTrialBalance: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').TrialBalanceDto>
+  >;
+  getLedgerStatement: (
+    ledgerId: string,
+    fromDate: Date,
+    toDate: Date,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerStatementDto>>;
+  getDashboardMetrics: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').AccountingDashboardDto>
+  >;
+  getActiveLedgers: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').LedgerLookupDto[]>
+  >;
+};
+
 export type VyoraCalculationAPI = {
   calculateInvoice: (
     input: import('@vyora/types').CalculationEngineInput,
@@ -335,6 +369,7 @@ declare global {
       print: VyoraPrintAPI;
       directories: VyoraDirectoriesAPI;
       calculation: VyoraCalculationAPI;
+      accounting: VyoraAccountingAPI;
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
     };

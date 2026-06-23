@@ -18,7 +18,9 @@ export * from './unitHandlers';
 export * from './uqcHandlers';
 export * from './hsnHandlers';
 export * from './sacHandlers';
+export * from './accountingHandlers';
 
+import { registerAccountingHandlers } from './accountingHandlers';
 import { registerBootstrapHandlers } from './bootstrapHandlers';
 import { registerCalculationHandlers } from './calculationHandlers';
 import { registerCompanyHandlers } from './companyHandlers';
@@ -63,4 +65,5 @@ export function registerAllHandlers() {
   registerUqcHandlers();
   registerHsnHandlers();
   registerSacHandlers();
+  registerAccountingHandlers();
 }

@@ -2,13 +2,22 @@ import { randomUUID } from 'crypto';
 
 import { InsertVoucher, InsertVoucherEntry } from '@vyora/database';
 import { ledgers, vouchers, voucher_entries } from '@vyora/database';
-import { CreateVoucherInput } from '@vyora/types';
+import {
+  CreateVoucherInput,
+  VoucherListItemDto,
+  VoucherFilterDto,
+  VoucherDetailDto,
+  TrialBalanceDto,
+  LedgerStatementDto,
+  AccountingDashboardDto,
+} from '@vyora/types';
 import { eq, and } from 'drizzle-orm';
 
 import { DbTransaction } from '../repositories/BaseRepository';
 import { journalRepository } from '../repositories/JournalRepository';
 
 import { companyContextService } from './CompanyContextService';
+import { dbService } from './database/DatabaseService';
 import { financialYearContextService } from './FinancialYearContextService';
 import { numberingEngineService } from './NumberingEngineService';
 import { systemLedgerResolver } from './SystemLedgerResolverService';
@@ -534,6 +543,114 @@ export class JournalService {
       .run();
 
     return { reversalVoucherId };
+  }
+
+  public async getVoucherById(voucherId: string): Promise<VoucherDetailDto> {
+    const companyId = companyContextService.getActiveCompany();
+    if (!companyId) throw new Error('No active company found');
+    const voucher = await journalRepository.getVoucherById(voucherId);
+    if (voucher.companyId !== companyId)
+      throw new Error('Voucher does not belong to active company');
+    return voucher;
+  }
+
+  public async listVouchers(filter: VoucherFilterDto): Promise<VoucherListItemDto[]> {
+    const companyId = companyContextService.getActiveCompany();
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!companyId) throw new Error('No active company found');
+    if (!fy) throw new Error('No active financial year context');
+
+    return await journalRepository.listVouchers(companyId, fy.id, filter);
+  }
+
+  public async getTrialBalance(): Promise<TrialBalanceDto> {
+    const companyId = companyContextService.getActiveCompany();
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!companyId) throw new Error('No active company found');
+    if (!fy) throw new Error('No active financial year context');
+
+    const rows = await journalRepository.getTrialBalance(companyId, fy.id);
+
+    let totalDebit = 0;
+    let totalCredit = 0;
+    for (const row of rows) {
+      totalDebit += row.debitTotal;
+      totalCredit += row.creditTotal;
+    }
+
+    if (totalDebit !== totalCredit) {
+      throw new Error(
+        `TRIAL_BALANCE_IMBALANCE: Debits (${totalDebit}) do not match Credits (${totalCredit})`,
+      );
+    }
+
+    return {
+      rows,
+      totalDebit,
+      totalCredit,
+      isBalanced: true,
+    };
+  }
+
+  public async getActiveLedgers(): Promise<{ id: string; name: string }[]> {
+    const companyId = companyContextService.getActiveCompany();
+    if (!companyId) throw new Error('No active company found');
+    return await journalRepository.getActiveLedgers(companyId);
+  }
+
+  public async getLedgerStatement(
+    ledgerId: string,
+    fromDate: Date,
+    toDate: Date,
+  ): Promise<LedgerStatementDto> {
+    const companyId = companyContextService.getActiveCompany();
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!companyId) throw new Error('No active company found');
+    if (!fy) throw new Error('No active financial year context');
+
+    const result = await journalRepository.getLedgerStatement(
+      companyId,
+      fy.id,
+      ledgerId,
+      fromDate,
+      toDate,
+    );
+
+    let ledgerName = 'Unknown';
+    const ledger = dbService
+      .getDb()
+      .select({ name: ledgers.name })
+      .from(ledgers)
+      .where(eq(ledgers.id, ledgerId))
+      .get();
+    if (ledger) ledgerName = ledger.name;
+
+    let closingBalance = result.openingBalance;
+    let closingType = result.openingType;
+    if (result.rows.length > 0) {
+      const lastRow = result.rows[result.rows.length - 1];
+      closingBalance = lastRow.balance;
+      closingType = lastRow.balanceType;
+    }
+
+    return {
+      ledgerId,
+      ledgerName,
+      openingBalance: result.openingBalance,
+      openingType: result.openingType,
+      rows: result.rows,
+      closingBalance,
+      closingType,
+    };
+  }
+
+  public async getDashboardMetrics(): Promise<AccountingDashboardDto> {
+    const companyId = companyContextService.getActiveCompany();
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!companyId) throw new Error('No active company found');
+    if (!fy) throw new Error('No active financial year context');
+
+    return await journalRepository.getDashboardMetrics(companyId, fy.id);
   }
 }
 

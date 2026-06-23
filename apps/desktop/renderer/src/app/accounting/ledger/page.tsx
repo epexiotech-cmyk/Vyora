@@ -1,0 +1,143 @@
+'use client';
+
+import { LedgerStatementDto, LedgerStatementRowDto } from '@vyora/types';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+
+import { AppDatePicker } from '@/components/shared/form/AppDatePicker';
+import { AppSelect } from '@/components/shared/form/AppSelect';
+import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
+export default function LedgerStatement() {
+  const [data, setData] = useState<LedgerStatementDto | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [ledgerId, setLedgerId] = useState<string>('');
+  const [fromDate, setFromDate] = useState<Date>(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
+  const [toDate, setToDate] = useState<Date>(new Date());
+
+  const formatDate = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  };
+
+  const [ledgers, setLedgers] = useState<{ label: string; value: string }[]>([
+    { label: 'Select Ledger...', value: '' },
+  ]);
+
+  useEffect(() => {
+    async function loadLedgers() {
+      try {
+        const res = await window.vyora.accounting.getActiveLedgers();
+        if (res.success && res.data) {
+          setLedgers([
+            { label: 'Select Ledger...', value: '' },
+            ...res.data.map((l) => ({ label: l.name, value: l.id })),
+          ]);
+        }
+      } catch (e) {
+        console.error('Failed to load ledgers', e);
+      }
+    }
+    loadLedgers();
+  }, []);
+
+  useEffect(() => {
+    async function load() {
+      if (!ledgerId) return;
+      setLoading(true);
+      try {
+        const res = await window.vyora.accounting.getLedgerStatement(ledgerId, fromDate, toDate);
+        if (res.success) {
+          setData(res.data || null);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [ledgerId, fromDate, toDate]);
+
+  const columns: ColumnDef<LedgerStatementRowDto>[] = [
+    { key: 'date', header: 'Date', cell: (row) => new Date(row.date).toLocaleDateString() },
+    { key: 'particulars', header: 'Particulars' },
+    { key: 'voucherType', header: 'Voucher Type' },
+    { key: 'voucherNumber', header: 'Voucher No.' },
+    {
+      key: 'debitAmount',
+      header: 'Debit',
+      className: 'text-right',
+      cell: (row) => (row.debitAmount > 0 ? (row.debitAmount / 100).toFixed(2) : ''),
+    },
+    {
+      key: 'creditAmount',
+      header: 'Credit',
+      className: 'text-right',
+      cell: (row) => (row.creditAmount > 0 ? (row.creditAmount / 100).toFixed(2) : ''),
+    },
+    {
+      key: 'balance',
+      header: 'Balance',
+      className: 'text-right font-semibold',
+      cell: (row) => (row.balance / 100).toFixed(2) + ' ' + row.balanceType,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Ledger Statement" description="View Ledger Statement" />
+
+      <div className="flex items-center space-x-4">
+        <AppSelect
+          options={ledgers}
+          value={ledgerId}
+          onChange={(v) => setLedgerId(typeof v === 'string' ? v : '')}
+          placeholder="Select Ledger"
+        />
+        <AppDatePicker
+          label="From Date"
+          value={formatDate(fromDate)}
+          onChange={(dateStr) => setFromDate(new Date(dateStr))}
+        />
+        <AppDatePicker
+          label="To Date"
+          value={formatDate(toDate)}
+          onChange={(dateStr) => setToDate(new Date(dateStr))}
+        />
+      </div>
+
+      {ledgerId && (
+        <div className="overflow-hidden rounded-md border">
+          {data && !loading && (
+            <div className="bg-muted/50 flex justify-between border-b p-4 font-semibold">
+              <div>Opening Balance:</div>
+              <div>
+                {(data.openingBalance / 100).toFixed(2)} {data.openingType}
+              </div>
+            </div>
+          )}
+          <DataTable
+            data={data?.rows || []}
+            columns={columns}
+            keyExtractor={(item) => item.id}
+            isLoading={loading}
+          />
+          {data && !loading && (
+            <div className="bg-muted/50 flex justify-between border-t p-4 font-semibold">
+              <div>Closing Balance:</div>
+              <div>
+                {(data.closingBalance / 100).toFixed(2)} {data.closingType}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

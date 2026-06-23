@@ -127,6 +127,11 @@ export interface LedgerDto {
   deletedAt?: Date | null;
 }
 
+export interface LedgerLookupDto {
+  id: string;
+  name: string;
+}
+
 export interface LedgerGroupDto {
   id: string;
   companyId: string;
@@ -139,4 +144,72 @@ export interface LedgerGroupDto {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
+}
+
+export interface VoucherListItemDto {
+  id: string;
+  voucherNumber: string;
+  voucherType: string;
+  voucherDate: Date;
+  referenceType: string;
+  referenceId?: string | null;
+  narration?: string | null;
+  isCancelled: boolean;
+  totalAmount: number; // calculated from debit or credit total
+}
+
+export interface VoucherFilterDto {
+  fromDate?: string | Date;
+  toDate?: string | Date;
+  voucherType?: string;
+  searchQuery?: string;
+}
+
+export interface VoucherDetailDto extends VoucherDto {
+  ledgerNames: Record<string, string>;
+  totalDebit: number;
+  totalCredit: number;
+}
+
+export interface TrialBalanceRowDto {
+  ledgerId: string;
+  ledgerName: string;
+  debitTotal: number;
+  creditTotal: number;
+}
+
+export interface TrialBalanceDto {
+  rows: TrialBalanceRowDto[];
+  totalDebit: number;
+  totalCredit: number;
+  isBalanced: boolean;
+}
+
+export interface LedgerStatementRowDto {
+  id: string;
+  date: Date;
+  voucherId: string;
+  voucherNumber: string;
+  voucherType: string;
+  particulars: string;
+  debitAmount: number;
+  creditAmount: number;
+  balance: number;
+  balanceType: 'Dr' | 'Cr';
+}
+
+export interface LedgerStatementDto {
+  ledgerId: string;
+  ledgerName: string;
+  openingBalance: number;
+  openingType: 'Dr' | 'Cr';
+  rows: LedgerStatementRowDto[];
+  closingBalance: number;
+  closingType: 'Dr' | 'Cr';
+}
+
+export interface AccountingDashboardDto {
+  totalVouchers: number;
+  salesVoucherCount: number;
+  purchaseVoucherCount: number;
 }

@@ -173,6 +173,29 @@ export type VyoraDirectoriesAPI = {
   };
 };
 
+export type VyoraAccountingAPI = {
+  getVoucherById: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;
+  listVouchers: (
+    filter: import('@vyora/types').VoucherFilterDto,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherListItemDto[]>>;
+  getTrialBalance: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').TrialBalanceDto>
+  >;
+  getLedgerStatement: (
+    ledgerId: string,
+    fromDate: Date,
+    toDate: Date,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerStatementDto>>;
+  getDashboardMetrics: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').AccountingDashboardDto>
+  >;
+  getActiveLedgers: () => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').LedgerLookupDto[]>
+  >;
+};
+
 export type VyoraCalculationAPI = {
   calculateInvoice: (
     input: import('@vyora/types').CalculationEngineInput,
@@ -207,6 +230,7 @@ declare global {
       splash: VyoraSplashAPI;
       directories: VyoraDirectoriesAPI;
       calculation: VyoraCalculationAPI;
+      accounting: VyoraAccountingAPI;
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
     };
