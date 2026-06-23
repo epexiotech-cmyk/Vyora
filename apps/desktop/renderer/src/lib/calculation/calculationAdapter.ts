@@ -1,6 +1,6 @@
 import { CalculationEngineInput, InvoiceCalculationResult } from '@vyora/types';
 import { moneyToPaise } from '@vyora/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { useDebounce } from '@/hooks/useDebounce';
@@ -83,6 +83,11 @@ export function useAsyncInvoiceCalculation(type: 'sales' | 'purchase') {
 
   const debouncedStringifiedLines = useDebounce(stringifiedLines, 400);
 
+  const linesRef = useRef(watchedLines);
+  useEffect(() => {
+    linesRef.current = watchedLines;
+  }, [watchedLines]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -95,7 +100,7 @@ export function useAsyncInvoiceCalculation(type: 'sales' | 'purchase') {
       try {
         setIsCalculating(true);
         // We use the raw watched lines instead of parsed, because they have the same shape
-        const input = mapLinesToEngineInput(watchedLines || [], type);
+        const input = mapLinesToEngineInput(linesRef.current || [], type);
 
         const res = await window.vyora.calculation.calculateInvoice(input);
 
