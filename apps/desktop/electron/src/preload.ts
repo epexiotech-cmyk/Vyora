@@ -175,6 +175,10 @@ contextBridge.exposeInMainWorld('vyora', {
   inventory: {
     getStockSummary: (productId: string) =>
       ipcRenderer.invoke('inventory:getStockSummary', productId),
+    getStock: (productId: string) => ipcRenderer.invoke('inventory:stock:get', productId),
+    getLedger: (productId: string) => ipcRenderer.invoke('inventory:ledger:get', productId),
+    getGlobalInventory: () => ipcRenderer.invoke('inventory:global:getAll'),
+    getNegativeInventory: () => ipcRenderer.invoke('inventory:global:getNegative'),
   },
 });
 
@@ -313,6 +317,10 @@ export type VyoraInventoryAPI = {
   getStockSummary: (
     productId: string,
   ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  getStock: (productId: string) => Promise<ApiResponse<import('@vyora/types').InventoryStockDto>>;
+  getLedger: (productId: string) => Promise<ApiResponse<import('@vyora/types').StockMovementDto[]>>;
+  getGlobalInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
+  getNegativeInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
 };
 
 declare global {

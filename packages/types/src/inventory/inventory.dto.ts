@@ -55,3 +55,26 @@ export interface StockSummaryDto {
   totalQty: number;
   totalValue: number;
 }
+
+export interface InventoryBalanceDto {
+  id: string;
+  companyId: string;
+  financialYearId: string;
+  productId: string;
+  currentQty: number;
+  currentWacPaise: number;
+  currentValuePaise: number;
+  syncVersion: number;
+  updatedAt: Date;
+}
+
+export interface GlobalInventoryRowDto {
+  productId: string;
+  productName: string;
+  productSku?: string | null;
+  unitId: string;
+  unitShortName: string;
+  currentQty: number;
+  currentWacPaise: number;
+  currentValuePaise: number;
+}

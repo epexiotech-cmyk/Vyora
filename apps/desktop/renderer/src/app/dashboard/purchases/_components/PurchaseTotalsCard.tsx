@@ -1,31 +1,36 @@
+import { InvoiceCalculationResult } from '@vyora/types';
 import { paiseToMoney } from '@vyora/utils';
 import * as React from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
-
-import { calculatePurchaseTotals } from './purchase-calculations';
 
 import { AppCard } from '@/components/ui/AppCard';
 import { cn } from '@/lib/utils';
 
 interface PurchaseTotalsCardProps {
   className?: string;
+  calculationState?: { totals: InvoiceCalculationResult; isCalculating: boolean };
 }
 
-export function usePurchaseTotals() {
-  const { control } = useFormContext();
-  const watchedLines = useWatch({ control, name: 'lines' });
-
-  return React.useMemo(() => {
-    return calculatePurchaseTotals(watchedLines || []);
-  }, [watchedLines]);
-}
-
-export function PurchaseTotalsCard({ className }: PurchaseTotalsCardProps) {
-  const totals = usePurchaseTotals();
+export function PurchaseTotalsCard({ className, calculationState }: PurchaseTotalsCardProps) {
+  const { totals, isCalculating } = calculationState || {
+    totals: {
+      subtotal: 0,
+      totalDiscount: 0,
+      totalTax: 0,
+      roundOffAmount: 0,
+      grandTotal: 0,
+      items: [],
+    },
+    isCalculating: false,
+  };
 
   return (
     <AppCard className={cn('p-5', className)}>
-      <h3 className="text-foreground mb-4 text-sm font-semibold">Invoice Totals</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-foreground text-sm font-semibold">Invoice Totals</h3>
+        {isCalculating && (
+          <span className="text-muted-foreground animate-pulse text-xs">Calculating...</span>
+        )}
+      </div>
 
       <div className="flex flex-col gap-3 text-sm">
         <div className="text-muted-foreground flex items-center justify-between">
@@ -33,18 +38,18 @@ export function PurchaseTotalsCard({ className }: PurchaseTotalsCardProps) {
           <span>₹{paiseToMoney(totals.subtotal).toFixed(2)}</span>
         </div>
 
-        {totals.discountTotal > 0 && (
+        {totals.totalDiscount > 0 && (
           <div className="text-muted-foreground flex items-center justify-between">
             <span>Discount (Sum of line discounts)</span>
             <span className="text-destructive">
-              -₹{paiseToMoney(totals.discountTotal).toFixed(2)}
+              -₹{paiseToMoney(totals.totalDiscount).toFixed(2)}
             </span>
           </div>
         )}
 
         <div className="text-muted-foreground flex items-center justify-between">
           <span>Tax Total</span>
-          <span>₹{paiseToMoney(totals.taxTotal).toFixed(2)}</span>
+          <span>₹{paiseToMoney(totals.totalTax).toFixed(2)}</span>
         </div>
 
         {totals.roundOffAmount !== 0 && (

@@ -4,8 +4,7 @@ import { z } from 'zod';
 // Base Enums & Constants
 // ==========================================
 
-export const PurchaseStatus = z.enum(['DRAFT', 'COMPLETED', 'CANCELLED']);
-export type PurchaseStatus = z.infer<typeof PurchaseStatus>;
+import { InvoiceStatus } from '../common/status.dto';
 
 // ==========================================
 // Nested Line Schemas
@@ -82,7 +81,7 @@ export const purchaseSchema = z.object({
   roundOffAmount: z.number().int().default(0),
   grandTotal: z.number().int().min(0),
   notes: z.string().nullable().optional(),
-  status: PurchaseStatus,
+  status: InvoiceStatus,
   isActive: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -109,7 +108,7 @@ export const createPurchaseSchema = purchaseSchema
     lines: true,
   })
   .extend({
-    status: PurchaseStatus.optional(),
+    status: InvoiceStatus.optional(),
     lines: z.array(createPurchaseLineSchema).min(1, 'At least one line item is required'),
   });
 
@@ -117,7 +116,7 @@ export type CreatePurchaseInput = z.infer<typeof createPurchaseSchema>;
 
 export const updatePurchaseSchema = createPurchaseSchema.partial().extend({
   id: z.string().uuid(),
-  status: PurchaseStatus.optional(),
+  status: InvoiceStatus.optional(),
   lines: z.array(updatePurchaseLineSchema).optional(),
 });
 
@@ -130,7 +129,7 @@ export type UpdatePurchaseInput = z.infer<typeof updatePurchaseSchema>;
 export const searchPurchasesSchema = z.object({
   query: z.string().optional(),
   supplierId: z.string().uuid().optional(),
-  status: PurchaseStatus.optional(),
+  status: InvoiceStatus.optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   isActive: z.boolean().optional(),
@@ -148,7 +147,7 @@ export const purchaseListRowSchema = z.object({
   supplierName: z.string(),
   supplierInvoiceNumber: z.string().nullable().optional(),
   grandTotal: z.number().int().min(0),
-  status: PurchaseStatus,
+  status: InvoiceStatus,
   isActive: z.boolean(),
 });
 

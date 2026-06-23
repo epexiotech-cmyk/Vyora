@@ -6,3 +6,4 @@ export * from './CustomerRepository';
 export * from './ProductRepository';
 export * from './CompanyRepository';
 export * from './SettingsRepository';
+export * from './InventoryBalanceRepository';

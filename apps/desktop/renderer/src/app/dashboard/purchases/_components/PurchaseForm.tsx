@@ -1,14 +1,13 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreatePurchaseInput, PurchaseDto, PurchaseStatus } from '@vyora/types';
+import { CreatePurchaseInput, PurchaseDto, InvoiceStatus } from '@vyora/types';
 import { paiseToMoney } from '@vyora/utils';
-import { Save, FileCheck, X } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 
-import { calculatePurchaseTotals } from './purchase-calculations';
 import { PurchaseLineGrid } from './PurchaseLineGrid';
 import { PurchaseSupplierSelector } from './PurchaseSupplierSelector';
 import { PurchaseTotalsCard } from './PurchaseTotalsCard';
@@ -19,6 +18,10 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import {
+  mapLinesToEngineInput,
+  useAsyncInvoiceCalculation,
+} from '@/lib/calculation/calculationAdapter';
 
 // Create a local form schema to handle UI decimal states and date strings before mapping to DTO
 const purchaseUiSchema = z.object({
@@ -57,10 +60,14 @@ interface PurchaseFormProps {
 export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: PurchaseFormProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isCancelling, setIsCancelling] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [activeCompanyId, setActiveCompanyId] = React.useState<string>('');
   const [activeFinancialYearId, setActiveFinancialYearId] = React.useState<string>('');
+
+  const calculationState = useAsyncInvoiceCalculation('purchase');
 
   React.useEffect(() => {
     const fetchDependencies = async () => {
@@ -129,7 +136,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
     defaultValues: defaultValues as import('react-hook-form').DefaultValues<PurchaseUiValues>,
   });
 
-  const onSubmit = async (data: PurchaseUiValues, status: PurchaseStatus) => {
+  const onSubmit = async (data: PurchaseUiValues) => {
     try {
       setIsSaving(true);
       setErrorMsg(null);
@@ -137,30 +144,38 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
       if (!activeCompanyId) throw new Error('No active company found');
 
-      // Delegate logic to single source of truth helper
-      const computedTotals = calculatePurchaseTotals(
-        data.lines.filter((line) => line.productId && line.quantity > 0),
-      );
+      const engineInput = mapLinesToEngineInput(data.lines || [], 'purchase');
+      const calcResponse = await window.vyora.calculation.calculateInvoice(engineInput);
 
-      if (computedTotals.items.length === 0) {
-        throw new Error('Please add at least one valid line item');
+      if (
+        !calcResponse ||
+        !calcResponse.success ||
+        !calcResponse.data ||
+        calcResponse.data.items.length === 0
+      ) {
+        throw new Error('Please add at least one valid line item or check calculation engine.');
       }
 
-      // Map back to the DTO contract mapping
-      const items = computedTotals.items.map((line) => ({
-        productId: line.productId!,
-        unitId: line.unitId || 'default-unit',
-        taxId: line.taxId || 'default-tax',
-        description: line.description || undefined,
-        quantity: line.quantity,
-        rate: line.paiseRate,
-        discountAmount: line.paiseDiscount,
-        taxableAmount: line.lineTaxable,
-        taxAmount: line.lineTax,
-        lineTotal: line.lineTotal,
-      }));
+      const computedTotals = calcResponse.data;
 
-      const payload: Omit<CreatePurchaseInput, 'companyId'> & { status: PurchaseStatus } = {
+      const items = computedTotals.items.map((line, index) => {
+        const uiLine = data.lines[index];
+        const engineIn = engineInput.items[index];
+        return {
+          productId: uiLine.productId!,
+          unitId: uiLine.unitId || 'default-unit',
+          taxId: uiLine.taxId || 'default-tax',
+          description: uiLine.description || undefined,
+          quantity: engineIn.quantity,
+          rate: engineIn.rate,
+          discountAmount: engineIn.discountAmount,
+          taxableAmount: line.taxableAmount,
+          taxAmount: line.taxAmount,
+          lineTotal: line.lineTotal,
+        };
+      });
+
+      const payload: Omit<CreatePurchaseInput, 'companyId'> & { status: InvoiceStatus } = {
         financialYearId: activeFinancialYearId,
         purchaseDate: new Date(data.purchaseDate),
         supplierId: data.supplierId,
@@ -170,12 +185,12 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
           : undefined,
         notes: data.notes || undefined,
         subtotal: computedTotals.subtotal,
-        discountAmount: computedTotals.discountTotal,
-        taxAmount: computedTotals.taxTotal,
+        discountAmount: computedTotals.totalDiscount,
+        taxAmount: computedTotals.totalTax,
         roundOffAmount: computedTotals.roundOffAmount,
         grandTotal: computedTotals.grandTotal,
         lines: items,
-        status: status,
+        status: 'DRAFT', // we only ever save/update as draft
       };
 
       if (isEditMode && initialData) {
@@ -193,11 +208,8 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
         }
       } else {
         // Create mode
-        // For phase 5.5.9C, we simulate the backend call or pass it properly
-        // Note: The IPC contract expects (data, status) ? We will send status in wrapper if supported, or via service layer
         const res = await window.vyora.db.purchases.create({
           ...payload,
-          // Workaround for creating a purchase with specific status, the schema doesn't accept status but the backend does natively inside service
         });
 
         if (res.success) {
@@ -218,11 +230,56 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
     }
   };
 
-  const submitPurchase = (status: PurchaseStatus) =>
-    methods.handleSubmit((data) => onSubmit(data as PurchaseUiValues, status));
+  const handleSubmitPurchase = async () => {
+    if (!initialData?.id) return;
+    if (
+      !window.confirm(
+        'Are you sure? This will post inventory and accounting entries and lock the purchase.',
+      )
+    )
+      return;
+
+    try {
+      setIsSubmitting(true);
+      setErrorMsg(null);
+      const res = await window.vyora.db.purchases.submit(initialData.id);
+      if (res.success) {
+        setSuccessMsg('Purchase submitted successfully!');
+        window.location.reload();
+      } else {
+        setErrorMsg(res.error || 'Failed to submit purchase.');
+      }
+    } catch {
+      setErrorMsg('An unexpected error occurred while submitting.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelPurchase = async () => {
+    if (!initialData?.id) return;
+    if (!window.confirm('Are you sure? If submitted, ledger entries will be reversed.')) return;
+
+    try {
+      setIsCancelling(true);
+      setErrorMsg(null);
+      const res = await window.vyora.db.purchases.cancel(initialData.id);
+      if (res.success) {
+        setSuccessMsg('Purchase cancelled successfully!');
+        window.location.reload();
+      } else {
+        setErrorMsg(res.error || 'Failed to cancel purchase.');
+      }
+    } catch {
+      setErrorMsg('An unexpected error occurred while cancelling.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   const currentStatus = initialData?.status || 'DRAFT';
-  const isReadOnly = forceReadOnly || currentStatus !== 'DRAFT';
+  const isReadOnly =
+    forceReadOnly || currentStatus === 'SUBMITTED' || currentStatus === 'CANCELLED';
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -249,7 +306,15 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
             description="Manage purchase invoices and supplier details"
           />
           <div className="flex items-center gap-3">
-            <StatusBadge variant={currentStatus === 'DRAFT' ? 'warning' : 'success'}>
+            <StatusBadge
+              variant={
+                currentStatus === 'SUBMITTED'
+                  ? 'success'
+                  : currentStatus === 'DRAFT'
+                    ? 'warning'
+                    : 'destructive'
+              }
+            >
               {currentStatus}
             </StatusBadge>
           </div>
@@ -270,19 +335,24 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
                   <h3 className="text-foreground mb-4 text-sm font-semibold">Supplier Details</h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <AppField name="supplierId" label="Supplier *">
-                      <PurchaseSupplierSelector name="supplierId" />
+                      <PurchaseSupplierSelector name="supplierId" disabled={isReadOnly} />
                     </AppField>
 
                     <AppField name="purchaseDate" label="Purchase Date *">
-                      <FormInput name="purchaseDate" type="date" />
+                      <FormInput name="purchaseDate" type="date" disabled={isReadOnly} />
                     </AppField>
 
                     <AppField name="supplierInvoiceNumber" label="Supplier Inv. No.">
-                      <FormInput name="supplierInvoiceNumber" type="text" placeholder="INV-..." />
+                      <FormInput
+                        name="supplierInvoiceNumber"
+                        type="text"
+                        placeholder="INV-..."
+                        disabled={isReadOnly}
+                      />
                     </AppField>
 
                     <AppField name="supplierInvoiceDate" label="Supplier Inv. Date">
-                      <FormInput name="supplierInvoiceDate" type="date" />
+                      <FormInput name="supplierInvoiceDate" type="date" disabled={isReadOnly} />
                     </AppField>
                   </div>
                 </AppCard>
@@ -293,7 +363,13 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
                     <h3 className="text-foreground text-sm font-semibold">Line Items</h3>
                   </div>
                   <div className="bg-background flex-1">
-                    <PurchaseLineGrid />
+                    <PurchaseLineGrid
+                      calculationState={{
+                        totals: calculationState.totals,
+                        isCalculating: calculationState.isCalculating,
+                      }}
+                      isReadOnly={isReadOnly}
+                    />
                   </div>
                 </AppCard>
 
@@ -301,8 +377,9 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
                 <AppCard className="p-5">
                   <h3 className="text-foreground mb-4 text-sm font-semibold">Internal Notes</h3>
                   <textarea
-                    className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+                    className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Add notes..."
+                    disabled={isReadOnly}
                     {...methods.register('notes')}
                   />
                 </AppCard>
@@ -310,7 +387,12 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
               {/* Right Column: Totals */}
               <div className="col-span-12 flex flex-col gap-6 xl:col-span-3">
-                <PurchaseTotalsCard />
+                <PurchaseTotalsCard
+                  calculationState={{
+                    totals: calculationState.totals,
+                    isCalculating: calculationState.isCalculating,
+                  }}
+                />
               </div>
             </div>
           </fieldset>
@@ -323,20 +405,39 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
           <X className="mr-2 h-4 w-4" /> Cancel
         </AppButton>
         <div className="flex gap-3">
-          {!isReadOnly && (
-            <>
-              <AppButton variant="secondary" disabled={isSaving} onClick={submitPurchase('DRAFT')}>
-                <Save className="mr-2 h-4 w-4" /> Save as Draft
-              </AppButton>
-              <AppButton
-                variant="default"
-                disabled={isSaving}
-                onClick={submitPurchase('COMPLETED')}
-              >
-                <FileCheck className="mr-2 h-4 w-4" /> Complete Purchase
-              </AppButton>
-            </>
+          {isEditMode && currentStatus === 'DRAFT' && (
+            <AppButton
+              variant="default"
+              className="bg-green-600 text-white hover:bg-green-700"
+              onClick={handleSubmitPurchase}
+              disabled={isSubmitting || isCancelling || isSaving}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Purchase'}
+            </AppButton>
           )}
+
+          {isEditMode && currentStatus !== 'CANCELLED' && (
+            <AppButton
+              variant="destructive"
+              onClick={handleCancelPurchase}
+              disabled={isSubmitting || isCancelling || isSaving}
+            >
+              {isCancelling ? 'Cancelling...' : 'Cancel Purchase'}
+            </AppButton>
+          )}
+
+          {!isReadOnly && (
+            <AppButton
+              variant="secondary"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick={methods.handleSubmit(onSubmit as any)}
+              disabled={isSaving || isSubmitting || isCancelling}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {isSaving ? 'Saving...' : 'Save as Draft'}
+            </AppButton>
+          )}
+
           {isReadOnly && (
             <AppButton variant="secondary" onClick={() => router.push('/dashboard/purchases')}>
               Close

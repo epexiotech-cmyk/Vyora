@@ -11,6 +11,7 @@ interface SalesProductSelectorProps {
   onProductSelect?: (product: ProductDto | null) => void;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function SalesProductSelector({
@@ -18,6 +19,7 @@ export function SalesProductSelector({
   onProductSelect,
   className,
   placeholder = 'Search by Name, SKU, or HSN...',
+  disabled,
 }: SalesProductSelectorProps) {
   // Use useFormContext safely if available. If we use this outside of a form context later, we should handle that,
   // but for now it aligns with the existing AppForm/FormProvider patterns.
@@ -158,8 +160,10 @@ export function SalesProductSelector({
         className={cn(
           'border-input bg-background focus-within:ring-ring flex h-9 w-full cursor-text items-center rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1',
           isOpen && 'ring-ring ring-1',
+          disabled && 'cursor-not-allowed opacity-50',
         )}
         onClick={() => {
+          if (disabled) return;
           setIsOpen(true);
           inputRef.current?.focus();
         }}
@@ -172,7 +176,8 @@ export function SalesProductSelector({
             <button
               type="button"
               onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground ml-2 shrink-0 outline-none"
+              disabled={disabled}
+              className="text-muted-foreground hover:text-foreground ml-2 shrink-0 outline-none disabled:pointer-events-none"
             >
               <X className="h-4 w-4" />
             </button>
@@ -181,7 +186,8 @@ export function SalesProductSelector({
           <input
             ref={inputRef}
             type="text"
-            className="placeholder:text-muted-foreground text-foreground flex-1 bg-transparent outline-none"
+            disabled={disabled}
+            className="placeholder:text-muted-foreground text-foreground flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
             placeholder={selectedProduct ? selectedProduct.name : placeholder}
             value={searchTerm}
             onChange={(e) => {

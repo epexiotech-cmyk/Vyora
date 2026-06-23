@@ -109,6 +109,28 @@ export class StockMovementRepository extends BaseRepository {
     return movement ? mapToDto(movement) : null;
   }
 
+  public async getMovementsByReference(
+    referenceType: string,
+    referenceId: string,
+    tx?: DbTransaction,
+  ): Promise<StockMovementDto[]> {
+    const executor = tx || this.db;
+    const movements = await executor
+      .select()
+      .from(stock_movements)
+      .where(
+        and(
+          eq(
+            stock_movements.referenceType,
+            referenceType as unknown as (typeof stock_movements.$inferSelect)['referenceType'],
+          ),
+          eq(stock_movements.referenceId, referenceId),
+        ),
+      )
+      .all();
+    return movements.map(mapToDto);
+  }
+
   public async getReturnedTotalsForMovement(
     referenceType: string,
     referenceId: string,
@@ -169,5 +191,25 @@ export class StockMovementRepository extends BaseRepository {
       returnedQty: result?.returnedQty ? Number(result.returnedQty) : 0,
       returnedAmount: 0,
     };
+  }
+
+  public async getAllDistinctBalancesKeys(
+    tx?: DbTransaction,
+  ): Promise<{ companyId: string; financialYearId: string; productId: string }[]> {
+    const executor = tx || this.db;
+    const results = await executor
+      .select({
+        companyId: stock_movements.companyId,
+        financialYearId: stock_movements.financialYearId,
+        productId: stock_movements.productId,
+      })
+      .from(stock_movements)
+      .groupBy(
+        stock_movements.companyId,
+        stock_movements.financialYearId,
+        stock_movements.productId,
+      )
+      .all();
+    return results;
   }
 }

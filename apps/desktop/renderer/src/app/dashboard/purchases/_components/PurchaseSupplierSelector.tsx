@@ -10,12 +10,14 @@ interface PurchaseSupplierSelectorProps {
   name: string;
   onSupplierSelect?: (supplier: SupplierProfileDto | null) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function PurchaseSupplierSelector({
   name,
   onSupplierSelect,
   className,
+  disabled,
 }: PurchaseSupplierSelectorProps) {
   const { setValue, watch } = useFormContext();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -187,8 +189,10 @@ export function PurchaseSupplierSelector({
         className={cn(
           'border-input bg-background focus-within:ring-ring flex h-9 w-full cursor-text items-center rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1',
           isOpen && 'ring-ring ring-1',
+          disabled && 'cursor-not-allowed opacity-50',
         )}
         onClick={() => {
+          if (disabled) return;
           setIsOpen(true);
           inputRef.current?.focus();
         }}
@@ -201,7 +205,8 @@ export function PurchaseSupplierSelector({
             <button
               type="button"
               onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground ml-2 shrink-0 outline-none"
+              disabled={disabled}
+              className="text-muted-foreground hover:text-foreground ml-2 shrink-0 outline-none disabled:pointer-events-none"
             >
               <X className="h-4 w-4" />
             </button>
@@ -210,7 +215,8 @@ export function PurchaseSupplierSelector({
           <input
             ref={inputRef}
             type="text"
-            className="placeholder:text-muted-foreground text-foreground flex-1 bg-transparent outline-none"
+            disabled={disabled}
+            className="placeholder:text-muted-foreground text-foreground flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
             placeholder={
               displayedSupplier ? displayedSupplier.name : 'Search by Name, Mobile, or GSTIN...'
             }

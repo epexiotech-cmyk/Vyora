@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard,
   ShoppingCart,
   Package,
   Box,
@@ -11,6 +10,11 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Calculator,
+  Users,
+  Truck,
+  PackageOpen,
+  Scale,
 } from 'lucide-react';
 import * as React from 'react';
 
@@ -46,19 +50,29 @@ export function Sidebar() {
 
       {/* Navigation Links */}
       <div className="scrollbar-thumb-border flex-1 scrollbar-thin scrollbar-track-transparent overflow-x-hidden overflow-y-auto py-4">
-        <SidebarGroup label="Overview">
-          <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
-          <SidebarItem icon={BarChart3} label="Reports" href="/dashboard/reports" />
-        </SidebarGroup>
-
-        <SidebarGroup label="Business">
+        <SidebarGroup label="Operations">
           <SidebarItem icon={ShoppingCart} label="Sales" href="/dashboard/sales" />
           <SidebarItem icon={Package} label="Purchases" href="/dashboard/purchases" />
+        </SidebarGroup>
+
+        <SidebarGroup label="Inventory">
           <SidebarItem icon={Box} label="Inventory" href="/dashboard/inventory" />
         </SidebarGroup>
 
-        <SidebarGroup label="Compliance">
+        <SidebarGroup label="Accounting">
+          <SidebarItem icon={Calculator} label="Accounting" href="/dashboard/accounting" />
+        </SidebarGroup>
+
+        <SidebarGroup label="Reporting">
+          <SidebarItem icon={BarChart3} label="Reports" href="/dashboard/reports" />
           <SidebarItem icon={Receipt} label="GST Returns" href="/dashboard/gst" />
+        </SidebarGroup>
+
+        <SidebarGroup label="Masters">
+          <SidebarItem icon={Users} label="Customers" href="/dashboard/customers" />
+          <SidebarItem icon={Truck} label="Suppliers" href="/dashboard/suppliers" />
+          <SidebarItem icon={PackageOpen} label="Items" href="/dashboard/items" />
+          <SidebarItem icon={Scale} label="Units" href="/dashboard/units" />
         </SidebarGroup>
       </div>
 

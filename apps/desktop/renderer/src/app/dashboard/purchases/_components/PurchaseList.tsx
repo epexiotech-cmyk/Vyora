@@ -20,7 +20,7 @@ export function PurchaseList() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const debouncedSearch = useDebounce(searchQuery, 400);
   const [filterStatus, setFilterStatus] = React.useState<
-    'ALL' | 'DRAFT' | 'COMPLETED' | 'CANCELLED'
+    'ALL' | 'DRAFT' | 'SUBMITTED' | 'CANCELLED'
   >('ALL');
   const [page, setPage] = React.useState(0);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
@@ -43,7 +43,7 @@ export function PurchaseList() {
   };
 
   React.useEffect(() => {
-    let statusValue: 'DRAFT' | 'COMPLETED' | 'CANCELLED' | undefined = undefined;
+    let statusValue: 'DRAFT' | 'SUBMITTED' | 'CANCELLED' | undefined = undefined;
     if (filterStatus !== 'ALL') statusValue = filterStatus;
 
     const fetchPurchases = async () => {
@@ -96,14 +96,14 @@ export function PurchaseList() {
             <select
               value={filterStatus}
               onChange={(e) => {
-                setFilterStatus(e.target.value as 'ALL' | 'DRAFT' | 'COMPLETED' | 'CANCELLED');
+                setFilterStatus(e.target.value as 'ALL' | 'DRAFT' | 'SUBMITTED' | 'CANCELLED');
                 setPage(0);
               }}
               className="border-border bg-background focus:border-primary focus:ring-primary/20 appearance-none rounded-md border py-2 pr-8 pl-9 text-sm transition-all outline-none focus:ring-2"
             >
               <option value="ALL">All Statuses</option>
               <option value="DRAFT">Draft</option>
-              <option value="COMPLETED">Completed</option>
+              <option value="SUBMITTED">Submitted</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
           </div>
@@ -176,7 +176,7 @@ export function PurchaseList() {
                     <td className="px-4 py-3">
                       <StatusBadge
                         variant={
-                          purchase.status === 'COMPLETED'
+                          purchase.status === 'SUBMITTED'
                             ? 'success'
                             : purchase.status === 'DRAFT'
                               ? 'warning'
@@ -188,20 +188,24 @@ export function PurchaseList() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                        <button
-                          onClick={() => router.push(`/dashboard/purchases/${purchase.id}`)}
-                          className="text-muted-foreground hover:text-foreground p-1 transition-colors"
-                          title="View Details"
-                        >
-                          <Search className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => router.push(`/dashboard/purchases/${purchase.id}/edit`)}
-                          className="text-muted-foreground hover:text-primary p-1 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
+                        {purchase.status !== 'DRAFT' && (
+                          <button
+                            onClick={() => router.push(`/dashboard/purchases/${purchase.id}/edit`)}
+                            className="text-muted-foreground hover:text-foreground p-1 transition-colors"
+                            title="View Details"
+                          >
+                            <Search className="h-4 w-4" />
+                          </button>
+                        )}
+                        {purchase.status === 'DRAFT' && (
+                          <button
+                            onClick={() => router.push(`/dashboard/purchases/${purchase.id}/edit`)}
+                            className="text-muted-foreground hover:text-primary p-1 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                        )}
                         {purchase.status === 'DRAFT' && (
                           <button
                             onClick={() => handleDelete(purchase.id, purchase.purchaseNumber)}

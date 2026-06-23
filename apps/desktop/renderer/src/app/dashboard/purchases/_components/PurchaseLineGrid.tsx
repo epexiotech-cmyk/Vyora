@@ -1,10 +1,10 @@
 import { ProductDto } from '@vyora/types';
+import { InvoiceCalculationResult } from '@vyora/types';
 import { paiseToMoney } from '@vyora/utils';
 import { Plus, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
-import { calculatePurchaseLine } from './purchase-calculations';
 import { PurchaseItemSelector } from './PurchaseItemSelector';
 
 import { AppButton } from '@/components/ui/AppButton';
@@ -15,6 +15,8 @@ interface PurchaseLineRowProps {
   onRemove: (index: number) => void;
   onProductSelected: (product: ProductDto | null, index: number) => void;
   totalRows: number;
+  engineLineResult?: InvoiceCalculationResult['items'][0];
+  isReadOnly?: boolean;
 }
 
 const emptyLine = {
@@ -32,7 +34,14 @@ const emptyLine = {
   _uiTaxPercentage: 0,
 };
 
-function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: PurchaseLineRowProps) {
+function PurchaseLineRow({
+  index,
+  onRemove,
+  onProductSelected,
+  totalRows,
+  engineLineResult,
+  isReadOnly,
+}: PurchaseLineRowProps) {
   const {
     register,
     setValue,
@@ -43,35 +52,25 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
   const lineErrors =
     (errors.lines as Array<Record<string, { message?: string }>> | undefined)?.[index] || {};
 
-  // Watch fields to calculate amounts
-  const qty = useWatch({ control, name: `lines.${index}.quantity` }) || 0;
-  const rate = useWatch({ control, name: `lines.${index}.rate` }) || 0;
-  const discountAmount = useWatch({ control, name: `lines.${index}.discountAmount` }) || 0;
   const productId = useWatch({ control, name: `lines.${index}.productId` });
-  const taxPct = useWatch({ control, name: `lines.${index}._uiTaxPercentage` }) || 0;
 
   // Delegate row calculations to the shared engine (uses Integer Paise)
-  const computed = calculatePurchaseLine({
-    quantity: qty,
-    rate,
-    discountAmount,
-    _uiTaxPercentage: taxPct,
-  });
-
-  // Since backend/helper works in paise, we convert back to float ONLY for display and RHF tracking if needed
-  const lineTotal = paiseToMoney(computed.lineTotal);
+  // We don't manually calculate amount anymore. The engine gives us lineTotal in paise.
+  const lineTotal = engineLineResult ? paiseToMoney(engineLineResult.lineTotal) : 0;
+  const lineTaxable = engineLineResult ? paiseToMoney(engineLineResult.taxableAmount) : 0;
+  const lineTax = engineLineResult ? paiseToMoney(engineLineResult.taxAmount) : 0;
 
   // Can remove if it's not the only row, or if it is the only row but has a product selected
   const canRemove = totalRows > 1 || !!productId;
 
   // Auto-update calculated fields
   React.useEffect(() => {
-    setValue(`lines.${index}.taxableAmount`, paiseToMoney(computed.lineTaxable), {
+    setValue(`lines.${index}.taxableAmount`, lineTaxable, {
       shouldDirty: true,
     });
-    setValue(`lines.${index}.taxAmount`, paiseToMoney(computed.lineTax), { shouldDirty: true });
+    setValue(`lines.${index}.taxAmount`, lineTax, { shouldDirty: true });
     setValue(`lines.${index}.lineTotal`, lineTotal, { shouldDirty: true });
-  }, [computed.lineTaxable, computed.lineTax, lineTotal, index, setValue]);
+  }, [lineTaxable, lineTax, lineTotal, index, setValue]);
 
   return (
     <div className="group border-border/50 hover:bg-muted/50 flex flex-col border-b transition-colors">
@@ -96,6 +95,7 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
               lineErrors.productId && 'text-destructive',
             )}
             onProductSelect={(product) => onProductSelected(product, index)}
+            disabled={isReadOnly}
           />
         </div>
 
@@ -112,9 +112,10 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
             min="1"
             step="any"
             className={cn(
-              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
               lineErrors.quantity && 'text-destructive font-bold',
             )}
+            disabled={isReadOnly}
             {...register(`lines.${index}.quantity`, { valueAsNumber: true })}
           />
         </div>
@@ -132,9 +133,10 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
             min="0"
             step="any"
             className={cn(
-              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
               lineErrors.rate && 'text-destructive font-bold',
             )}
+            disabled={isReadOnly}
             {...register(`lines.${index}.rate`, { valueAsNumber: true })}
           />
         </div>
@@ -152,9 +154,10 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
             min="0"
             step="any"
             className={cn(
-              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+              'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
               lineErrors.discountAmount && 'text-destructive font-bold',
             )}
+            disabled={isReadOnly}
             {...register(`lines.${index}.discountAmount`, { valueAsNumber: true })}
           />
         </div>
@@ -166,14 +169,16 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
 
         {/* 7. Delete */}
         <div className="flex h-12 w-12 shrink-0 items-center justify-center">
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            disabled={!canRemove}
-            className="text-muted-foreground hover:text-destructive disabled:hover:text-muted-foreground focus:ring-ring rounded-sm p-1 transition-colors outline-none focus:ring-1 disabled:opacity-30"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              disabled={!canRemove}
+              className="text-muted-foreground hover:text-destructive disabled:hover:text-muted-foreground focus:ring-ring rounded-sm p-1 transition-colors outline-none focus:ring-1 disabled:opacity-30"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -184,7 +189,8 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
           <input
             type="text"
             placeholder="Item description (optional)"
-            className="text-muted-foreground w-full bg-transparent text-xs outline-none"
+            className="text-muted-foreground w-full bg-transparent text-xs outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isReadOnly}
             {...register(`lines.${index}.description`)}
           />
         </div>
@@ -193,7 +199,13 @@ function PurchaseLineRow({ index, onRemove, onProductSelected, totalRows }: Purc
   );
 }
 
-export function PurchaseLineGrid() {
+export function PurchaseLineGrid({
+  calculationState,
+  isReadOnly,
+}: {
+  calculationState?: { totals: InvoiceCalculationResult; isCalculating: boolean };
+  isReadOnly?: boolean;
+}) {
   const { control, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -274,24 +286,28 @@ export function PurchaseLineGrid() {
               onRemove={handleRemoveRow}
               onProductSelected={handleProductSelected}
               totalRows={fields.length}
+              engineLineResult={calculationState?.totals?.items?.[index]}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>
       </div>
 
       {/* Grid Footer / Action Bar */}
-      <div className="bg-muted/10 flex shrink-0 items-center p-2">
-        <AppButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleAddLine}
-          className="text-primary hover:text-primary hover:bg-primary/10"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Line
-        </AppButton>
-      </div>
+      {!isReadOnly && (
+        <div className="bg-muted/10 flex shrink-0 items-center p-2">
+          <AppButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleAddLine}
+            className="text-primary hover:text-primary hover:bg-primary/10"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Line
+          </AppButton>
+        </div>
+      )}
     </div>
   );
 }

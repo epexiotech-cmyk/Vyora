@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { InvoiceStatus } from '../common/status.dto';
+
 export const createSalesInvoiceItemSchema = z.object({
   productId: z.string().uuid(),
   unitId: z.string().uuid(),
@@ -28,7 +30,7 @@ export const createSalesInvoiceSchema = z.object({
   roundOffAmount: z.number().int().default(0),
   grandTotal: z.number().int().min(0),
   notes: z.string().optional().nullable(),
-  status: z.string(),
+  status: InvoiceStatus.optional(),
   items: z.array(createSalesInvoiceItemSchema).min(1),
 });
 
@@ -66,7 +68,7 @@ export interface SalesInvoiceDto {
   roundOffAmount: number;
   grandTotal: number;
   notes?: string | null;
-  status: string;
+  status: InvoiceStatus;
   createdAt: Date;
   items?: SalesInvoiceLineDto[];
 }
@@ -76,7 +78,7 @@ export interface SalesInvoiceSummaryDto {
   invoiceNumber: string;
   invoiceDate: Date;
   grandTotal: number;
-  status: string;
+  status: InvoiceStatus;
 }
 
 export interface ListSalesInvoicesOptions {

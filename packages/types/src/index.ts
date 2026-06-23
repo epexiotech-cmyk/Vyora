@@ -1,4 +1,5 @@
 export * from './api/responses';
+export * from './common/status.dto';
 export * from './company/company.dto';
 export * from './customer/customer.dto';
 export * from './product/product.dto';

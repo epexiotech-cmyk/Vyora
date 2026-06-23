@@ -6,6 +6,8 @@ import {
   SalesInvoiceDto,
   SalesInvoiceLineDto,
   ListSalesInvoicesOptions,
+  UpdateSalesInvoiceInput,
+  InvoiceStatus,
 } from '@vyora/types';
 import { eq, and, desc } from 'drizzle-orm';
 
@@ -46,7 +48,7 @@ function mapToDto(entity: DbSalesInvoice, items?: DbSalesInvoiceItem[]): SalesIn
     roundOffAmount: entity.roundOffAmount,
     grandTotal: entity.grandTotal,
     notes: entity.notes,
-    status: entity.status,
+    status: entity.status as InvoiceStatus,
     createdAt: entity.createdAt,
     items: items ? items.map(mapToLineDto) : undefined,
   };
@@ -66,6 +68,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       await executor.insert(sales_invoices).values({
         ...invoiceData,
         id: invoiceId,
+        status: invoiceData.status || 'DRAFT',
         createdAt: now,
       });
 
@@ -162,5 +165,56 @@ export class SalesInvoiceRepository extends BaseRepository {
 
     const results = await query.all();
     return results.map((row) => mapToDto(row));
+  }
+
+  public async updateInvoice(
+    invoiceId: string,
+    data: UpdateSalesInvoiceInput,
+    tx?: DbTransaction,
+  ): Promise<void> {
+    const executeLogic = async (executor: TransactionExecutor) => {
+      const { items, ...invoiceData } = data;
+
+      // Update header
+      if (Object.keys(invoiceData).length > 0) {
+        await executor
+          .update(sales_invoices)
+          .set(invoiceData)
+          .where(eq(sales_invoices.id, invoiceId));
+      }
+
+      // Update lines (replace all)
+      if (items !== undefined) {
+        await executor
+          .delete(sales_invoice_items)
+          .where(eq(sales_invoice_items.salesInvoiceId, invoiceId));
+
+        if (items.length > 0) {
+          const itemsToInsert = items.map((item) => ({
+            ...item,
+            id: randomUUID(),
+            salesInvoiceId: invoiceId,
+          }));
+          await executor.insert(sales_invoice_items).values(itemsToInsert);
+        }
+      }
+    };
+
+    if (tx) {
+      await executeLogic(tx);
+    } else {
+      await this.db.transaction(async (innerTx) => {
+        await executeLogic(innerTx);
+      });
+    }
+  }
+
+  public async updateStatus(
+    invoiceId: string,
+    status: InvoiceStatus,
+    tx?: DbTransaction,
+  ): Promise<void> {
+    const executor = tx || this.db;
+    await executor.update(sales_invoices).set({ status }).where(eq(sales_invoices.id, invoiceId));
   }
 }

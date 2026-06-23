@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { purchase_invoices, purchase_invoice_items } from '@vyora/database';
-import { PurchaseDto, SearchPurchasesOptions, PurchaseListDto } from '@vyora/types';
+import { PurchaseDto, SearchPurchasesOptions, PurchaseListDto, InvoiceStatus } from '@vyora/types';
 import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';
@@ -223,5 +223,21 @@ export class PurchaseRepository extends BaseRepository {
         syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
       })
       .where(eq(purchase_invoice_items.purchaseInvoiceId, id));
+  }
+  public async updateStatus(
+    id: string,
+    companyId: string,
+    status: InvoiceStatus,
+    tx?: DbTransaction,
+  ): Promise<void> {
+    const executor = tx ?? this.db;
+    await executor
+      .update(purchase_invoices)
+      .set({
+        status,
+        updatedAt: new Date(),
+        syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+      })
+      .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
   }
 }

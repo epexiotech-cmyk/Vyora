@@ -1,4 +1,6 @@
 import { ProductDto } from '@vyora/types';
+import { InvoiceCalculationResult } from '@vyora/types';
+import { paiseToMoney } from '@vyora/utils';
 import { Plus, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
@@ -12,6 +14,8 @@ interface InvoiceLineRowProps {
   onRemove: (index: number) => void;
   onProductSelected: (product: ProductDto | null, index: number) => void;
   totalRows: number;
+  engineLineResult?: InvoiceCalculationResult['items'][number];
+  isReadOnly?: boolean;
 }
 
 const emptyLine = {
@@ -24,7 +28,14 @@ const emptyLine = {
   amount: 0,
 };
 
-function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: InvoiceLineRowProps) {
+function InvoiceLineRow({
+  index,
+  onRemove,
+  onProductSelected,
+  totalRows,
+  engineLineResult,
+  isReadOnly,
+}: InvoiceLineRowProps) {
   const {
     register,
     setValue,
@@ -35,13 +46,10 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
   const lineErrors =
     (errors.lines as Array<Record<string, { message?: string }>> | undefined)?.[index] || {};
 
-  // Watch fields to calculate temporary amount display
-  const qty = useWatch({ control, name: `lines.${index}.qty` }) || 0;
-  const rate = useWatch({ control, name: `lines.${index}.rate` }) || 0;
   const productId = useWatch({ control, name: `lines.${index}.productId` });
 
-  // Calculate display amount (qty * rate) as per requirements
-  const amount = Number(qty) * Number(rate);
+  // We don't manually calculate amount anymore. The engine gives us lineTotal in paise.
+  const amount = engineLineResult ? paiseToMoney(engineLineResult.lineTotal) : 0;
 
   // Can remove if it's not the only row, or if it is the only row but has a product selected
   const canRemove = totalRows > 1 || !!productId;
@@ -74,6 +82,7 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
             lineErrors.productId && 'text-destructive',
           )}
           onProductSelect={(product) => onProductSelected(product, index)}
+          disabled={isReadOnly}
         />
       </div>
 
@@ -90,9 +99,10 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
           min="1"
           step="any"
           className={cn(
-            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:opacity-50',
             lineErrors.qty && 'text-destructive font-bold',
           )}
+          disabled={isReadOnly}
           {...register(`lines.${index}.qty`, { valueAsNumber: true })}
         />
       </div>
@@ -110,9 +120,10 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
           min="0"
           step="any"
           className={cn(
-            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:opacity-50',
             lineErrors.rate && 'text-destructive font-bold',
           )}
+          disabled={isReadOnly}
           {...register(`lines.${index}.rate`, { valueAsNumber: true })}
         />
       </div>
@@ -131,9 +142,10 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
           max="100"
           step="any"
           className={cn(
-            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:opacity-50',
             lineErrors.discountPercent && 'text-destructive font-bold',
           )}
+          disabled={isReadOnly}
           {...register(`lines.${index}.discountPercent`, { valueAsNumber: true })}
         />
       </div>
@@ -152,9 +164,10 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
           max="100"
           step="any"
           className={cn(
-            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none',
+            'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:opacity-50',
             lineErrors.taxPercent && 'text-destructive font-bold',
           )}
+          disabled={isReadOnly}
           {...register(`lines.${index}.taxPercent`, { valueAsNumber: true })}
         />
       </div>
@@ -165,21 +178,29 @@ function InvoiceLineRow({ index, onRemove, onProductSelected, totalRows }: Invoi
       </div>
 
       {/* 8. Delete */}
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center">
-        <button
-          type="button"
-          onClick={() => onRemove(index)}
-          disabled={!canRemove}
-          className="text-muted-foreground hover:text-destructive disabled:hover:text-muted-foreground focus:ring-ring rounded-sm p-1 transition-colors outline-none focus:ring-1 disabled:opacity-30"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </div>
+      {!isReadOnly && (
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center">
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            disabled={!canRemove}
+            className="text-muted-foreground hover:text-destructive disabled:hover:text-muted-foreground focus:ring-ring rounded-sm p-1 transition-colors outline-none focus:ring-1 disabled:opacity-30"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-export function InvoiceLineGrid() {
+export function InvoiceLineGrid({
+  calculationState,
+  isReadOnly,
+}: {
+  calculationState?: { totals: InvoiceCalculationResult; isCalculating: boolean };
+  isReadOnly?: boolean;
+}) {
   const { control, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -256,24 +277,28 @@ export function InvoiceLineGrid() {
               onRemove={handleRemoveRow}
               onProductSelected={handleProductSelected}
               totalRows={fields.length}
+              engineLineResult={calculationState?.totals?.items?.[index]}
+              isReadOnly={isReadOnly}
             />
           ))}
         </div>
       </div>
 
       {/* Grid Footer / Action Bar */}
-      <div className="border-border/50 flex shrink-0 items-center border-t p-3">
-        <AppButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleAddLine}
-          className="text-primary hover:text-primary hover:bg-primary/10"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Line
-        </AppButton>
-      </div>
+      {!isReadOnly && (
+        <div className="border-border/50 flex shrink-0 items-center border-t p-3">
+          <AppButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleAddLine}
+            className="text-primary hover:text-primary hover:bg-primary/10"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Line
+          </AppButton>
+        </div>
+      )}
     </div>
   );
 }

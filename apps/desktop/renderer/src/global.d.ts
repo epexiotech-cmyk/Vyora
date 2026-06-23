@@ -83,6 +83,8 @@ export type VyoraDatabaseAPI = {
     getById: (id: string) => Promise<ApiResponse<PurchaseDto | null>>;
     create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
     update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
+    submit: (id: string) => Promise<ApiResponse<void>>;
+    cancel: (id: string) => Promise<ApiResponse<void>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
@@ -187,6 +189,10 @@ export type VyoraInventoryAPI = {
   getStockSummary: (
     productId: string,
   ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  getStock: (productId: string) => Promise<ApiResponse<import('@vyora/types').InventoryStockDto>>;
+  getLedger: (productId: string) => Promise<ApiResponse<import('@vyora/types').StockMovementDto[]>>;
+  getGlobalInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
+  getNegativeInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
 };
 
 declare global {

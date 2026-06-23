@@ -16,6 +16,10 @@ import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import {
+  mapLinesToEngineInput,
+  useAsyncInvoiceCalculation,
+} from '@/lib/calculation/calculationAdapter';
 import { mapSalesInvoiceUiToDto } from '@/lib/mappers/salesInvoiceMapper';
 import { salesInvoiceSchema, SalesInvoiceFormValues } from '@/lib/validations/salesInvoiceSchema';
 
@@ -125,9 +129,16 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
   ]);
 
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isCancelling, setIsCancelling] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [savedInvoiceId, setSavedInvoiceId] = React.useState<string | null>(null);
+
+  const currentStatus = initialData?.status || 'DRAFT';
+  const isReadOnly = currentStatus === 'SUBMITTED' || currentStatus === 'CANCELLED';
+
+  const calculationState = useAsyncInvoiceCalculation('sales');
 
   const onSubmit = async (data: SalesInvoiceFormValues) => {
     try {
@@ -150,10 +161,24 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
         return;
       }
 
-      const companyId = companyRes.data;
-      const financialYearId = fyRes.data.id;
+      const engineInput = mapLinesToEngineInput(data.lines || [], 'sales');
+      const calcResponse = await window.vyora.calculation.calculateInvoice(engineInput);
 
-      const payload = mapSalesInvoiceUiToDto(data, companyId, financialYearId);
+      if (!calcResponse || !calcResponse.success || !calcResponse.data) {
+        setErrorMsg('Failed to calculate invoice totals from backend engine.');
+        setIsSaving(false);
+        return;
+      }
+
+      const calculationResult = calcResponse.data;
+
+      const payload = mapSalesInvoiceUiToDto(
+        data,
+        companyRes.data,
+        fyRes.data.id,
+        calculationResult,
+        engineInput,
+      );
 
       if (isEditMode && initialData) {
         // Edit Mode
@@ -179,6 +204,54 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
       setErrorMsg('An unexpected error occurred while saving.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSubmitInvoice = async () => {
+    if (!initialData?.id) return;
+    if (
+      !window.confirm(
+        'Are you sure? This will post inventory and accounting entries and lock the invoice.',
+      )
+    )
+      return;
+
+    try {
+      setIsSubmitting(true);
+      setErrorMsg(null);
+      const res = await window.vyora.db.sales.submitInvoice(initialData.id);
+      if (res.success) {
+        setSuccessMsg('Invoice submitted successfully!');
+        // Refresh page to load new state
+        window.location.reload();
+      } else {
+        setErrorMsg(res.error || 'Failed to submit invoice.');
+      }
+    } catch {
+      setErrorMsg('An unexpected error occurred while submitting.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelInvoice = async () => {
+    if (!initialData?.id) return;
+    if (!window.confirm('Are you sure? If submitted, ledger entries will be reversed.')) return;
+
+    try {
+      setIsCancelling(true);
+      setErrorMsg(null);
+      const res = await window.vyora.db.sales.cancelInvoice(initialData.id);
+      if (res.success) {
+        setSuccessMsg('Invoice cancelled successfully!');
+        window.location.reload();
+      } else {
+        setErrorMsg(res.error || 'Failed to cancel invoice.');
+      }
+    } catch {
+      setErrorMsg('An unexpected error occurred while cancelling.');
+    } finally {
+      setIsCancelling(false);
     }
   };
 
@@ -219,8 +292,17 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
             }
           />
           <div className="flex items-center gap-3">
-            {/* Future invoice status location */}
-            <StatusBadge variant="secondary">Draft</StatusBadge>
+            <StatusBadge
+              variant={
+                currentStatus === 'SUBMITTED'
+                  ? 'success'
+                  : currentStatus === 'DRAFT'
+                    ? 'warning'
+                    : 'destructive'
+              }
+            >
+              {currentStatus}
+            </StatusBadge>
             <div className="bg-border h-6 w-px" />
             <AppButton variant="outline" size="icon">
               <Settings className="h-4 w-4" />
@@ -267,6 +349,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                   <AppField name="customer" label="Customer Master">
                     <SalesCustomerSelector
                       name="customer"
+                      disabled={isReadOnly}
                       onCustomerSelect={(c) => {
                         if (c) {
                           methods.setValue('billingName', c.name || '');
@@ -290,28 +373,28 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                     <div className="space-y-4">
                       <h4 className="text-sm font-semibold">Billing Details</h4>
                       <AppField name="billingName" label="Billing Name">
-                        <FormInput name="billingName" type="text" />
+                        <FormInput name="billingName" type="text" disabled={isReadOnly} />
                       </AppField>
                       <AppField name="billingGstin" label="Billing GSTIN">
-                        <FormInput name="billingGstin" type="text" />
+                        <FormInput name="billingGstin" type="text" disabled={isReadOnly} />
                       </AppField>
                       <AppField name="billingAddress" label="Address">
-                        <FormInput name="billingAddress" type="text" />
+                        <FormInput name="billingAddress" type="text" disabled={isReadOnly} />
                       </AppField>
                       <div className="grid grid-cols-2 gap-4">
                         <AppField name="billingCity" label="City">
-                          <FormInput name="billingCity" type="text" />
+                          <FormInput name="billingCity" type="text" disabled={isReadOnly} />
                         </AppField>
                         <AppField name="billingPincode" label="PIN Code">
-                          <FormInput name="billingPincode" type="text" />
+                          <FormInput name="billingPincode" type="text" disabled={isReadOnly} />
                         </AppField>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <AppField name="billingStateCode" label="State Code">
-                          <FormInput name="billingStateCode" type="text" />
+                          <FormInput name="billingStateCode" type="text" disabled={isReadOnly} />
                         </AppField>
                         <AppField name="billingStateName" label="State Name">
-                          <FormInput name="billingStateName" type="text" />
+                          <FormInput name="billingStateName" type="text" disabled={isReadOnly} />
                         </AppField>
                       </div>
                     </div>
@@ -324,8 +407,9 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                           <input
                             type="checkbox"
                             id="shippingSameAsBilling"
+                            disabled={isReadOnly}
                             {...methods.register('shippingSameAsBilling')}
-                            className="h-4 w-4 rounded border-gray-300"
+                            className="h-4 w-4 rounded border-gray-300 disabled:opacity-50"
                           />
                           <label
                             htmlFor="shippingSameAsBilling"
@@ -339,28 +423,36 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                       {!shippingSameAsBilling && (
                         <>
                           <AppField name="shippingName" label="Shipping Name">
-                            <FormInput name="shippingName" type="text" />
+                            <FormInput name="shippingName" type="text" disabled={isReadOnly} />
                           </AppField>
                           <AppField name="shippingGstin" label="Shipping GSTIN">
-                            <FormInput name="shippingGstin" type="text" />
+                            <FormInput name="shippingGstin" type="text" disabled={isReadOnly} />
                           </AppField>
                           <AppField name="shippingAddress" label="Address">
-                            <FormInput name="shippingAddress" type="text" />
+                            <FormInput name="shippingAddress" type="text" disabled={isReadOnly} />
                           </AppField>
                           <div className="grid grid-cols-2 gap-4">
                             <AppField name="shippingCity" label="City">
-                              <FormInput name="shippingCity" type="text" />
+                              <FormInput name="shippingCity" type="text" disabled={isReadOnly} />
                             </AppField>
                             <AppField name="shippingPincode" label="PIN Code">
-                              <FormInput name="shippingPincode" type="text" />
+                              <FormInput name="shippingPincode" type="text" disabled={isReadOnly} />
                             </AppField>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <AppField name="shippingStateCode" label="State Code">
-                              <FormInput name="shippingStateCode" type="text" />
+                              <FormInput
+                                name="shippingStateCode"
+                                type="text"
+                                disabled={isReadOnly}
+                              />
                             </AppField>
                             <AppField name="shippingStateName" label="State Name">
-                              <FormInput name="shippingStateName" type="text" />
+                              <FormInput
+                                name="shippingStateName"
+                                type="text"
+                                disabled={isReadOnly}
+                              />
                             </AppField>
                           </div>
                         </>
@@ -375,7 +467,12 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <AppField name="placeOfSupplyCode" label="Place of Supply (State Code)">
-                      <FormInput name="placeOfSupplyCode" type="text" placeholder="e.g. 27" />
+                      <FormInput
+                        name="placeOfSupplyCode"
+                        type="text"
+                        placeholder="e.g. 27"
+                        disabled={isReadOnly}
+                      />
                     </AppField>
                   </div>
                 </div>
@@ -391,7 +488,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                   </AppField>
 
                   <AppField name="invoiceDate" label="Invoice Date">
-                    <FormInput name="invoiceDate" type="date" />
+                    <FormInput name="invoiceDate" type="date" disabled={isReadOnly} />
                   </AppField>
 
                   <AppField name="referenceNumber" label="Reference Number">
@@ -399,6 +496,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                       name="referenceNumber"
                       type="text"
                       placeholder="Optional PO or Ref..."
+                      disabled={isReadOnly}
                     />
                   </AppField>
                 </div>
@@ -411,12 +509,24 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                 <h3 className="text-foreground text-sm font-semibold">Line Items</h3>
               </div>
 
-              <InvoiceLineGrid />
+              <InvoiceLineGrid
+                calculationState={{
+                  totals: calculationState.totals,
+                  isCalculating: calculationState.isCalculating,
+                }}
+                isReadOnly={isReadOnly}
+              />
             </AppCard>
 
             {/* Totals Container */}
             <div className="flex justify-end">
-              <InvoiceTotalsCard className="w-full md:w-80" />
+              <InvoiceTotalsCard
+                className="w-full md:w-80"
+                calculationState={{
+                  totals: calculationState.totals,
+                  isCalculating: calculationState.isCalculating,
+                }}
+              />
             </div>
           </form>
         </FormProvider>
@@ -433,15 +543,37 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
             <X className="mr-2 h-4 w-4" /> Cancel
           </AppButton>
           <div className="flex items-center gap-3">
-            <AppButton variant="outline">Save</AppButton>
-            <AppButton
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={methods.handleSubmit(onSubmit as any)}
-              disabled={isSaving}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {isSaving ? 'Saving...' : isEditMode ? 'Update Draft' : 'Save Invoice'}
-            </AppButton>
+            {isEditMode && currentStatus === 'DRAFT' && (
+              <AppButton
+                variant="default"
+                className="bg-green-600 text-white hover:bg-green-700"
+                onClick={handleSubmitInvoice}
+                disabled={isSubmitting || isCancelling || isSaving}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Invoice'}
+              </AppButton>
+            )}
+
+            {isEditMode && currentStatus !== 'CANCELLED' && (
+              <AppButton
+                variant="destructive"
+                onClick={handleCancelInvoice}
+                disabled={isSubmitting || isCancelling || isSaving}
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
+              </AppButton>
+            )}
+
+            {!isReadOnly && (
+              <AppButton
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={methods.handleSubmit(onSubmit as any)}
+                disabled={isSaving || isSubmitting || isCancelling}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {isSaving ? 'Saving...' : isEditMode ? 'Update Draft' : 'Save Draft'}
+              </AppButton>
+            )}
           </div>
         </div>
       </div>

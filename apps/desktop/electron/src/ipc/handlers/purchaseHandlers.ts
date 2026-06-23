@@ -27,13 +27,22 @@ export function registerPurchaseHandlers() {
     'db:purchases:update',
     async (_, payload: UpdatePurchaseInput): Promise<ApiResponse<void>> => {
       try {
-        await purchaseService.update(payload);
+        await purchaseService.updateDraft(payload);
         return { success: true, data: undefined };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }
     },
   );
+
+  ipcMain.handle('db:purchases:submit', async (_, id: string): Promise<ApiResponse<void>> => {
+    try {
+      await purchaseService.submitPurchase(id);
+      return { success: true, data: undefined };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
 
   ipcMain.handle(
     'db:purchases:getById',
@@ -58,6 +67,15 @@ export function registerPurchaseHandlers() {
       }
     },
   );
+
+  ipcMain.handle('db:purchases:cancel', async (_, id: string): Promise<ApiResponse<void>> => {
+    try {
+      await purchaseService.cancelPurchase(id);
+      return { success: true, data: undefined };
+    } catch (err: unknown) {
+      return { success: false, error: (err as Error).message };
+    }
+  });
 
   ipcMain.handle('db:purchases:delete', async (_, id: string): Promise<ApiResponse<void>> => {
     try {
