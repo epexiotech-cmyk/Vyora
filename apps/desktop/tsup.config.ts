@@ -7,5 +7,5 @@ export default defineConfig({
   target: 'node20',
   clean: true,
   external: ['electron', 'better-sqlite3'],
-  noExternal: ['@vyora/database', '@vyora/types'], // Bundle workspace packages
+  noExternal: ['@vyora/database', '@vyora/types', '@vyora/utils'], // Bundle workspace packages
 });
