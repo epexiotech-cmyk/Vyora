@@ -22,7 +22,7 @@ export abstract class BaseRepository {
   /**
    * Executes a callback within a database transaction.
    */
-  public async transaction<T>(callback: (tx: DbTransaction) => Promise<T>): Promise<T> {
+  public transaction<T>(callback: (tx: DbTransaction) => T): T {
     return this.db.transaction(callback);
   }
 }

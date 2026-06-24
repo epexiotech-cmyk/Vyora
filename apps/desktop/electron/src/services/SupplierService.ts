@@ -11,7 +11,6 @@ import {
 import { SupplierRepository } from '../repositories/SupplierRepository';
 
 import { companyContextService } from './CompanyContextService';
-import { numberingEngineService } from './NumberingEngineService';
 import { partyLedgerIntegrationService } from './PartyLedgerIntegrationService';
 
 export class SupplierService {
@@ -34,15 +33,10 @@ export class SupplierService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
 
-    return await this.supplierRepo.transaction(async (tx) => {
-      const supplierCode = await numberingEngineService.generateNextNumber(
-        companyId,
-        '',
-        'SUPPLIER',
-        tx,
-      );
+    return this.supplierRepo.transaction((tx) => {
+      const supplierCode = this.supplierRepo.getNextSupplierCodeSync(companyId, tx);
 
-      const supplier = await this.supplierRepo.create(
+      const supplier = this.supplierRepo.createSync(
         companyId,
         {
           ...validatedData,
@@ -62,7 +56,9 @@ export class SupplierService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
 
-    return await this.supplierRepo.update(id, companyId, validatedData);
+    return this.supplierRepo.transaction((tx) => {
+      return this.supplierRepo.updateSync(id, companyId, validatedData, tx);
+    });
   }
 
   public async deactivateSupplier(id: string): Promise<void> {

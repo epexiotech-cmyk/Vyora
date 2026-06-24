@@ -65,6 +65,29 @@ export class CompanyRepository extends BaseRepository {
     return mapToDto(created!);
   }
 
+  public createSync(
+    data: Omit<CompanyDto, 'id' | 'createdAt' | 'updatedAt'>,
+    tx?: DbTransaction,
+  ): CompanyDto {
+    const executor = tx || this.db;
+    const id = randomUUID();
+    const now = new Date();
+
+    const newCompany = {
+      ...data,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    executor
+      .insert(companies)
+      .values(newCompany as InsertCompany)
+      .run();
+    const created = executor.select().from(companies).where(eq(companies.id, id)).get();
+    return mapToDto(created!);
+  }
+
   public async updateProfile(
     id: string,
     data: Partial<Omit<CompanyDto, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>>,

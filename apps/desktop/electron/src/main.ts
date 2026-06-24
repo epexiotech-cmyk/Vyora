@@ -16,6 +16,7 @@ import { encryptionService } from './main/security/EncryptionService';
 import { keyManagementService } from './main/security/KeyManagementService';
 import { companyContextService } from './services/CompanyContextService';
 import { dbService } from './services/database/DatabaseService';
+import { runTest } from '../../scripts/run-sales-test';
 import { fileSystemService } from './services/filesystem/FileSystemService';
 import { loggerService } from './services/logger/LoggerService';
 import { MainWindow } from './windows/MainWindow';
@@ -66,12 +67,19 @@ async function bootstrap() {
     registerCalculationHandlers();
     registerJournalHandlers();
 
-    // Try to load active company context immediately after DB init
     try {
       await companyContextService.loadActiveCompany();
       loggerService.info('Active company context loaded');
     } catch (e) {
       loggerService.warn('Failed to load active company context: ' + e);
+    }
+
+    try {
+      loggerService.info('STARTING SALES RUNTIME TEST');
+      await runTest();
+      loggerService.info('SALES RUNTIME TEST FINISHED');
+    } catch (e) {
+      loggerService.error('RUNTEST FAILED', e);
     }
   } catch (err) {
     console.error('Failed to initialize database:', err);

@@ -4,7 +4,7 @@ import { purchase_invoices, purchase_invoice_items } from '@vyora/database';
 import { PurchaseDto, SearchPurchasesOptions, PurchaseListDto, InvoiceStatus } from '@vyora/types';
 import { eq, and, like, desc, isNull, sql } from 'drizzle-orm';
 
-import { BaseRepository, DbTransaction } from './BaseRepository';
+import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
 export class PurchaseRepository extends BaseRepository {
   public async create(
@@ -239,5 +239,163 @@ export class PurchaseRepository extends BaseRepository {
         syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
       })
       .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)));
+  }
+
+  // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
+
+  public createSync(
+    companyId: string,
+    payload: Omit<PurchaseDto, 'lines'>,
+    lines: Omit<PurchaseDto['lines'][0], 'purchaseInvoiceId'>[],
+    tx: TransactionExecutor,
+  ): string {
+    tx.insert(purchase_invoices).values(payload).run();
+
+    if (lines.length > 0) {
+      const linesWithHeaderId = lines.map((line) => ({
+        ...line,
+        purchaseInvoiceId: payload.id,
+      }));
+      tx.insert(purchase_invoice_items).values(linesWithHeaderId).run();
+    }
+
+    return payload.id;
+  }
+
+  public updateSync(
+    id: string,
+    companyId: string,
+    headerPayload: Partial<Omit<PurchaseDto, 'lines' | 'id' | 'companyId'>>,
+    lines?: Partial<PurchaseDto['lines'][0]>[],
+    tx?: TransactionExecutor,
+  ): void {
+    const executor = tx ?? this.db;
+
+    if (Object.keys(headerPayload).length > 0) {
+      executor
+        .update(purchase_invoices)
+        .set({
+          ...headerPayload,
+          updatedAt: new Date(),
+          syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+        })
+        .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)))
+        .run();
+    }
+
+    if (lines) {
+      const existingLines = executor
+        .select({ id: purchase_invoice_items.id })
+        .from(purchase_invoice_items)
+        .where(
+          and(
+            eq(purchase_invoice_items.purchaseInvoiceId, id),
+            isNull(purchase_invoice_items.deletedAt),
+          ),
+        )
+        .all();
+
+      const existingLineIds = existingLines.map((l: { id: string }) => l.id);
+      const incomingLineIds = lines
+        .filter((l: { id?: string }) => l.id)
+        .map((l: { id?: string }) => l.id as string);
+
+      const linesToDelete = existingLineIds.filter(
+        (extId: string) => !incomingLineIds.includes(extId),
+      );
+
+      if (linesToDelete.length > 0) {
+        for (const lineId of linesToDelete) {
+          executor
+            .update(purchase_invoice_items)
+            .set({
+              deletedAt: new Date(),
+              syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+            })
+            .where(eq(purchase_invoice_items.id, lineId))
+            .run();
+        }
+      }
+
+      for (const line of lines) {
+        if (line.id && existingLineIds.includes(line.id)) {
+          executor
+            .update(purchase_invoice_items)
+            .set({
+              ...line,
+              updatedAt: new Date(),
+              syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
+            })
+            .where(eq(purchase_invoice_items.id, line.id))
+            .run();
+        } else {
+          const newLine = {
+            ...line,
+            id: randomUUID(),
+            purchaseInvoiceId: id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            syncVersion: 1,
+            isActive: true,
+          };
+          executor
+            .insert(purchase_invoice_items)
+            .values(newLine as typeof purchase_invoice_items.$inferInsert)
+            .run();
+        }
+      }
+    }
+  }
+
+  public getByIdSync(id: string, companyId: string, tx?: TransactionExecutor): PurchaseDto | null {
+    const executor = tx ?? this.db;
+    const header = executor
+      .select()
+      .from(purchase_invoices)
+      .where(
+        and(
+          eq(purchase_invoices.id, id),
+          eq(purchase_invoices.companyId, companyId),
+          isNull(purchase_invoices.deletedAt),
+        ),
+      )
+      .get();
+
+    if (!header) return null;
+
+    const lines = executor
+      .select()
+      .from(purchase_invoice_items)
+      .where(
+        and(
+          eq(purchase_invoice_items.purchaseInvoiceId, id),
+          isNull(purchase_invoice_items.deletedAt),
+        ),
+      )
+      .all();
+
+    return {
+      ...header,
+      status: header.status as PurchaseDto['status'],
+      lines: lines.map((line) => ({
+        ...line,
+      })),
+    } as PurchaseDto;
+  }
+
+  public updateStatusSync(
+    id: string,
+    companyId: string,
+    status: InvoiceStatus,
+    tx: TransactionExecutor,
+  ): void {
+    tx.update(purchase_invoices)
+      .set({
+        status,
+        updatedAt: new Date(),
+        syncVersion: sql`${purchase_invoices.syncVersion} + 1`,
+      })
+      .where(and(eq(purchase_invoices.id, id), eq(purchase_invoices.companyId, companyId)))
+      .run();
   }
 }

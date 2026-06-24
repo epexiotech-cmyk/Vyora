@@ -217,4 +217,91 @@ export class SalesInvoiceRepository extends BaseRepository {
     const executor = tx || this.db;
     await executor.update(sales_invoices).set({ status }).where(eq(sales_invoices.id, invoiceId));
   }
+
+  // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
+
+  public createInvoiceSync(
+    data: CreateSalesInvoiceInput,
+    tx: TransactionExecutor,
+  ): { invoiceId: string } {
+    const invoiceId = randomUUID();
+    const now = new Date();
+
+    const { items, ...invoiceData } = data;
+
+    tx.insert(sales_invoices)
+      .values({
+        ...invoiceData,
+        id: invoiceId,
+        status: invoiceData.status || 'DRAFT',
+        createdAt: now,
+      })
+      .run();
+
+    if (items && items.length > 0) {
+      const itemsToInsert = items.map((item) => ({
+        ...item,
+        id: randomUUID(),
+        salesInvoiceId: invoiceId,
+      }));
+
+      tx.insert(sales_invoice_items).values(itemsToInsert).run();
+    }
+
+    return { invoiceId };
+  }
+
+  public getByIdSync(id: string, tx: TransactionExecutor): SalesInvoiceDto | null {
+    const invoice = tx.select().from(sales_invoices).where(eq(sales_invoices.id, id)).get();
+
+    if (!invoice) return null;
+
+    const items = tx
+      .select()
+      .from(sales_invoice_items)
+      .where(eq(sales_invoice_items.salesInvoiceId, id))
+      .all();
+
+    return mapToDto(invoice, items);
+  }
+
+  public updateInvoiceSync(
+    invoiceId: string,
+    data: UpdateSalesInvoiceInput,
+    tx: TransactionExecutor,
+  ): void {
+    const { items, ...invoiceData } = data;
+
+    // Update header
+    if (Object.keys(invoiceData).length > 0) {
+      tx.update(sales_invoices)
+        .set(invoiceData)
+        .where(eq(sales_invoices.id, invoiceId))
+        .run();
+    }
+
+    // Update lines (replace all)
+    if (items !== undefined) {
+      tx.delete(sales_invoice_items)
+        .where(eq(sales_invoice_items.salesInvoiceId, invoiceId))
+        .run();
+
+      if (items.length > 0) {
+        const itemsToInsert = items.map((item) => ({
+          ...item,
+          id: randomUUID(),
+          salesInvoiceId: invoiceId,
+        }));
+        tx.insert(sales_invoice_items).values(itemsToInsert).run();
+      }
+    }
+  }
+
+  public updateStatusSync(
+    invoiceId: string,
+    status: InvoiceStatus,
+    tx: TransactionExecutor,
+  ): void {
+    tx.update(sales_invoices).set({ status }).where(eq(sales_invoices.id, invoiceId)).run();
+  }
 }

@@ -121,6 +121,19 @@ export class CustomerRepository extends BaseRepository {
     return mapToDto(result);
   }
 
+  public getByIdSync(id: string, companyId: string, tx: DbTransaction): CustomerProfileDto | null {
+    const result = tx
+      .select()
+      .from(customers)
+      .where(
+        and(eq(customers.id, id), eq(customers.companyId, companyId), isNull(customers.deletedAt)),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result);
+  }
+
   public async getNextCustomerCode(companyId: string, tx: DbTransaction): Promise<string> {
     const executor = tx;
 
@@ -157,6 +170,41 @@ export class CustomerRepository extends BaseRepository {
     return `CUST-${String(nextValue).padStart(4, '0')}`;
   }
 
+  public getNextCustomerCodeSync(companyId: string, tx: DbTransaction): string {
+    const existingSeq = tx
+      .select()
+      .from(document_sequences)
+      .where(
+        and(
+          eq(document_sequences.companyId, companyId),
+          eq(document_sequences.documentType, 'CUSTOMER'),
+        ),
+      )
+      .get();
+
+    let nextValue = 1;
+    if (existingSeq) {
+      nextValue = existingSeq.currentValue + 1;
+      tx.update(document_sequences)
+        .set({ currentValue: nextValue, updatedAt: new Date() })
+        .where(eq(document_sequences.id, existingSeq.id))
+        .run();
+    } else {
+      tx.insert(document_sequences)
+        .values({
+          id: randomUUID(),
+          companyId,
+          financialYearId: null,
+          documentType: 'CUSTOMER',
+          currentValue: nextValue,
+          updatedAt: new Date(),
+        })
+        .run();
+    }
+
+    return `CUST-${String(nextValue).padStart(4, '0')}`;
+  }
+
   public async create(
     companyId: string,
     data: CreateCustomerInput & { customerCode: string },
@@ -185,6 +233,35 @@ export class CustomerRepository extends BaseRepository {
     return mapToDto(created!);
   }
 
+  public createSync(
+    companyId: string,
+    data: CreateCustomerInput & { customerCode: string },
+    tx: DbTransaction,
+  ): CustomerProfileDto {
+    const id = randomUUID();
+    const now = new Date();
+
+    const newCustomer = {
+      ...data,
+      id,
+      companyId,
+      isActive: data.isActive ?? true,
+      syncVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      openingBalance: data.openingBalance ?? 0,
+      creditLimit: data.creditLimit ?? 0,
+      creditDays: data.creditDays ?? 0,
+    };
+
+    tx.insert(customers)
+      .values(newCustomer as InsertCustomer)
+      .run();
+    const created = tx.select().from(customers).where(eq(customers.id, id)).get();
+    return mapToDto(created!);
+  }
+
   public async update(
     id: string,
     companyId: string,
@@ -206,6 +283,29 @@ export class CustomerRepository extends BaseRepository {
     await executor.update(customers).set(updateData).where(eq(customers.id, id));
 
     const updated = await executor.select().from(customers).where(eq(customers.id, id)).get();
+    return mapToDto(updated!);
+  }
+
+  public updateSync(
+    id: string,
+    companyId: string,
+    data: UpdateCustomerInput,
+    tx: DbTransaction,
+  ): CustomerProfileDto {
+    const now = new Date();
+
+    const existing = this.getByIdSync(id, companyId, tx);
+    if (!existing) throw new Error('Customer not found');
+
+    const updateData = {
+      ...data,
+      syncVersion: existing.syncVersion + 1,
+      updatedAt: now,
+    };
+
+    tx.update(customers).set(updateData).where(eq(customers.id, id)).run();
+
+    const updated = tx.select().from(customers).where(eq(customers.id, id)).get();
     return mapToDto(updated!);
   }
 

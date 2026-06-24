@@ -167,4 +167,76 @@ export class InventoryBalanceRepository extends BaseRepository {
         ),
       );
   }
+
+  // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
+
+  public getBalanceSync(
+    companyId: string,
+    financialYearId: string,
+    productId: string,
+    tx: TransactionExecutor,
+  ): InventoryBalanceDto | null {
+    const result = tx
+      .select()
+      .from(inventory_balances)
+      .where(
+        and(
+          eq(inventory_balances.companyId, companyId),
+          eq(inventory_balances.financialYearId, financialYearId),
+          eq(inventory_balances.productId, productId),
+        ),
+      )
+      .get();
+
+    return result ? mapToDto(result) : null;
+  }
+
+  public upsertBalanceSync(
+    companyId: string,
+    financialYearId: string,
+    productId: string,
+    currentQty: number,
+    currentWacPaise: number,
+    currentValuePaise: number,
+    tx: TransactionExecutor,
+  ): void {
+    const existing = tx
+      .select()
+      .from(inventory_balances)
+      .where(
+        and(
+          eq(inventory_balances.companyId, companyId),
+          eq(inventory_balances.financialYearId, financialYearId),
+          eq(inventory_balances.productId, productId),
+        ),
+      )
+      .get();
+
+    if (existing) {
+      tx.update(inventory_balances)
+        .set({
+          currentQty,
+          currentWacPaise,
+          currentValuePaise,
+          updatedAt: new Date(),
+          syncVersion: existing.syncVersion + 1,
+        })
+        .where(eq(inventory_balances.id, existing.id))
+        .run();
+    } else {
+      tx.insert(inventory_balances)
+        .values({
+          id: randomUUID(),
+          companyId,
+          financialYearId,
+          productId,
+          currentQty,
+          currentWacPaise,
+          currentValuePaise,
+          updatedAt: new Date(),
+          syncVersion: 1,
+        })
+        .run();
+    }
+  }
 }

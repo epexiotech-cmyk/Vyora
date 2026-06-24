@@ -10,7 +10,9 @@ import {
 } from '@vyora/types';
 import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
 
-import { BaseRepository, DbTransaction } from './BaseRepository';
+import { numberingEngineService } from '../services/NumberingEngineService';
+
+import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
 function mapToDto(entity: Supplier): SupplierProfileDto {
   return {
@@ -121,6 +123,27 @@ export class SupplierRepository extends BaseRepository {
     return mapToDto(result);
   }
 
+  public getByIdSync(
+    id: string,
+    companyId: string,
+    tx: TransactionExecutor,
+  ): SupplierProfileDto | null {
+    const result = tx
+      .select()
+      .from(suppliers)
+      .where(
+        and(eq(suppliers.id, id), eq(suppliers.companyId, companyId), isNull(suppliers.deletedAt)),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result as Supplier);
+  }
+
+  public getNextSupplierCodeSync(companyId: string, tx: TransactionExecutor): string {
+    return numberingEngineService.generateNextNumberSync(companyId, '', 'SUPPLIER', tx);
+  }
+
   public async create(
     companyId: string,
     data: CreateSupplierInput & { supplierCode: string },
@@ -149,6 +172,33 @@ export class SupplierRepository extends BaseRepository {
     return mapToDto(created!);
   }
 
+  public createSync(
+    companyId: string,
+    data: CreateSupplierInput & { supplierCode: string },
+    tx: TransactionExecutor,
+  ): SupplierProfileDto {
+    const id = randomUUID();
+    const now = new Date();
+
+    const newSupplier = {
+      ...data,
+      id,
+      companyId,
+      isActive: data.isActive ?? true,
+      syncVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      openingBalance: data.openingBalance ?? 0,
+      creditLimit: data.creditLimit ?? 0,
+      creditDays: data.creditDays ?? 0,
+    };
+
+    tx.insert(suppliers).values(newSupplier).run();
+    const created = tx.select().from(suppliers).where(eq(suppliers.id, id)).get();
+    return mapToDto(created as Supplier);
+  }
+
   public async update(
     id: string,
     companyId: string,
@@ -171,6 +221,29 @@ export class SupplierRepository extends BaseRepository {
 
     const updated = await executor.select().from(suppliers).where(eq(suppliers.id, id)).get();
     return mapToDto(updated!);
+  }
+
+  public updateSync(
+    id: string,
+    companyId: string,
+    data: UpdateSupplierInput,
+    tx: TransactionExecutor,
+  ): SupplierProfileDto {
+    const now = new Date();
+
+    const existing = this.getByIdSync(id, companyId, tx);
+    if (!existing) throw new Error('Supplier not found');
+
+    const updateData = {
+      ...data,
+      syncVersion: existing.syncVersion + 1,
+      updatedAt: now,
+    };
+
+    tx.update(suppliers).set(updateData).where(eq(suppliers.id, id)).run();
+
+    const updated = tx.select().from(suppliers).where(eq(suppliers.id, id)).get();
+    return mapToDto(updated as Supplier);
   }
 
   public async deactivate(id: string, companyId: string, tx?: DbTransaction): Promise<void> {

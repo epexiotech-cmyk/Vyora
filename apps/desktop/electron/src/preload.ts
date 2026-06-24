@@ -103,7 +103,7 @@ contextBridge.exposeInMainWorld('vyora', {
   bootstrap: {
     status: () => ipcRenderer.invoke('bootstrap:status'),
     createCompany: (data: {
-      name: string;
+      legalName: string;
       isGstRegistered: boolean;
       gstin: string | null;
       financialYearStart: Date;
@@ -250,7 +250,7 @@ export type VyoraDatabaseAPI = {
 export type VyoraBootstrapAPI = {
   status: () => Promise<ApiResponse<boolean>>;
   createCompany: (data: {
-    name: string;
+    legalName: string;
     isGstRegistered: boolean;
     gstin: string | null;
     financialYearStart: Date;

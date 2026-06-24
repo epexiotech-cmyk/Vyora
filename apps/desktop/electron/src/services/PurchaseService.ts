@@ -33,9 +33,9 @@ export class PurchaseService {
     // Strict schema validation
     const parsedPayload = createPurchaseSchema.parse(payload);
 
-    return this.purchaseRepo.transaction(async (tx) => {
+    return this.purchaseRepo.transaction((tx) => {
       // Generate Number
-      const purchaseNumber = await numberingEngineService.generateNextNumber(
+      const purchaseNumber = numberingEngineService.generateNextNumberSync(
         companyId,
         parsedPayload.financialYearId,
         'PURCHASE_INVOICE',
@@ -43,7 +43,7 @@ export class PurchaseService {
       );
 
       // Fetch Supplier Snapshot
-      const supplier = await tx
+      const supplier = tx
         .select()
         .from(suppliers)
         .where(eq(suppliers.id, parsedPayload.supplierId))
@@ -71,13 +71,13 @@ export class PurchaseService {
       // Process Lines and Fetch Snapshots
       const linesPayload = [];
       for (const line of parsedPayload.lines) {
-        const item = await tx.select().from(products).where(eq(products.id, line.productId)).get();
+        const item = tx.select().from(products).where(eq(products.id, line.productId)).get();
         if (!item) throw new Error(`Invalid item ID: ${line.productId}`);
 
-        const unit = await tx.select().from(units).where(eq(units.id, line.unitId)).get();
+        const unit = tx.select().from(units).where(eq(units.id, line.unitId)).get();
         if (!unit) throw new Error(`Invalid unit ID: ${line.unitId}`);
 
-        const tax = await tx.select().from(taxes).where(eq(taxes.id, line.taxId)).get();
+        const tax = tx.select().from(taxes).where(eq(taxes.id, line.taxId)).get();
         if (!tax) throw new Error(`Invalid tax ID: ${line.taxId}`);
 
         linesPayload.push({
@@ -95,7 +95,7 @@ export class PurchaseService {
         });
       }
 
-      await this.purchaseRepo.create(companyId, headerPayload, linesPayload, tx);
+      this.purchaseRepo.createSync(companyId, headerPayload, linesPayload, tx);
 
       return id;
     });
@@ -110,8 +110,8 @@ export class PurchaseService {
       throw new Error('Cannot change status during updateDraft. Use submit or cancel actions.');
     }
 
-    return this.purchaseRepo.transaction(async (tx) => {
-      const existing = await this.purchaseRepo.getById(parsedPayload.id, companyId, tx);
+    return this.purchaseRepo.transaction((tx) => {
+      const existing = this.purchaseRepo.getByIdSync(parsedPayload.id, companyId, tx);
       if (!existing) throw new Error('Purchase Invoice not found');
       if (existing.status !== 'DRAFT')
         throw new Error(`Cannot update invoice in status ${existing.status}`);
@@ -137,7 +137,7 @@ export class PurchaseService {
           if (isNewProduct) {
             const pId = line.productId || existingLine?.productId;
             if (pId) {
-              const item = await tx.select().from(products).where(eq(products.id, pId)).get();
+              const item = tx.select().from(products).where(eq(products.id, pId)).get();
               if (item) {
                 itemName = item.name;
                 itemCode = item.sku;
@@ -151,7 +151,7 @@ export class PurchaseService {
           if (isNewUnit) {
             const uId = line.unitId || existingLine?.unitId;
             if (uId) {
-              const unit = await tx.select().from(units).where(eq(units.id, uId)).get();
+              const unit = tx.select().from(units).where(eq(units.id, uId)).get();
               if (unit) {
                 unitShortName = unit.shortName;
               }
@@ -163,7 +163,7 @@ export class PurchaseService {
           if (isNewTax) {
             const tId = line.taxId || existingLine?.taxId;
             if (tId) {
-              const tax = await tx.select().from(taxes).where(eq(taxes.id, tId)).get();
+              const tax = tx.select().from(taxes).where(eq(taxes.id, tId)).get();
               if (tax) {
                 taxPercentage = tax.rate;
               }
@@ -181,7 +181,7 @@ export class PurchaseService {
         }
       }
 
-      await this.purchaseRepo.update(id, companyId, headerUpdates, processedLines, tx);
+      this.purchaseRepo.updateSync(id, companyId, headerUpdates, processedLines, tx);
     });
   }
 
@@ -189,8 +189,8 @@ export class PurchaseService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company found');
 
-    return this.purchaseRepo.transaction(async (tx) => {
-      const invoice = await this.purchaseRepo.getById(id, companyId, tx);
+    return this.purchaseRepo.transaction((tx) => {
+      const invoice = this.purchaseRepo.getByIdSync(id, companyId, tx);
       if (!invoice) throw new Error(`Purchase Invoice not found: ${id}`);
 
       if (invoice.status === 'SUBMITTED') throw new Error('Invoice is already submitted');
@@ -207,7 +207,7 @@ export class PurchaseService {
       let totalIgst = 0;
 
       for (const line of invoice.lines) {
-        await inventoryEngine.postInbound(
+        inventoryEngine.postInboundSync(
           {
             companyId,
             financialYearId: invoice.financialYearId,
@@ -226,7 +226,7 @@ export class PurchaseService {
         totalIgst += line.taxAmount; // Simplify taxes as IGST for now, or calculate properly if needed
       }
 
-      await journalService.postPurchaseBill(
+      journalService.postPurchaseBillSync(
         {
           companyId,
           financialYearId: invoice.financialYearId,
@@ -243,7 +243,7 @@ export class PurchaseService {
         tx,
       );
 
-      await this.purchaseRepo.updateStatus(id, companyId, 'SUBMITTED', tx);
+      this.purchaseRepo.updateStatusSync(id, companyId, 'SUBMITTED', tx);
     });
   }
 
@@ -251,17 +251,17 @@ export class PurchaseService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company found');
 
-    await this.purchaseRepo.transaction(async (tx) => {
-      const existing = await this.purchaseRepo.getById(id, companyId, tx);
+    await this.purchaseRepo.transaction((tx) => {
+      const existing = this.purchaseRepo.getByIdSync(id, companyId, tx);
       if (!existing) throw new Error('Purchase Invoice not found');
       if (existing.status === 'CANCELLED') throw new Error('Purchase Invoice already cancelled');
 
       if (existing.status === 'SUBMITTED') {
-        await inventoryEngine.reversePurchaseInvoice(id, tx);
-        await journalService.reversePurchaseBill(id, tx);
+        inventoryEngine.reversePurchaseInvoiceSync(id, tx);
+        journalService.reversePurchaseBillSync(id, tx);
       }
 
-      await this.purchaseRepo.updateStatus(id, companyId, 'CANCELLED', tx);
+      this.purchaseRepo.updateStatusSync(id, companyId, 'CANCELLED', tx);
     });
   }
 

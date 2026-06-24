@@ -40,7 +40,7 @@ export default function SetupPage() {
     setError(null);
     try {
       const res = await window.vyora.bootstrap.createCompany({
-        name,
+        legalName: name,
         isGstRegistered,
         gstin: isGstRegistered ? gstin : null,
         financialYearStart,

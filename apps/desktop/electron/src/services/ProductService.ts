@@ -33,10 +33,10 @@ export class ProductService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
 
-    return await this.productRepo.transaction(async (tx) => {
-      const sku = await numberingEngineService.generateNextNumber(companyId, '', 'ITEM', tx);
+    return this.productRepo.transaction((tx) => {
+      const sku = numberingEngineService.generateNextNumberSync(companyId, '', 'ITEM', tx);
 
-      return await this.productRepo.create(
+      return this.productRepo.createSync(
         companyId,
         {
           ...validatedData,
@@ -52,7 +52,9 @@ export class ProductService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
 
-    return await this.productRepo.update(id, companyId, validatedData);
+    return this.productRepo.transaction((tx) => {
+      return this.productRepo.updateSync(id, companyId, validatedData, tx);
+    });
   }
 
   public async deactivateProduct(id: string): Promise<void> {

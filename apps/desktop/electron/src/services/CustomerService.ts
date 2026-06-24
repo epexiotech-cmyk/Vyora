@@ -30,10 +30,10 @@ export class CustomerService {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
 
-    return await this.customerRepo.transaction(async (tx) => {
-      const customerCode = await this.customerRepo.getNextCustomerCode(companyId, tx);
+    return this.customerRepo.transaction((tx) => {
+      const customerCode = this.customerRepo.getNextCustomerCodeSync(companyId, tx);
 
-      const customer = await this.customerRepo.create(
+      const customer = this.customerRepo.createSync(
         companyId,
         {
           ...data,

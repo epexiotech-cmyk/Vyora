@@ -32,8 +32,8 @@ export class SalesInvoiceService {
     // Force default status to DRAFT
     const invoiceData = { ...data, status: 'DRAFT' as const };
 
-    return await dbService.getDb().transaction(async (tx) => {
-      const { invoiceId } = await this.salesInvoiceRepo.createInvoice(invoiceData, tx);
+    return dbService.getDb().transaction((tx) => {
+      const { invoiceId } = this.salesInvoiceRepo.createInvoiceSync(invoiceData, tx);
       return { invoiceId };
     });
   }
@@ -60,8 +60,8 @@ export class SalesInvoiceService {
       throw new Error('Cannot change status during updateDraft. Use submit or cancel actions.');
     }
 
-    await dbService.getDb().transaction(async (tx) => {
-      await this.salesInvoiceRepo.updateInvoice(invoiceId, payload, tx);
+    dbService.getDb().transaction((tx) => {
+      this.salesInvoiceRepo.updateInvoiceSync(invoiceId, payload, tx);
     });
 
     const updated = await this.salesInvoiceRepo.getById(invoiceId);
@@ -70,8 +70,8 @@ export class SalesInvoiceService {
   }
 
   public async submitInvoice(invoiceId: string): Promise<{ warnings: unknown[] }> {
-    return await dbService.getDb().transaction(async (tx) => {
-      const invoice = await this.salesInvoiceRepo.getById(invoiceId);
+    return dbService.getDb().transaction((tx) => {
+      const invoice = this.salesInvoiceRepo.getByIdSync(invoiceId, tx);
       if (!invoice) throw new Error(`Invoice not found: ${invoiceId}`);
 
       if (invoice.status === 'SUBMITTED') throw new Error('Invoice is already submitted');
@@ -85,7 +85,7 @@ export class SalesInvoiceService {
 
       let totalCogsAmount = 0;
       for (const item of invoice.items) {
-        const { wacApplied } = await inventoryEngine.postOutbound(
+        const { wacApplied } = inventoryEngine.postOutboundSync(
           {
             companyId: invoice.companyId,
             financialYearId: invoice.financialYearId,
@@ -104,7 +104,7 @@ export class SalesInvoiceService {
         totalCogsAmount += wacApplied * item.quantity;
       }
 
-      await journalService.postSalesInvoice(
+      journalService.postSalesInvoiceSync(
         {
           companyId: invoice.companyId,
           financialYearId: invoice.financialYearId,
@@ -121,28 +121,28 @@ export class SalesInvoiceService {
         tx,
       );
 
-      await this.salesInvoiceRepo.updateStatus(invoiceId, 'SUBMITTED', tx);
+      this.salesInvoiceRepo.updateStatusSync(invoiceId, 'SUBMITTED', tx);
 
       return { warnings: [] };
     });
   }
 
   public async cancelInvoice(invoiceId: string): Promise<void> {
-    const invoice = await this.salesInvoiceRepo.getById(invoiceId);
-    if (!invoice) throw new Error('Invoice not found');
-    if (invoice.status === 'CANCELLED') throw new Error('Invoice already cancelled');
+    dbService.getDb().transaction((tx) => {
+      const invoice = this.salesInvoiceRepo.getByIdSync(invoiceId, tx);
+      if (!invoice) throw new Error('Invoice not found');
+      if (invoice.status === 'CANCELLED') throw new Error('Invoice already cancelled');
 
-    await dbService.getDb().transaction(async (tx) => {
       if (invoice.status === 'SUBMITTED') {
         // Reverse inventory using the new generic cancellation method
-        await inventoryEngine.reverseSalesInvoice(invoiceId, tx);
+        inventoryEngine.reverseSalesInvoiceSync(invoiceId, tx);
 
         // Reverse journal
-        await journalService.reverseSalesInvoice(invoiceId, tx);
+        journalService.reverseSalesInvoiceSync(invoiceId, tx);
       }
 
       // Mark as cancelled
-      await this.salesInvoiceRepo.updateStatus(invoiceId, 'CANCELLED', tx);
+      this.salesInvoiceRepo.updateStatusSync(invoiceId, 'CANCELLED', tx);
     });
   }
 }

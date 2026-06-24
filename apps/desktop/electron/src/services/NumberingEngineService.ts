@@ -160,6 +160,146 @@ export class NumberingEngineService {
 
     return `${prefix}${middleSegment}${paddedSequence}${finalSuffix}`;
   }
+
+  /**
+   * Synchronous version of generateNextNumber.
+   * MUST be executed within an existing transaction to ensure atomic increments and no gaps.
+   */
+  public generateNextNumberSync(
+    companyId: string,
+    financialYearId: string,
+    documentType: DocumentType,
+    tx: TransactionExecutor,
+  ): string {
+    // 1. Fetch Company Settings to determine policy, prefix, suffix, padding
+    const settings = tx
+      .select()
+      .from(company_settings)
+      .where(eq(company_settings.companyId, companyId))
+      .get();
+
+    if (!settings) {
+      throw new Error(`Company settings not found for company ${companyId}`);
+    }
+
+    // Determine configuration based on document type
+    let prefix = '';
+    let suffix: string | null = null;
+    let padding = 4;
+    let startFrom = 1;
+    let resetPolicy = 'YEARLY';
+
+    if (documentType === 'SALES_INVOICE') {
+      prefix = settings.salesPrefix || 'INV';
+      suffix = settings.salesSuffix;
+      padding = settings.salesPadding ?? 4;
+      startFrom = settings.salesStartFrom ?? 1;
+      resetPolicy = settings.salesResetPolicy || 'YEARLY';
+    } else if (documentType === 'PURCHASE_INVOICE') {
+      prefix = settings.purchasePrefix || 'PUR';
+      suffix = settings.purchaseSuffix;
+      padding = settings.purchasePadding ?? 4;
+      startFrom = settings.purchaseStartFrom ?? 1;
+      resetPolicy = settings.purchaseResetPolicy || 'YEARLY';
+    } else if (documentType === 'CUSTOMER') {
+      prefix = 'CUST';
+      padding = 4;
+      startFrom = 1;
+      resetPolicy = 'NEVER';
+    } else if (documentType === 'SUPPLIER') {
+      prefix = 'SUPP';
+      padding = 5; // As per user request: SUPP-00001
+      startFrom = 1;
+      resetPolicy = 'NEVER';
+    } else if (documentType === 'ITEM') {
+      prefix = 'ITEM';
+      padding = 5;
+      startFrom = 1;
+      resetPolicy = 'NEVER';
+    } else if (documentType === 'JOURNAL_VOUCHER') {
+      prefix = 'JV';
+      padding = 5;
+      startFrom = 1;
+      resetPolicy = 'YEARLY';
+    } else {
+      // Fallbacks for future document types
+      prefix = documentType.split('_')[0];
+      padding = 4;
+      startFrom = 1;
+      resetPolicy = 'YEARLY';
+    }
+
+    // 2. Determine sequence scope based on Reset Policy
+    const sequenceScopeFyId = resetPolicy === 'YEARLY' ? financialYearId : null;
+
+    // 3. Find existing sequence record
+    const conditions = [
+      eq(document_sequences.companyId, companyId),
+      eq(document_sequences.documentType, documentType),
+    ];
+
+    if (sequenceScopeFyId) {
+      conditions.push(eq(document_sequences.financialYearId, sequenceScopeFyId));
+    }
+
+    const sequences = tx
+      .select()
+      .from(document_sequences)
+      .where(and(...conditions))
+      .all();
+
+    const sequenceRecord = sequences.find((s) => s.financialYearId === sequenceScopeFyId);
+
+    let nextValue = startFrom;
+
+    if (!sequenceRecord) {
+      // Initialize sequence
+      const id = randomUUID();
+      tx.insert(document_sequences)
+        .values({
+          id,
+          companyId,
+          financialYearId: sequenceScopeFyId,
+          documentType,
+          currentValue: startFrom,
+          updatedAt: new Date(),
+        })
+        .run();
+    } else {
+      // Increment sequence
+      nextValue = sequenceRecord.currentValue + 1;
+      tx.update(document_sequences)
+        .set({
+          currentValue: nextValue,
+          updatedAt: new Date(),
+        })
+        .where(eq(document_sequences.id, sequenceRecord.id))
+        .run();
+    }
+
+    // 4. Construct Number
+    let middleSegment = '';
+    if (resetPolicy === 'YEARLY') {
+      const fy = tx
+        .select()
+        .from(financial_years)
+        .where(eq(financial_years.id, financialYearId))
+        .get();
+
+      if (fy) {
+        middleSegment = `/${fy.label}/`; // e.g. /26-27/
+      } else {
+        middleSegment = '/';
+      }
+    } else {
+      middleSegment = '-';
+    }
+
+    const paddedSequence = String(nextValue).padStart(padding, '0');
+    const finalSuffix = suffix ? `/${suffix}` : '';
+
+    return `${prefix}${middleSegment}${paddedSequence}${finalSuffix}`;
+  }
 }
 
 export const numberingEngineService = new NumberingEngineService();

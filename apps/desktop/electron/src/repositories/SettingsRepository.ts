@@ -34,6 +34,23 @@ export class SettingsRepository extends BaseRepository {
     }
   }
 
+  public getAppSettingSync(key: string, tx?: DbTransaction): string | undefined {
+    const executor = tx || this.db;
+    const result = executor.select().from(app_settings).where(eq(app_settings.key, key)).get();
+    return result?.value;
+  }
+
+  public setAppSettingSync(key: string, value: string, tx?: DbTransaction): void {
+    const executor = tx || this.db;
+    const existing = this.getAppSettingSync(key, tx);
+
+    if (existing !== undefined) {
+      executor.update(app_settings).set({ value }).where(eq(app_settings.key, key)).run();
+    } else {
+      executor.insert(app_settings).values({ key, value }).run();
+    }
+  }
+
   // --- Company Settings ---
 
   public async getCompanySettings(
@@ -65,6 +82,30 @@ export class SettingsRepository extends BaseRepository {
 
     await executor.insert(company_settings).values(newSettings);
     const created = await executor
+      .select()
+      .from(company_settings)
+      .where(eq(company_settings.id, id))
+      .get();
+    return created as CompanySetting;
+  }
+
+  public createCompanySettingsSync(
+    data: Omit<InsertCompanySetting, 'id' | 'createdAt' | 'updatedAt'>,
+    tx?: DbTransaction,
+  ): CompanySetting {
+    const executor = tx || this.db;
+    const id = randomUUID();
+    const now = new Date();
+
+    const newSettings = {
+      ...data,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    } as InsertCompanySetting;
+
+    executor.insert(company_settings).values(newSettings).run();
+    const created = executor
       .select()
       .from(company_settings)
       .where(eq(company_settings.id, id))

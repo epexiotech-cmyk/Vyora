@@ -107,7 +107,7 @@ export default function VoucherExplorer() {
         columns={columns}
         keyExtractor={(item) => item.id}
         isLoading={loading}
-        onRowClick={(item) => router.push('/accounting/vouchers/' + item.id)}
+        onRowClick={(item) => router.push('/dashboard/accounting/vouchers/' + item.id)}
       />
     </div>
   );

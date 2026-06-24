@@ -2,6 +2,7 @@ import { CreateCompanyInput, ApiResponse } from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { companyBootstrapService } from '../../services/CompanyBootstrapService';
+import { companyContextService } from '../../services/CompanyContextService';
 
 export function registerBootstrapHandlers() {
   ipcMain.handle('bootstrap:status', async (): Promise<ApiResponse<boolean>> => {
@@ -19,6 +20,7 @@ export function registerBootstrapHandlers() {
     async (_, payload: CreateCompanyInput): Promise<ApiResponse<string>> => {
       try {
         const companyId = await companyBootstrapService.createCompany(payload);
+        await companyContextService.loadActiveCompany();
         return { success: true, data: companyId };
       } catch (error) {
         console.error('Error creating company during bootstrap:', error);

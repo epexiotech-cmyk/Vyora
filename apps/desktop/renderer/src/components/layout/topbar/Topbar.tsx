@@ -2,12 +2,37 @@
 
 import { Search, User, RefreshCcw } from 'lucide-react';
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppInput } from '@/components/ui/AppInput';
 
 export function Topbar() {
+  const [companyName, setCompanyName] = useState<string>('Loading...');
+
+  useEffect(() => {
+    const loadCompany = async () => {
+      try {
+        const response = await window.vyora.company.getActive();
+        if (response.success && response.data) {
+          const profileResponse = await window.vyora.company.getProfile(response.data);
+          if (profileResponse.success && profileResponse.data) {
+            setCompanyName(profileResponse.data.tradeName || profileResponse.data.legalName);
+          } else {
+            setCompanyName('No Active Company');
+          }
+        } else {
+          setCompanyName('No Active Company');
+        }
+      } catch (error) {
+        console.error('Failed to load active company', error);
+        setCompanyName('No Active Company');
+      }
+    };
+    loadCompany();
+  }, []);
+
   return (
     <header className="bg-glass-bg sticky top-0 z-30 flex h-[var(--header-height)] shrink-0 items-center justify-between border-b px-4 backdrop-blur-md">
       <div className="flex flex-1 items-center gap-4">
@@ -37,7 +62,7 @@ export function Topbar() {
 
         {/* Company Switcher Placeholder */}
         <div className="bg-secondary border-border/50 hover:bg-secondary/80 hidden cursor-pointer rounded-sm border px-2 py-1 text-xs font-medium transition-colors sm:flex">
-          Main Company Ltd
+          {companyName}
         </div>
 
         <ThemeToggle />

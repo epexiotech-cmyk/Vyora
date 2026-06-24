@@ -22,9 +22,9 @@ export class CompanyBootstrapService {
   }
 
   public async createCompany(input: CreateCompanyInput): Promise<string> {
-    return await dbService.getDb().transaction(async (tx) => {
+    return dbService.getDb().transaction((tx) => {
       // 1. Create base company record
-      const company = await this.companyRepo.create(
+      const company = this.companyRepo.createSync(
         {
           legalName: input.legalName,
           gstin: input.gstin || null,
@@ -34,7 +34,7 @@ export class CompanyBootstrapService {
 
       // 2. Create company_settings (Financial Year, Currency)
       // 3 & 4 & 5. Default invoice, GST, numbering settings
-      await this.settingsRepo.createCompanySettings(
+      this.settingsRepo.createCompanySettingsSync(
         {
           companyId: company.id,
           financialYearStart: input.financialYearStart,
@@ -48,8 +48,8 @@ export class CompanyBootstrapService {
       );
 
       // Set global flags
-      await this.settingsRepo.setAppSetting('setup_completed', 'true', tx);
-      await this.settingsRepo.setAppSetting('active_company_id', company.id, tx);
+      this.settingsRepo.setAppSettingSync('setup_completed', 'true', tx);
+      this.settingsRepo.setAppSettingSync('active_company_id', company.id, tx);
 
       systemLedgerSeeder.seedSystemLedgers(company.id, tx);
 

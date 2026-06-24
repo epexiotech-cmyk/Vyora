@@ -11,7 +11,7 @@ import {
 } from '@vyora/types';
 import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
 
-import { BaseRepository, DbTransaction } from './BaseRepository';
+import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
 function mapToDto(entity: Product): ProductDto {
   return {
@@ -112,6 +112,20 @@ export class ProductRepository extends BaseRepository {
     return mapToDto(result);
   }
 
+  public getByIdSync(id: string, companyId: string, tx: TransactionExecutor): ProductDto | null {
+    const executor = tx || this.db;
+    const result = executor
+      .select()
+      .from(products)
+      .where(
+        and(eq(products.id, id), eq(products.companyId, companyId), isNull(products.deletedAt)),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result as Product);
+  }
+
   public async create(
     companyId: string,
     data: CreateProductInput & { sku: string },
@@ -139,6 +153,38 @@ export class ProductRepository extends BaseRepository {
     await executor.insert(products).values(newProduct as InsertProduct);
     const created = await executor.select().from(products).where(eq(products.id, id)).get();
     return mapToDto(created!);
+  }
+
+  public createSync(
+    companyId: string,
+    data: CreateProductInput & { sku: string },
+    tx: TransactionExecutor,
+  ): ProductDto {
+    const executor = tx || this.db;
+    const id = randomUUID();
+    const now = new Date();
+
+    const newProduct = {
+      ...data,
+      id,
+      companyId,
+      isActive: data.isActive ?? true,
+      syncVersion: 1,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      salePrice: data.salePrice ?? 0,
+      purchasePrice: data.purchasePrice ?? 0,
+      stock: data.stock ?? 0,
+      reorderLevel: data.reorderLevel ?? 0,
+    };
+
+    executor
+      .insert(products)
+      .values(newProduct as InsertProduct)
+      .run();
+    const created = executor.select().from(products).where(eq(products.id, id)).get();
+    return mapToDto(created as Product);
   }
 
   public async update(
@@ -174,6 +220,42 @@ export class ProductRepository extends BaseRepository {
 
     const updated = await executor.select().from(products).where(eq(products.id, id)).get();
     return mapToDto(updated!);
+  }
+
+  public updateSync(
+    id: string,
+    companyId: string,
+    data: UpdateProductInput,
+    tx: TransactionExecutor,
+  ): ProductDto {
+    const executor = tx || this.db;
+    const now = new Date();
+
+    const existing = this.getByIdSync(id, companyId, executor);
+    if (!existing) throw new Error('Product not found');
+
+    // Exclude id from data payload if passed
+    const restData = { ...data };
+    delete (restData as Partial<UpdateProductInput>).id;
+
+    const updateData = {
+      ...restData,
+      syncVersion: existing.syncVersion + 1,
+      updatedAt: now,
+    };
+
+    // Remove nulls for non-nullable fields to satisfy Drizzle types at runtime
+    if (updateData.unitId === null) delete updateData.unitId;
+    if (updateData.taxId === null) delete updateData.taxId;
+
+    executor
+      .update(products)
+      .set(updateData as Partial<InsertProduct>)
+      .where(eq(products.id, id))
+      .run();
+
+    const updated = executor.select().from(products).where(eq(products.id, id)).get();
+    return mapToDto(updated as Product);
   }
 
   public async deactivate(id: string, companyId: string, tx?: DbTransaction): Promise<void> {

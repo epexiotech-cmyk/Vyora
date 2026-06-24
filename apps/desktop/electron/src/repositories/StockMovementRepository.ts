@@ -109,6 +109,48 @@ export class StockMovementRepository extends BaseRepository {
     return movement ? mapToDto(movement) : null;
   }
 
+  // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
+
+  public createMovementSync(
+    data: CreateStockMovementInput,
+    tx: TransactionExecutor,
+  ): { movementId: string } {
+    const movementId = randomUUID();
+    const now = new Date();
+
+    tx.insert(stock_movements)
+      .values({
+        ...data,
+        id: movementId,
+        createdAt: now,
+      })
+      .run();
+
+    return { movementId };
+  }
+
+  public getMovementsByReferenceSync(
+    referenceType: string,
+    referenceId: string,
+    tx: TransactionExecutor,
+  ): StockMovementDto[] {
+    const movements = tx
+      .select()
+      .from(stock_movements)
+      .where(
+        and(
+          eq(
+            stock_movements.referenceType,
+            referenceType as unknown as (typeof stock_movements.$inferSelect)['referenceType'],
+          ),
+          eq(stock_movements.referenceId, referenceId),
+        ),
+      )
+      .all();
+
+    return movements.map(mapToDto);
+  }
+
   public async getMovementsByReference(
     referenceType: string,
     referenceId: string,
