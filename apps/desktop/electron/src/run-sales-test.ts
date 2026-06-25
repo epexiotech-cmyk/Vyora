@@ -24,14 +24,16 @@ import {
   inventory_balances,
   vouchers,
   voucher_entries,
+  document_sequences,
 } from '@vyora/database';
-import { dbService } from '../electron/src/services/database/DatabaseService';
-import { financialYearContextService } from '../electron/src/services/FinancialYearContextService';
-import { companyContextService } from '../electron/src/services/CompanyContextService';
-import { salesInvoiceService } from '../electron/src/services/SalesInvoiceService';
-import { systemLedgerSeeder } from '../electron/src/services/database/SystemLedgerSeeder';
 import { eq, and } from 'drizzle-orm';
-import { inventoryEngine } from '../electron/src/services/InventoryEngine';
+
+import { companyContextService } from './services/CompanyContextService';
+import { dbService } from './services/database/DatabaseService';
+import { systemLedgerSeeder } from './services/database/SystemLedgerSeeder';
+import { financialYearContextService } from './services/FinancialYearContextService';
+import { inventoryEngine } from './services/InventoryEngine';
+import { salesInvoiceService } from './services/SalesInvoiceService';
 
 export async function runTest() {
   log('Starting Sales Runtime Test');
@@ -47,24 +49,39 @@ export async function runTest() {
       .values({
         id,
         legalName: 'Runtime Test Company',
-        isActive: true,
         pan: 'ABCDE1234F',
         stateCode: '27',
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .run();
-    db.insert(company_settings).values({ id: randomUUID(), companyId: id, createdAt: new Date(), updatedAt: new Date() }).run();
+    db.insert(company_settings)
+      .values({ id: randomUUID(), companyId: id, createdAt: new Date(), updatedAt: new Date() })
+      .run();
     activeCompany = db.select().from(companies).where(eq(companies.id, id)).get();
   }
 
+  if (!activeCompany) throw new Error('Missing company');
+
   // Ensure settings exist
-  const hasSettings = db.select().from(company_settings).where(eq(company_settings.companyId, activeCompany.id)).get();
+  const hasSettings = db
+    .select()
+    .from(company_settings)
+    .where(eq(company_settings.companyId, activeCompany.id))
+    .get();
   if (!hasSettings) {
-    db.insert(company_settings).values({ id: randomUUID(), companyId: activeCompany.id, createdAt: new Date(), updatedAt: new Date() }).run();
+    db.insert(company_settings)
+      .values({
+        id: randomUUID(),
+        companyId: activeCompany.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .run();
   }
   // Inject company context directly (avoids async DB side-effects)
-  (companyContextService as unknown as { activeCompanyId: string }).activeCompanyId = activeCompany.id;
+  (companyContextService as unknown as { activeCompanyId: string }).activeCompanyId =
+    activeCompany.id;
 
   // Ensure system ledgers exist for the test company
   try {
@@ -99,7 +116,8 @@ export async function runTest() {
   if (!activeFy) throw new Error('Missing financial year');
 
   // Inject FY context directly (avoids async DB side-effects)
-  (financialYearContextService as unknown as { activeFinancialYear: unknown }).activeFinancialYear = activeFy;
+  (financialYearContextService as unknown as { activeFinancialYear: unknown }).activeFinancialYear =
+    activeFy;
 
   const companyId = activeCompany.id;
   const financialYearId = activeFy.id;
@@ -127,20 +145,27 @@ export async function runTest() {
     .get();
 
   if (!debtorsGroup) {
-    const defaultParent = db.select().from(ledger_groups).where(eq(ledger_groups.companyId, companyId)).limit(1).get();
+    const defaultParent = db
+      .select()
+      .from(ledger_groups)
+      .where(eq(ledger_groups.companyId, companyId))
+      .limit(1)
+      .get();
     const grpId = randomUUID();
-    db.insert(ledger_groups).values({
-      id: grpId,
-      companyId,
-      name: 'Sundry Debtors',
-      nature: 'Assets',
-      isSystemGroup: true,
-      parentId: defaultParent ? defaultParent.id : null,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      syncVersion: 1
-    }).run();
+    db.insert(ledger_groups)
+      .values({
+        id: grpId,
+        companyId,
+        name: 'Sundry Debtors',
+        nature: 'Asset',
+        isSystemGroup: true,
+        parentGroupId: defaultParent ? defaultParent.id : null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        syncVersion: 1,
+      })
+      .run();
     debtorsGroup = db.select().from(ledger_groups).where(eq(ledger_groups.id, grpId)).get();
   }
 
@@ -222,24 +247,35 @@ export async function runTest() {
   // 4.5. ADD INVENTORY
   // Simulate an inbound purchase manually or via InventoryEngine
   db.transaction((tx) => {
-    inventoryEngine.postInboundSync({
-      companyId,
-      financialYearId,
-      productId,
-      movementType: 'OPENING_BALANCE',
-      referenceType: 'MANUAL',
-      referenceId: randomUUID(),
-      quantityIn: 50,
-      quantityOut: 0,
-      rate: 100, // WAC = 100
-      movementDate: new Date(),
-      remarks: 'Initial stock for sales test',
-    }, tx);
+    inventoryEngine.postInboundSync(
+      {
+        companyId,
+        financialYearId,
+        productId,
+        movementType: 'OPENING_BALANCE',
+        referenceType: 'MANUAL',
+        referenceId: randomUUID(),
+        quantityIn: 50,
+        quantityOut: 0,
+        rate: 100, // WAC = 100
+        movementDate: new Date(),
+        remarks: 'Initial stock for sales test',
+      },
+      tx,
+    );
   });
-  
-  const initialBalance = db.select().from(inventory_balances).where(eq(inventory_balances.productId, productId)).get();
-  log('Initial Inventory Balance Qty:', initialBalance?.currentQty, 'WAC:', initialBalance?.currentWacPaise);
 
+  const initialBalance = db
+    .select()
+    .from(inventory_balances)
+    .where(eq(inventory_balances.productId, productId))
+    .get();
+  log(
+    'Initial Inventory Balance Qty:',
+    initialBalance?.currentQty,
+    'WAC:',
+    initialBalance?.currentWacPaise,
+  );
 
   // 5. Create DRAFT Sales Invoice
   log('\n--- B. Draft Sales Test ---');
@@ -279,11 +315,7 @@ export async function runTest() {
   }
 
   // Verify DB state for Draft
-  const draftRow = db
-    .select()
-    .from(sales_invoices)
-    .where(eq(sales_invoices.id, invoiceId))
-    .get();
+  const draftRow = db.select().from(sales_invoices).where(eq(sales_invoices.id, invoiceId)).get();
   log('Draft Row:', draftRow ? 'Exists' : 'Missing', draftRow?.status);
 
   const draftMovements = db
@@ -366,10 +398,10 @@ export async function runTest() {
       d += e.debitAmount;
       c += e.creditAmount;
       if (e.narration?.includes('COGS')) {
-          log('  Found COGS Entry:', e.debitAmount, e.creditAmount);
+        log('  Found COGS Entry:', e.debitAmount, e.creditAmount);
       }
       if (e.narration?.includes('Inventory asset reduction')) {
-          log('  Found Inventory Reduction Entry:', e.debitAmount, e.creditAmount);
+        log('  Found Inventory Reduction Entry:', e.debitAmount, e.creditAmount);
       }
     });
     log(
@@ -385,15 +417,36 @@ export async function runTest() {
   // Log all vouchers and sequences to debug UNIQUE constraint
   log('--- DEBUG VOUCHERS AND SEQUENCES ---');
   const allVouchers = db.select().from(vouchers).all();
-  log('Vouchers:', JSON.stringify(allVouchers.map(v => ({ id: v.id, number: v.voucherNumber, type: v.voucherType, ref: v.referenceType })), null, 2));
+  log(
+    'Vouchers:',
+    JSON.stringify(
+      allVouchers.map((v) => ({
+        id: v.id,
+        number: v.voucherNumber,
+        type: v.voucherType,
+        ref: v.referenceType,
+      })),
+      null,
+      2,
+    ),
+  );
 
-  try {
-    const document_sequences = require('@vyora/database').document_sequences;
-    const allSeqs = db.select().from(document_sequences).all();
-    log('Sequences:', JSON.stringify(allSeqs.map((s: any) => ({ type: s.documentType, val: s.currentValue, cId: s.companyId, fyId: s.financialYearId })), null, 2));
-    log('EXPECTED FY:', activeFy.id);
-    log('EXPECTED COMPANY:', activeCompany.id);
-  } catch(e) {}
+  const allSeqs = db.select().from(document_sequences).all();
+  log(
+    'Sequences:',
+    JSON.stringify(
+      allSeqs.map((s) => ({
+        type: s.documentType,
+        val: s.currentValue,
+        cId: s.companyId,
+        fyId: s.financialYearId,
+      })),
+      null,
+      2,
+    ),
+  );
+  log('EXPECTED FY:', activeFy.id);
+  log('EXPECTED COMPANY:', activeCompany.id);
 
   log('\n--- E. Cancel Sales Test ---');
   try {
@@ -454,8 +507,3 @@ export async function runTest() {
   log('\n--- TEST COMPLETE ---');
   process.exit(0);
 }
-
-// runTest().catch((e) => {
-//   log('Test failed with error:', e);
-//   process.exit(1);
-// });
