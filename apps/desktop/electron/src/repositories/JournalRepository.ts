@@ -7,6 +7,7 @@ import {
   InsertVoucherEntry,
   Voucher,
   ledgers,
+  ledger_groups,
 } from '@vyora/database';
 import {
   VoucherListItemDto,
@@ -269,6 +270,88 @@ export class JournalRepository extends BaseRepository {
       openingBalance: ledger.openingBalance,
       openingType: ledger.openingType as 'Dr' | 'Cr',
     };
+  }
+
+  public async getBulkLedgerMovements(
+    companyId: string,
+    financialYearId: string,
+    asOfDate?: Date,
+  ): Promise<
+    {
+      ledgerId: string;
+      ledgerName: string;
+      groupId: string;
+      openingBalance: number;
+      openingType: 'Dr' | 'Cr';
+      totalDebit: number;
+      totalCredit: number;
+    }[]
+  > {
+    // 1. Fetch all active ledgers
+    const activeLedgers = this.db
+      .select({
+        ledgerId: ledgers.id,
+        ledgerName: ledgers.name,
+        groupId: ledgers.groupId,
+        openingBalance: ledgers.openingBalance,
+        openingType: ledgers.openingType,
+      })
+      .from(ledgers)
+      .where(and(eq(ledgers.companyId, companyId), eq(ledgers.isActive, true)))
+      .all();
+
+    // 2. Fetch aggregated movements
+    let movementConditions = and(
+      eq(vouchers.companyId, companyId),
+      eq(vouchers.financialYearId, financialYearId),
+    );
+    if (asOfDate) {
+      movementConditions = and(movementConditions, lte(voucher_entries.entryDate, asOfDate));
+    }
+
+    const movements = this.db
+      .select({
+        ledgerId: voucher_entries.ledgerId,
+        totalDebit: sql<number>`SUM(CAST(${voucher_entries.debitAmount} AS INTEGER))`,
+        totalCredit: sql<number>`SUM(CAST(${voucher_entries.creditAmount} AS INTEGER))`,
+      })
+      .from(voucher_entries)
+      .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
+      .where(movementConditions)
+      .groupBy(voucher_entries.ledgerId)
+      .all();
+
+    // 3. Merge
+    const movementMap = new Map<string, { totalDebit: number; totalCredit: number }>();
+    for (const m of movements) {
+      movementMap.set(m.ledgerId, {
+        totalDebit: Number(m.totalDebit) || 0,
+        totalCredit: Number(m.totalCredit) || 0,
+      });
+    }
+
+    return activeLedgers.map((l) => {
+      const move = movementMap.get(l.ledgerId) || { totalDebit: 0, totalCredit: 0 };
+      return {
+        ...l,
+        openingType: l.openingType as 'Dr' | 'Cr',
+        totalDebit: move.totalDebit,
+        totalCredit: move.totalCredit,
+      };
+    });
+  }
+
+  public async getLedgerGroups(companyId: string) {
+    return this.db
+      .select({
+        id: ledger_groups.id,
+        name: ledger_groups.name,
+        parentId: ledger_groups.parentGroupId,
+        nature: ledger_groups.nature,
+      })
+      .from(ledger_groups)
+      .where(eq(ledger_groups.companyId, companyId))
+      .all();
   }
 
   /**

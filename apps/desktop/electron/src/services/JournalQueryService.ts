@@ -23,7 +23,15 @@ export class JournalQueryService {
   public async getLedgerOpeningBalance(
     ledgerId: string,
   ): Promise<{ openingBalance: number; openingType: 'Dr' | 'Cr' }> {
-    return journalRepository.getLedgerOpeningBalance(ledgerId);
+    return await journalRepository.getLedgerOpeningBalance(ledgerId);
+  }
+
+  public async getBulkLedgerMovements(companyId: string, financialYearId: string, asOfDate?: Date) {
+    return await journalRepository.getBulkLedgerMovements(companyId, financialYearId, asOfDate);
+  }
+
+  public async getLedgerGroups(companyId: string) {
+    return await journalRepository.getLedgerGroups(companyId);
   }
 }
 

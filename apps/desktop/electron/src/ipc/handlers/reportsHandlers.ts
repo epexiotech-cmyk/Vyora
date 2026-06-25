@@ -3,6 +3,7 @@ import { ipcMain } from 'electron';
 import { companyContextService } from '../../services/CompanyContextService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
+import { trialBalanceService } from '../../services/TrialBalanceService';
 
 export function registerReportsHandlers() {
   ipcMain.handle(
@@ -39,4 +40,14 @@ export function registerReportsHandlers() {
       }
     },
   );
+
+  ipcMain.handle('reports:getTrialBalance', async (_, asOfDate?: Date) => {
+    const companyId = companyContextService.getActiveCompany();
+    const financialYear = financialYearContextService.getActiveFinancialYear();
+
+    if (!companyId) throw new Error('No active company selected.');
+    if (!financialYear) throw new Error('No active financial year selected.');
+
+    return trialBalanceService.getTrialBalance(companyId, financialYear.id, asOfDate);
+  });
 }

@@ -62,6 +62,40 @@ export class BalanceComputationService {
       };
     });
   }
+
+  /**
+   * Computes closing balances for a bulk array of ledger movements.
+   */
+  public computeBulkClosingBalances(
+    movements: {
+      ledgerId: string;
+      ledgerName: string;
+      groupId: string;
+      openingBalance: number;
+      openingType: 'Dr' | 'Cr';
+      totalDebit: number;
+      totalCredit: number;
+    }[],
+  ): {
+    ledgerId: string;
+    ledgerName: string;
+    groupId: string;
+    closingBalance: import('@vyora/types').MonetaryBalance;
+  }[] {
+    return movements.map((m) => {
+      const baseOpeningValue = (m.openingType === 'Dr' ? 1 : -1) * (m.openingBalance || 0);
+      const currentBalanceValue = baseOpeningValue + m.totalDebit - m.totalCredit;
+      const amount = Math.abs(currentBalanceValue);
+      const type = currentBalanceValue >= 0 ? 'Dr' : 'Cr';
+
+      return {
+        ledgerId: m.ledgerId,
+        ledgerName: m.ledgerName,
+        groupId: m.groupId,
+        closingBalance: { amount, type },
+      };
+    });
+  }
 }
 
 export const balanceComputationService = new BalanceComputationService();
