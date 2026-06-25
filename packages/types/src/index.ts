@@ -12,3 +12,4 @@ export * from './directories/pincode.dto';
 export * from './supplier/supplier.dto';
 export * from './master/unit.dto';
 export * from './accounting';
+export * from './reporting';

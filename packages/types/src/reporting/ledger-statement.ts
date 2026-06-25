@@ -1,0 +1,26 @@
+import { MonetaryBalance } from './balances';
+
+export interface JournalEntryRow {
+  entryId: string;
+  voucherId: string;
+  voucherNumber: string;
+  voucherDate: Date;
+  voucherType: string;
+  ledgerId: string;
+  ledgerName: string;
+  debitAmount: number; // Paise
+  creditAmount: number; // Paise
+  narration: string | null;
+  runningBalance?: MonetaryBalance;
+}
+
+export interface LedgerStatementReport {
+  ledgerId: string;
+  companyId: string;
+  financialYearId: string;
+  startDate?: Date;
+  endDate?: Date;
+  openingBalance: MonetaryBalance;
+  closingBalance: MonetaryBalance;
+  entries: JournalEntryRow[];
+}

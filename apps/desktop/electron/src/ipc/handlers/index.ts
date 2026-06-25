@@ -17,6 +17,7 @@ export * from './taxHandlers';
 export * from './unitHandlers';
 export * from './uqcHandlers';
 export * from './hsnHandlers';
+export * from './reportsHandlers';
 export * from './sacHandlers';
 export * from './accountingHandlers';
 
@@ -35,6 +36,7 @@ import { registerPincodeHandlers } from './pincodeHandlers';
 import { registerPrintHandlers } from './printHandlers';
 import { registerProductHandlers } from './productHandlers';
 import { registerPurchaseHandlers } from './purchaseHandlers';
+import { registerReportsHandlers } from './reportsHandlers';
 import { registerSacHandlers } from './sacHandlers';
 import { registerSalesInvoiceHandlers } from './salesHandlers';
 import { registerStateHandlers } from './stateHandlers';
@@ -66,4 +68,6 @@ export function registerAllHandlers() {
   registerHsnHandlers();
   registerSacHandlers();
   registerAccountingHandlers();
+  registerReportsHandlers();
 }
+export * from './reportsHandlers';

@@ -15,6 +15,7 @@ import {
   TrialBalanceRowDto,
   LedgerStatementRowDto,
   AccountingDashboardDto,
+  JournalQueryFilter,
 } from '@vyora/types';
 import { eq, and, gte, lte, desc, asc, sql, ilike } from 'drizzle-orm';
 
@@ -208,6 +209,71 @@ export class JournalRepository extends BaseRepository {
       .all();
   }
 
+  public async queryJournalEntries(filter: JournalQueryFilter) {
+    let conditions = and(
+      eq(vouchers.companyId, filter.companyId),
+      eq(vouchers.financialYearId, filter.financialYearId),
+    );
+
+    if (filter.ledgerId) {
+      conditions = and(conditions, eq(voucher_entries.ledgerId, filter.ledgerId));
+    }
+    if (filter.startDate) {
+      conditions = and(conditions, gte(voucher_entries.entryDate, filter.startDate));
+    }
+    if (filter.endDate) {
+      conditions = and(conditions, lte(voucher_entries.entryDate, filter.endDate));
+    }
+    if (filter.voucherType) {
+      conditions = and(
+        conditions,
+        eq(vouchers.voucherType, filter.voucherType as import('@vyora/database').VoucherType),
+      );
+    }
+    if (filter.searchQuery) {
+      conditions = and(conditions, ilike(vouchers.voucherNumber, `%${filter.searchQuery}%`));
+    }
+
+    const query = this.db
+      .select({
+        id: voucher_entries.id,
+        voucherId: vouchers.id,
+        voucherNumber: vouchers.voucherNumber,
+        voucherDate: vouchers.voucherDate,
+        voucherType: vouchers.voucherType,
+        ledgerId: voucher_entries.ledgerId,
+        ledgerName: ledgers.name,
+        debitAmount: voucher_entries.debitAmount,
+        creditAmount: voucher_entries.creditAmount,
+        narration: voucher_entries.narration,
+      })
+      .from(voucher_entries)
+      .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
+      .innerJoin(ledgers, eq(voucher_entries.ledgerId, ledgers.id))
+      .where(conditions)
+      .orderBy(asc(voucher_entries.entryDate), asc(voucher_entries.createdAt));
+
+    return query.all();
+  }
+
+  public async getLedgerOpeningBalance(
+    ledgerId: string,
+  ): Promise<{ openingBalance: number; openingType: 'Dr' | 'Cr' }> {
+    const ledger = this.db
+      .select({ openingBalance: ledgers.openingBalance, openingType: ledgers.openingType })
+      .from(ledgers)
+      .where(eq(ledgers.id, ledgerId))
+      .get();
+    if (!ledger) throw new Error('Ledger not found');
+    return {
+      openingBalance: ledger.openingBalance,
+      openingType: ledger.openingType as 'Dr' | 'Cr',
+    };
+  }
+
+  /**
+   * @deprecated Use getLedgerOpeningBalance and JournalQueryService instead.
+   */
   public async getLedgerStatement(
     companyId: string,
     financialYearId: string,
