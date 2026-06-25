@@ -656,15 +656,11 @@ export class JournalService {
   // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
 
   public createVoucherSync(
+    companyId: string,
+    financialYearId: string,
     input: CreateVoucherInput,
     tx: TransactionExecutor,
   ): { voucherId: string; voucherNumber: string } {
-    const companyId = companyContextService.getActiveCompany();
-    const fy = financialYearContextService.getActiveFinancialYear();
-
-    if (!companyId) throw new Error('No active company context');
-    if (!fy) throw new Error('No active financial year context');
-
     if (input.entries.length < 2) {
       throw new Error('A voucher must have at least two entries');
     }
@@ -699,7 +695,7 @@ export class JournalService {
     const insertVoucher: InsertVoucher = {
       id: randomUUID(),
       companyId,
-      financialYearId: fy.id,
+      financialYearId,
       voucherType: input.voucherType,
       voucherNumber: input.voucherNumber,
       voucherDate: input.voucherDate as Date,
@@ -835,7 +831,12 @@ export class JournalService {
       entries,
     };
 
-    const { voucherId } = this.createVoucherSync(voucherInput, tx);
+    const { voucherId } = this.createVoucherSync(
+      payload.companyId,
+      payload.financialYearId,
+      voucherInput,
+      tx,
+    );
 
     return { voucherId };
   }
@@ -844,18 +845,10 @@ export class JournalService {
     purchaseId: string,
     tx: TransactionExecutor,
   ): { reversalVoucherId: string } {
-    const companyId = companyContextService.getActiveCompany() as string;
-
     const originalVouchers = tx
       .select()
       .from(vouchers)
-      .where(
-        and(
-          eq(vouchers.companyId, companyId),
-          eq(vouchers.referenceType, 'PURCHASE_BILL'),
-          eq(vouchers.referenceId, purchaseId),
-        ),
-      )
+      .where(and(eq(vouchers.referenceType, 'PURCHASE_BILL'), eq(vouchers.referenceId, purchaseId)))
       .all();
 
     if (originalVouchers.length === 0) {
@@ -866,6 +859,12 @@ export class JournalService {
     }
 
     const originalVoucher = originalVouchers[0];
+    const companyId = originalVoucher.companyId;
+    const financialYearId = originalVoucher.financialYearId;
+
+    if (!financialYearId) {
+      throw new Error('Original voucher has no financial year ID');
+    }
 
     if (originalVoucher.isCancelled) {
       throw new Error(`Voucher ${originalVoucher.voucherNumber} is already cancelled`);
@@ -890,12 +889,9 @@ export class JournalService {
       }),
     );
 
-    const fy = financialYearContextService.getActiveFinancialYear();
-    if (!fy) throw new Error('No active financial year context');
-
     const generatedVoucherNumber = numberingEngineService.generateNextNumberSync(
       companyId,
-      fy.id,
+      financialYearId,
       'JOURNAL_VOUCHER',
       tx,
     );
@@ -911,7 +907,12 @@ export class JournalService {
       entries: reversalEntries,
     };
 
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(reversalInput, tx);
+    const { voucherId: reversalVoucherId } = this.createVoucherSync(
+      companyId,
+      financialYearId,
+      reversalInput,
+      tx,
+    );
 
     tx.update(vouchers)
       .set({ isCancelled: true, reversalVoucherId })
@@ -1041,7 +1042,12 @@ export class JournalService {
       entries,
     };
 
-    const { voucherId } = this.createVoucherSync(voucherInput, tx);
+    const { voucherId } = this.createVoucherSync(
+      payload.companyId,
+      payload.financialYearId,
+      voucherInput,
+      tx,
+    );
 
     return { voucherId };
   }
@@ -1054,12 +1060,7 @@ export class JournalService {
     const originalVouchers = tx
       .select()
       .from(vouchers)
-      .where(
-        and(
-          eq(vouchers.referenceType, 'SALES_INVOICE'),
-          eq(vouchers.referenceId, invoiceId),
-        ),
-      )
+      .where(and(eq(vouchers.referenceType, 'SALES_INVOICE'), eq(vouchers.referenceId, invoiceId)))
       .all();
 
     if (originalVouchers.length === 0) {
@@ -1105,7 +1106,12 @@ export class JournalService {
       entries: reversalEntries,
     };
 
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(reversalInput, tx);
+    const { voucherId: reversalVoucherId } = this.createVoucherSync(
+      companyId,
+      financialYearId,
+      reversalInput,
+      tx,
+    );
 
     tx.update(vouchers)
       .set({ isCancelled: true, reversalVoucherId })
