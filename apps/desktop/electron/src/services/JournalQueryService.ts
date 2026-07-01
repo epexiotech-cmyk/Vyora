@@ -26,8 +26,18 @@ export class JournalQueryService {
     return await journalRepository.getLedgerOpeningBalance(ledgerId);
   }
 
-  public async getBulkLedgerMovements(companyId: string, financialYearId: string, asOfDate?: Date) {
-    return await journalRepository.getBulkLedgerMovements(companyId, financialYearId, asOfDate);
+  public async getBulkLedgerMovements(
+    companyId: string,
+    financialYearId: string,
+    asOfDate?: Date,
+    includeInactive?: boolean,
+  ) {
+    return await journalRepository.getBulkLedgerMovements(
+      companyId,
+      financialYearId,
+      asOfDate,
+      includeInactive,
+    );
   }
 
   public async getLedgerGroups(companyId: string) {

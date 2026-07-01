@@ -276,6 +276,7 @@ export class JournalRepository extends BaseRepository {
     companyId: string,
     financialYearId: string,
     asOfDate?: Date,
+    includeInactive?: boolean,
   ): Promise<
     {
       ledgerId: string;
@@ -288,6 +289,11 @@ export class JournalRepository extends BaseRepository {
     }[]
   > {
     // 1. Fetch all active ledgers
+    let ledgerConditions: import('drizzle-orm').SQL<unknown> = eq(ledgers.companyId, companyId);
+    if (!includeInactive) {
+      ledgerConditions = and(ledgerConditions, eq(ledgers.isActive, true))!;
+    }
+
     const activeLedgers = this.db
       .select({
         ledgerId: ledgers.id,
@@ -297,7 +303,7 @@ export class JournalRepository extends BaseRepository {
         openingType: ledgers.openingType,
       })
       .from(ledgers)
-      .where(and(eq(ledgers.companyId, companyId), eq(ledgers.isActive, true)))
+      .where(ledgerConditions)
       .all();
 
     // 2. Fetch aggregated movements
