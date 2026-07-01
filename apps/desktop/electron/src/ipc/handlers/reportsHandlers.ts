@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 
+import { balanceSheetService } from '../../services/BalanceSheetService';
 import { companyContextService } from '../../services/CompanyContextService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
@@ -60,5 +61,15 @@ export function registerReportsHandlers() {
     if (!financialYear) throw new Error('No active financial year selected.');
 
     return profitLossService.getProfitLoss(companyId, financialYear.id, asOfDate);
+  });
+
+  ipcMain.handle('reports:getBalanceSheet', async (_, asOfDate?: Date) => {
+    const companyId = companyContextService.getActiveCompany();
+    const financialYear = financialYearContextService.getActiveFinancialYear();
+
+    if (!companyId) throw new Error('No active company selected.');
+    if (!financialYear) throw new Error('No active financial year selected.');
+
+    return balanceSheetService.getBalanceSheet(companyId, financialYear.id, asOfDate);
   });
 }

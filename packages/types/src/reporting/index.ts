@@ -3,3 +3,4 @@ export * from './balances';
 export * from './ledger-statement';
 export * from './trial-balance';
 export * from './profit-loss';
+export * from './balance-sheet';
