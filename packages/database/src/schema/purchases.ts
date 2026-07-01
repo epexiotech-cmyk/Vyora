@@ -1,7 +1,7 @@
-import { sqliteTable, text, integer, index, unique } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, unique, real } from 'drizzle-orm/sqlite-core';
 
-import { suppliers, products, units, taxes } from './master';
-import { companies, financial_years } from './system';
+import { suppliers, products, units, taxes, tax_groups } from './master';
+import { companies, financial_years, states } from './system';
 
 export const purchase_invoices = sqliteTable(
   'purchase_invoices',
@@ -15,6 +15,8 @@ export const purchase_invoices = sqliteTable(
       .notNull(),
     purchaseNumber: text('purchase_number').notNull(),
     purchaseDate: integer('purchase_date', { mode: 'timestamp' }).notNull(),
+    placeOfSupplyStateId: text('place_of_supply_state_id').references(() => states.id),
+    isReverseCharge: integer('is_reverse_charge', { mode: 'boolean' }).default(false).notNull(),
     supplierId: text('supplier_id')
       .references(() => suppliers.id)
       .notNull(),
@@ -67,8 +69,16 @@ export const purchase_invoice_items = sqliteTable(
     unitShortName: text('unit_short_name').notNull(),
     taxId: text('tax_id')
       .references(() => taxes.id)
-      .notNull(),
-    taxPercentage: integer('tax_percentage').default(0).notNull(),
+      .notNull(), // kept for backward compat if needed
+    taxGroupId: text('tax_group_id').references(() => tax_groups.id),
+    taxGroupCodeSnapshot: text('tax_group_code_snapshot'),
+    taxGroupNameSnapshot: text('tax_group_name_snapshot'),
+    taxRateSnapshot: real('tax_rate_snapshot'),
+    cgstRateSnapshot: real('cgst_rate_snapshot'),
+    sgstRateSnapshot: real('sgst_rate_snapshot'),
+    igstRateSnapshot: real('igst_rate_snapshot'),
+    cessRateSnapshot: real('cess_rate_snapshot'),
+    taxPercentage: integer('tax_percentage').default(0).notNull(), // kept for backward compat
     hsnCode: text('hsn_code'),
     description: text('description'),
     quantity: integer('quantity').default(0).notNull(),
@@ -76,6 +86,10 @@ export const purchase_invoice_items = sqliteTable(
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxableAmount: integer('taxable_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),
+    cgstAmount: integer('cgst_amount').default(0).notNull(),
+    sgstAmount: integer('sgst_amount').default(0).notNull(),
+    igstAmount: integer('igst_amount').default(0).notNull(),
+    cessAmount: integer('cess_amount').default(0).notNull(),
     lineTotal: integer('line_total').default(0).notNull(),
     isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),

@@ -13,6 +13,7 @@ export interface CustomerProfileDto {
   area?: string | null;
   city?: string | null;
   state?: string | null;
+  gstStateId?: string | null;
   pincode?: string | null;
   gstin?: string | null;
   pan?: string | null;
@@ -61,6 +62,7 @@ export const createCustomerSchema = z.object({
   area: z.string().max(100).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
   state: z.string().max(100).optional().nullable(),
+  gstStateId: z.string().uuid('Invalid State ID').optional().nullable(),
   pincode: z
     .string()
     .refine((val) => !val || /^[1-9][0-9]{5}$/.test(val), 'Invalid Pincode format')

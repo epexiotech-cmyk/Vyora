@@ -274,17 +274,12 @@ export class SalesInvoiceRepository extends BaseRepository {
 
     // Update header
     if (Object.keys(invoiceData).length > 0) {
-      tx.update(sales_invoices)
-        .set(invoiceData)
-        .where(eq(sales_invoices.id, invoiceId))
-        .run();
+      tx.update(sales_invoices).set(invoiceData).where(eq(sales_invoices.id, invoiceId)).run();
     }
 
     // Update lines (replace all)
     if (items !== undefined) {
-      tx.delete(sales_invoice_items)
-        .where(eq(sales_invoice_items.salesInvoiceId, invoiceId))
-        .run();
+      tx.delete(sales_invoice_items).where(eq(sales_invoice_items.salesInvoiceId, invoiceId)).run();
 
       if (items.length > 0) {
         const itemsToInsert = items.map((item) => ({
@@ -297,11 +292,7 @@ export class SalesInvoiceRepository extends BaseRepository {
     }
   }
 
-  public updateStatusSync(
-    invoiceId: string,
-    status: InvoiceStatus,
-    tx: TransactionExecutor,
-  ): void {
+  public updateStatusSync(invoiceId: string, status: InvoiceStatus, tx: TransactionExecutor): void {
     tx.update(sales_invoices).set({ status }).where(eq(sales_invoices.id, invoiceId)).run();
   }
 }

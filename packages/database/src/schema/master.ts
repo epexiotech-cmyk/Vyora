@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-import { companies } from './system';
+import { companies, states } from './system';
 
 export const taxes = sqliteTable('taxes', {
   id: text('id').primaryKey(),
@@ -12,6 +12,38 @@ export const taxes = sqliteTable('taxes', {
   rate: real('rate').notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+export const tax_groups = sqliteTable('tax_groups', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id')
+    .references(() => companies.id)
+    .notNull(),
+  code: text('code').notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  syncVersion: integer('sync_version').default(1).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+});
+
+export const tax_components = sqliteTable('tax_components', {
+  id: text('id').primaryKey(),
+  taxGroupId: text('tax_group_id')
+    .references(() => tax_groups.id)
+    .notNull(),
+  componentType: text('component_type', {
+    enum: ['CGST', 'SGST', 'IGST', 'CESS'],
+  }).notNull(),
+  rate: real('rate').notNull(),
+  sequence: integer('sequence').default(0).notNull(),
+  calculationPriority: integer('calculation_priority').default(0).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
 export const units = sqliteTable(
@@ -62,7 +94,8 @@ export const customers = sqliteTable(
     addressLine2: text('address_line_2'),
     area: text('area'),
     city: text('city'),
-    state: text('state'),
+    state: text('state'), // backward compatibility
+    gstStateId: text('gst_state_id').references(() => states.id),
     pincode: text('pincode'),
 
     // Compliance
@@ -116,7 +149,8 @@ export const suppliers = sqliteTable(
     addressLine2: text('address_line_2'),
     area: text('area'),
     city: text('city'),
-    state: text('state'),
+    state: text('state'), // backward compatibility
+    gstStateId: text('gst_state_id').references(() => states.id),
     pincode: text('pincode'),
 
     // Compliance

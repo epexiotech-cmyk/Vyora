@@ -7,7 +7,12 @@ import { VyoraDatabase } from '../client/db';
 import { companies, users, settings } from '../schema/system';
 import { hashPassword } from '../utils/password';
 
+import { seedGstStates } from './states';
+
 export const seedDatabase = async (db: VyoraDatabase) => {
+  // Always run GST states seed (it handles duplicates)
+  await seedGstStates(db);
+
   // Check if admin user exists
   const existingAdmin = await db.select().from(users).where(eq(users.username, 'admin')).get();
 

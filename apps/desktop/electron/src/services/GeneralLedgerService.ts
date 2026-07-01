@@ -39,7 +39,7 @@ export class GeneralLedgerService {
       const adjustedOpeningValue = nativeOpeningValue + movementValue;
 
       const adjustedOpeningBalanceAmount = Math.abs(adjustedOpeningValue);
-      const adjustedOpeningBalanceType = adjustedOpeningValue >= 0 ? 'Dr' : 'Cr';
+      const adjustedOpeningBalanceType = (adjustedOpeningValue >= 0 ? 'Dr' : 'Cr') as 'Dr' | 'Cr';
 
       if (adjustedOpeningBalanceAmount === 0 && entries.length === 0) {
         // Skip entirely empty ledgers for the period

@@ -28,6 +28,7 @@ export const createSupplierSchema = z.object({
   area: z.string().max(100).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
   state: z.string().max(100).optional().nullable(),
+  gstStateId: z.string().uuid('Invalid State ID').optional().nullable(),
   pincode: z
     .string()
     .refine((val) => !val || /^[1-9][0-9]{5}$/.test(val), 'Invalid Pincode format')

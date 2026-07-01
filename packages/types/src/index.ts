@@ -13,3 +13,4 @@ export * from './supplier/supplier.dto';
 export * from './master/unit.dto';
 export * from './accounting';
 export * from './reporting';
+export * from './system/states.dto';

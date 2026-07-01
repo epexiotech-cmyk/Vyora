@@ -183,6 +183,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
         supplierInvoiceDate: data.supplierInvoiceDate
           ? new Date(data.supplierInvoiceDate)
           : undefined,
+        isReverseCharge: false,
         notes: data.notes || undefined,
         subtotal: computedTotals.subtotal,
         discountAmount: computedTotals.totalDiscount,

@@ -42,9 +42,9 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
           <td class="text-right">${item.quantity}</td>
           <td class="text-right">${formatCurrencyINR(item.rate)}</td>
           <td class="text-right">${formatCurrencyINR(item.taxableAmount)}</td>
-          <td class="text-right">${formatCurrencyINR(item.cgstAmount || 0)} <br/><small>(${item.cgstRate || 0}%)</small></td>
-          <td class="text-right">${formatCurrencyINR(item.sgstAmount || 0)} <br/><small>(${item.sgstRate || 0}%)</small></td>
-          <td class="text-right">${formatCurrencyINR(item.igstAmount || 0)} <br/><small>(${item.igstRate || 0}%)</small></td>
+          <td class="text-right">${formatCurrencyINR(item.cgstAmount || 0)} <br/><small>(${item.cgstRateSnapshot || 0}%)</small></td>
+          <td class="text-right">${formatCurrencyINR(item.sgstAmount || 0)} <br/><small>(${item.sgstRateSnapshot || 0}%)</small></td>
+          <td class="text-right">${formatCurrencyINR(item.igstAmount || 0)} <br/><small>(${item.igstRateSnapshot || 0}%)</small></td>
           <td class="text-right">${formatCurrencyINR(item.lineTotal)}</td>
         </tr>
       `;

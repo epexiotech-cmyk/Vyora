@@ -6,6 +6,7 @@ fs.writeFileSync('test-output-sales.txt', '');
 const log = (...args: unknown[]) => {
   const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ') + '\n';
   fs.appendFileSync('test-output-sales.txt', msg);
+  // eslint-disable-next-line no-console
   console.log(...args); // keep console.log too
 };
 
@@ -287,6 +288,7 @@ export async function runTest() {
       customerId,
       invoiceNumber: 'INV-' + Date.now(),
       invoiceDate: new Date(),
+      isReverseCharge: false,
       subtotal: 1500, // 10 * 150
       taxAmount: 75,
       discountAmount: 0,

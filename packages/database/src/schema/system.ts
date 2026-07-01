@@ -1,5 +1,17 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
+export const states = sqliteTable('states', {
+  id: text('id').primaryKey(),
+  gstStateCode: text('gst_state_code').notNull().unique(),
+  isoCode: text('iso_code').notNull(),
+  name: text('name').notNull(),
+  isUnionTerritory: integer('is_union_territory', { mode: 'boolean' }).default(false).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+});
+
 export const companies = sqliteTable('companies', {
   id: text('id').primaryKey(),
   legalName: text('legal_name').notNull(),
@@ -12,7 +24,8 @@ export const companies = sqliteTable('companies', {
   addressLine2: text('address_line_2'),
   city: text('city'),
   district: text('district'),
-  stateCode: text('state_code'),
+  stateCode: text('state_code'), // backward compatibility
+  gstStateId: text('gst_state_id').references(() => states.id),
   countryCode: text('country_code'),
   pincode: text('pincode'),
   email: text('email'),

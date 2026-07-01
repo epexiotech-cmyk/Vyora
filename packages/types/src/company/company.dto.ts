@@ -13,6 +13,7 @@ export interface CompanyProfileDto {
   city?: string | null;
   district?: string | null;
   stateCode?: string | null;
+  gstStateId?: string | null;
   countryCode?: string | null;
   pincode?: string | null;
   email?: string | null;
@@ -44,6 +45,7 @@ export interface UpdateCompanyProfileRequest {
   city?: string | null;
   district?: string | null;
   stateCode?: string | null;
+  gstStateId?: string | null;
   countryCode?: string | null;
   pincode?: string | null;
   email?: string | null;

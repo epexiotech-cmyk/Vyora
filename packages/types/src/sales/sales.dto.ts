@@ -6,6 +6,14 @@ export const createSalesInvoiceItemSchema = z.object({
   productId: z.string().uuid(),
   unitId: z.string().uuid(),
   taxId: z.string().uuid(),
+  taxGroupId: z.string().uuid().optional().nullable(),
+  taxGroupCodeSnapshot: z.string().optional().nullable(),
+  taxGroupNameSnapshot: z.string().optional().nullable(),
+  taxRateSnapshot: z.number().optional().nullable(),
+  cgstRateSnapshot: z.number().optional().nullable(),
+  sgstRateSnapshot: z.number().optional().nullable(),
+  igstRateSnapshot: z.number().optional().nullable(),
+  cessRateSnapshot: z.number().optional().nullable(),
   description: z.string().optional().nullable(),
   hsnCode: z.string().optional().nullable(),
   quantity: z.number().int().min(1),
@@ -13,6 +21,10 @@ export const createSalesInvoiceItemSchema = z.object({
   discountAmount: z.number().int().min(0).default(0),
   taxableAmount: z.number().int().min(0),
   taxAmount: z.number().int().min(0),
+  cgstAmount: z.number().int().min(0).optional(),
+  sgstAmount: z.number().int().min(0).optional(),
+  igstAmount: z.number().int().min(0).optional(),
+  cessAmount: z.number().int().min(0).optional(),
   lineTotal: z.number().int().min(0),
 });
 
@@ -24,6 +36,33 @@ export const createSalesInvoiceSchema = z.object({
   customerId: z.string().uuid(),
   invoiceNumber: z.string().min(1),
   invoiceDate: z.date(),
+  placeOfSupplyStateId: z.string().uuid().optional().nullable(),
+  isReverseCharge: z.boolean().default(false),
+
+  // Snapshots for Printing
+  companyNameSnapshot: z.string().optional().nullable(),
+  companyAddressSnapshot: z.string().optional().nullable(),
+  companyGstinSnapshot: z.string().optional().nullable(),
+  companyStateNameSnapshot: z.string().optional().nullable(),
+  companyStateCodeSnapshot: z.string().optional().nullable(),
+  companyPanSnapshot: z.string().optional().nullable(),
+
+  placeOfSupplyCode: z.string().optional().nullable(),
+
+  billingName: z.string().optional().nullable(),
+  billingAddress: z.string().optional().nullable(),
+  billingCity: z.string().optional().nullable(),
+  billingPincode: z.string().optional().nullable(),
+  billingGstin: z.string().optional().nullable(),
+  billingStateCode: z.string().optional().nullable(),
+
+  shippingName: z.string().optional().nullable(),
+  shippingAddress: z.string().optional().nullable(),
+  shippingCity: z.string().optional().nullable(),
+  shippingPincode: z.string().optional().nullable(),
+  shippingGstin: z.string().optional().nullable(),
+  shippingStateCode: z.string().optional().nullable(),
+
   subtotal: z.number().int().min(0),
   discountAmount: z.number().int().min(0).default(0),
   taxAmount: z.number().int().min(0),
@@ -45,6 +84,14 @@ export interface SalesInvoiceLineDto {
   productId: string;
   unitId: string;
   taxId: string;
+  taxGroupId?: string | null;
+  taxGroupCodeSnapshot?: string | null;
+  taxGroupNameSnapshot?: string | null;
+  taxRateSnapshot?: number | null;
+  cgstRateSnapshot?: number | null;
+  sgstRateSnapshot?: number | null;
+  igstRateSnapshot?: number | null;
+  cessRateSnapshot?: number | null;
   description?: string | null;
   hsnCode?: string | null;
   quantity: number;
@@ -52,6 +99,10 @@ export interface SalesInvoiceLineDto {
   discountAmount: number;
   taxableAmount: number;
   taxAmount: number;
+  cgstAmount?: number;
+  sgstAmount?: number;
+  igstAmount?: number;
+  cessAmount?: number;
   lineTotal: number;
 }
 
@@ -62,6 +113,33 @@ export interface SalesInvoiceDto {
   customerId: string;
   invoiceNumber: string;
   invoiceDate: Date;
+  placeOfSupplyStateId?: string | null;
+  isReverseCharge?: boolean;
+
+  // Snapshots for Printing
+  companyNameSnapshot?: string | null;
+  companyAddressSnapshot?: string | null;
+  companyGstinSnapshot?: string | null;
+  companyStateNameSnapshot?: string | null;
+  companyStateCodeSnapshot?: string | null;
+  companyPanSnapshot?: string | null;
+
+  placeOfSupplyCode?: string | null;
+
+  billingName?: string | null;
+  billingAddress?: string | null;
+  billingCity?: string | null;
+  billingPincode?: string | null;
+  billingGstin?: string | null;
+  billingStateCode?: string | null;
+
+  shippingName?: string | null;
+  shippingAddress?: string | null;
+  shippingCity?: string | null;
+  shippingPincode?: string | null;
+  shippingGstin?: string | null;
+  shippingStateCode?: string | null;
+
   subtotal: number;
   discountAmount: number;
   taxAmount: number;

@@ -1,7 +1,7 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, real } from 'drizzle-orm/sqlite-core';
 
-import { customers, products, units, taxes } from './master';
-import { companies, financial_years } from './system';
+import { customers, products, units, taxes, tax_groups } from './master';
+import { companies, financial_years, states } from './system';
 
 export const sales_invoices = sqliteTable(
   'sales_invoices',
@@ -18,6 +18,8 @@ export const sales_invoices = sqliteTable(
       .notNull(),
     invoiceNumber: text('invoice_number').notNull(),
     invoiceDate: integer('invoice_date', { mode: 'timestamp' }).notNull(),
+    placeOfSupplyStateId: text('place_of_supply_state_id').references(() => states.id),
+    isReverseCharge: integer('is_reverse_charge', { mode: 'boolean' }).default(false).notNull(),
     subtotal: integer('subtotal').default(0).notNull(),
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),
@@ -49,7 +51,15 @@ export const sales_invoice_items = sqliteTable(
       .notNull(),
     taxId: text('tax_id')
       .references(() => taxes.id)
-      .notNull(),
+      .notNull(), // kept for backward compat if needed
+    taxGroupId: text('tax_group_id').references(() => tax_groups.id),
+    taxGroupCodeSnapshot: text('tax_group_code_snapshot'),
+    taxGroupNameSnapshot: text('tax_group_name_snapshot'),
+    taxRateSnapshot: real('tax_rate_snapshot'),
+    cgstRateSnapshot: real('cgst_rate_snapshot'),
+    sgstRateSnapshot: real('sgst_rate_snapshot'),
+    igstRateSnapshot: real('igst_rate_snapshot'),
+    cessRateSnapshot: real('cess_rate_snapshot'),
     description: text('description'),
     hsnCode: text('hsn_code'),
     quantity: integer('quantity').default(0).notNull(),
@@ -57,6 +67,10 @@ export const sales_invoice_items = sqliteTable(
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxableAmount: integer('taxable_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),
+    cgstAmount: integer('cgst_amount').default(0).notNull(),
+    sgstAmount: integer('sgst_amount').default(0).notNull(),
+    igstAmount: integer('igst_amount').default(0).notNull(),
+    cessAmount: integer('cess_amount').default(0).notNull(),
     lineTotal: integer('line_total').default(0).notNull(),
   },
   (table) => [
