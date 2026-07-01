@@ -5,3 +5,4 @@ export * from './trial-balance';
 export * from './profit-loss';
 export * from './balance-sheet';
 export * from './general-ledger';
+export * from './day-book';

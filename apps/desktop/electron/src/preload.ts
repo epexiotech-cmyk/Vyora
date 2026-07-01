@@ -191,6 +191,14 @@ contextBridge.exposeInMainWorld('vyora', {
     getGlobalInventory: () => ipcRenderer.invoke('inventory:global:getAll'),
     getNegativeInventory: () => ipcRenderer.invoke('inventory:global:getNegative'),
   },
+  reports: {
+    getDayBook: (args: {
+      startDate?: Date;
+      endDate?: Date;
+      voucherType?: string;
+      searchQuery?: string;
+    }) => ipcRenderer.invoke('reports:getDayBook', args),
+  },
 });
 
 export type VyoraSystemAPI = {
@@ -357,6 +365,15 @@ export type VyoraInventoryAPI = {
   getNegativeInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
 };
 
+export type VyoraReportsAPI = {
+  getDayBook: (args: {
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').DayBookReportDto>;
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -372,6 +389,7 @@ declare global {
       accounting: VyoraAccountingAPI;
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
+      reports: VyoraReportsAPI;
     };
   }
 }

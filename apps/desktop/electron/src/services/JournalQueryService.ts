@@ -8,6 +8,7 @@ export class JournalQueryService {
 
     return rawRows.map((row) => ({
       entryId: row.id,
+      lineNumber: row.lineNumber,
       voucherId: row.voucherId,
       voucherNumber: row.voucherNumber,
       voucherDate: row.voucherDate,

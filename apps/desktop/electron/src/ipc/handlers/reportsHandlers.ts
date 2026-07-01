@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 
 import { balanceSheetService } from '../../services/BalanceSheetService';
 import { companyContextService } from '../../services/CompanyContextService';
+import { dayBookService } from '../../services/DayBookService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
 import { generalLedgerService } from '../../services/GeneralLedgerService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
@@ -94,4 +95,28 @@ export function registerReportsHandlers() {
 
     return balanceSheetService.getBalanceSheet(companyId, financialYear.id, asOfDate);
   });
+
+  ipcMain.handle(
+    'reports:getDayBook',
+    async (
+      _event,
+      args: { startDate?: Date; endDate?: Date; voucherType?: string; searchQuery?: string } = {},
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate Day Book: Missing company or financial year context');
+      }
+
+      return await dayBookService.getDayBook({
+        companyId,
+        financialYearId: financialYear.id,
+        startDate: args.startDate,
+        endDate: args.endDate,
+        voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
+        searchQuery: args.searchQuery,
+      });
+    },
+  );
 }

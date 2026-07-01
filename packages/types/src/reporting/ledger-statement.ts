@@ -2,6 +2,7 @@ import { MonetaryBalance } from './balances';
 
 export interface JournalEntryRow {
   entryId: string;
+  lineNumber?: number;
   voucherId: string;
   voucherNumber: string;
   voucherDate: Date;

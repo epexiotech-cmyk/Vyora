@@ -238,6 +238,7 @@ export class JournalRepository extends BaseRepository {
     const query = this.db
       .select({
         id: voucher_entries.id,
+        lineNumber: voucher_entries.lineNumber,
         voucherId: vouchers.id,
         voucherNumber: vouchers.voucherNumber,
         voucherDate: vouchers.voucherDate,
@@ -252,7 +253,12 @@ export class JournalRepository extends BaseRepository {
       .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
       .innerJoin(ledgers, eq(voucher_entries.ledgerId, ledgers.id))
       .where(conditions)
-      .orderBy(asc(voucher_entries.entryDate), asc(voucher_entries.createdAt));
+      .orderBy(
+        asc(vouchers.voucherDate),
+        asc(vouchers.createdAt),
+        asc(vouchers.voucherNumber),
+        asc(voucher_entries.lineNumber),
+      );
 
     return query.all();
   }
