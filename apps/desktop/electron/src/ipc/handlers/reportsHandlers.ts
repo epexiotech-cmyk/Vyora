@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 
 import { balanceSheetService } from '../../services/BalanceSheetService';
+import { cashBookService } from '../../services/CashBookService';
 import { companyContextService } from '../../services/CompanyContextService';
 import { dayBookService } from '../../services/DayBookService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
@@ -112,6 +113,37 @@ export function registerReportsHandlers() {
       return await dayBookService.getDayBook({
         companyId,
         financialYearId: financialYear.id,
+        startDate: args.startDate,
+        endDate: args.endDate,
+        voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
+        searchQuery: args.searchQuery,
+      });
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getCashBook',
+    async (
+      _event,
+      args: {
+        ledgerId: string;
+        startDate?: Date;
+        endDate?: Date;
+        voucherType?: string;
+        searchQuery?: string;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate Cash Book: Missing company or financial year context');
+      }
+
+      return await cashBookService.getCashBook({
+        companyId,
+        financialYearId: financialYear.id,
+        ledgerId: args.ledgerId,
         startDate: args.startDate,
         endDate: args.endDate,
         voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,

@@ -198,6 +198,13 @@ contextBridge.exposeInMainWorld('vyora', {
       voucherType?: string;
       searchQuery?: string;
     }) => ipcRenderer.invoke('reports:getDayBook', args),
+    getCashBook: (args: {
+      ledgerId: string;
+      startDate?: Date;
+      endDate?: Date;
+      voucherType?: string;
+      searchQuery?: string;
+    }) => ipcRenderer.invoke('reports:getCashBook', args),
   },
 });
 
@@ -372,6 +379,13 @@ export type VyoraReportsAPI = {
     voucherType?: string;
     searchQuery?: string;
   }) => Promise<import('@vyora/types').DayBookReportDto>;
+  getCashBook: (args: {
+    ledgerId: string;
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').CashBookReportDto>;
 };
 
 declare global {

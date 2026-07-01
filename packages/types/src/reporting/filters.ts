@@ -6,6 +6,7 @@ export interface JournalQueryFilter {
   endDate?: Date;
   voucherType?: string;
   searchQuery?: string;
+  vouchersInvolvingLedgerId?: string;
 }
 
 export interface PaginationDto {

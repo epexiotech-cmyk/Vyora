@@ -234,6 +234,12 @@ export class JournalRepository extends BaseRepository {
     if (filter.searchQuery) {
       conditions = and(conditions, ilike(vouchers.voucherNumber, `%${filter.searchQuery}%`));
     }
+    if (filter.vouchersInvolvingLedgerId) {
+      conditions = and(
+        conditions,
+        sql`EXISTS (SELECT 1 FROM ${voucher_entries} ve WHERE ve.voucher_id = ${vouchers.id} AND ve.ledger_id = ${filter.vouchersInvolvingLedgerId})`,
+      );
+    }
 
     const query = this.db
       .select({
