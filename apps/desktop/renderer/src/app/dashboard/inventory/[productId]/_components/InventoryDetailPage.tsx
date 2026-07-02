@@ -1,6 +1,11 @@
 'use client';
 
-import { InventoryStockDto, ProductDto, StockMovementDto, StockSummaryDto } from '@vyora/types';
+import {
+  InventoryStockDto,
+  ProductDto,
+  StockMovementDto,
+  ProductStockStatusDto,
+} from '@vyora/types';
 import { ArrowLeft, History, Loader2, Package, Tag, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -22,7 +27,7 @@ export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
   const router = useRouter();
 
   const [product, setProduct] = React.useState<ProductDto | null>(null);
-  const [stockSummary, setStockSummary] = React.useState<StockSummaryDto | null>(null);
+  const [stockSummary, setStockSummary] = React.useState<ProductStockStatusDto | null>(null);
   const [currentStock, setCurrentStock] = React.useState<InventoryStockDto | null>(null);
   const [ledger, setLedger] = React.useState<StockMovementDto[]>([]);
 

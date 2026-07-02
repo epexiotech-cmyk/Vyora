@@ -1,4 +1,9 @@
-import { ApiResponse, InventoryStockDto, StockMovementDto, StockSummaryDto } from '@vyora/types';
+import {
+  ApiResponse,
+  InventoryStockDto,
+  StockMovementDto,
+  ProductStockStatusDto,
+} from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { DbTransaction } from '../../repositories/BaseRepository';
@@ -10,7 +15,7 @@ import { inventoryService } from '../../services/InventoryService';
 import { createIpcHandler } from '../wrapper';
 
 export function registerInventoryHandlers() {
-  createIpcHandler<StockSummaryDto>(
+  createIpcHandler<ProductStockStatusDto>(
     'inventory:getStockSummary',
     async (_event, productId: string) => {
       const companyId = companyContextService.getActiveCompany();

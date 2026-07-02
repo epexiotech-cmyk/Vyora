@@ -209,9 +209,7 @@ export type VyoraJournalAPI = {
 };
 
 export type VyoraInventoryAPI = {
-  getStockSummary: (
-    productId: string,
-  ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  getStockSummary: (productId: string) => Promise<ApiResponse<ProductStockStatusDto>>;
   getStock: (productId: string) => Promise<ApiResponse<import('@vyora/types').InventoryStockDto>>;
   getLedger: (productId: string) => Promise<ApiResponse<import('@vyora/types').StockMovementDto[]>>;
   getGlobalInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
