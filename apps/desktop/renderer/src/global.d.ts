@@ -216,6 +216,49 @@ export type VyoraInventoryAPI = {
   getNegativeInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
 };
 
+export type VyoraReportsAPI = {
+  getDayBook: (args: {
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').DayBookReportDto>;
+  getCashBook: (args: {
+    ledgerId: string;
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').CashBookReportDto>;
+  getBankBook: (args: {
+    ledgerId: string;
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').BankBookReportDto>;
+  getOutstandingSummary: (args: {
+    reportType: 'CUSTOMER' | 'SUPPLIER';
+    asOfDate?: Date;
+  }) => Promise<import('@vyora/types').OutstandingSummaryDto>;
+  getStockSummary: (args?: {
+    asOfDate?: Date;
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  getStockLedger: (args: {
+    productId: string;
+    productName: string;
+    unitShortName: string;
+    fromDate?: Date;
+    toDate?: Date;
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockLedgerDto>>;
+  getStockMovementRegister: (args?: {
+    fromDate?: Date;
+    toDate?: Date;
+  }) => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').StockMovementRegisterDto>
+  >;
+};
+
 declare global {
   interface Window {
     vyora: {
@@ -231,6 +274,7 @@ declare global {
       accounting: VyoraAccountingAPI;
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
+      reports: VyoraReportsAPI;
     };
   }
 }

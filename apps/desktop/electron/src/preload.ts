@@ -214,6 +214,17 @@ contextBridge.exposeInMainWorld('vyora', {
     }) => ipcRenderer.invoke('reports:getBankBook', args),
     getOutstandingSummary: (args: { reportType: 'CUSTOMER' | 'SUPPLIER'; asOfDate?: Date }) =>
       ipcRenderer.invoke('reports:getOutstandingSummary', args),
+    getStockSummary: (args?: { asOfDate?: Date }) =>
+      ipcRenderer.invoke('reports:getStockSummary', args),
+    getStockLedger: (args: {
+      productId: string;
+      productName: string;
+      unitShortName: string;
+      fromDate?: Date;
+      toDate?: Date;
+    }) => ipcRenderer.invoke('reports:getStockLedger', args),
+    getStockMovementRegister: (args?: { fromDate?: Date; toDate?: Date }) =>
+      ipcRenderer.invoke('reports:getStockMovementRegister', args),
   },
 });
 
@@ -406,6 +417,22 @@ export type VyoraReportsAPI = {
     reportType: 'CUSTOMER' | 'SUPPLIER';
     asOfDate?: Date;
   }) => Promise<import('@vyora/types').OutstandingSummaryDto>;
+  getStockSummary: (args?: {
+    asOfDate?: Date;
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  getStockLedger: (args: {
+    productId: string;
+    productName: string;
+    unitShortName: string;
+    fromDate?: Date;
+    toDate?: Date;
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockLedgerDto>>;
+  getStockMovementRegister: (args?: {
+    fromDate?: Date;
+    toDate?: Date;
+  }) => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').StockMovementRegisterDto>
+  >;
 };
 
 declare global {

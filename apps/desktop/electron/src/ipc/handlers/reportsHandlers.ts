@@ -1,3 +1,4 @@
+import { StockSummaryDto, StockLedgerDto, StockMovementRegisterDto } from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { balanceSheetService } from '../../services/BalanceSheetService';
@@ -7,11 +8,12 @@ import { companyContextService } from '../../services/CompanyContextService';
 import { dayBookService } from '../../services/DayBookService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
 import { generalLedgerService } from '../../services/GeneralLedgerService';
+import { inventoryReportService } from '../../services/InventoryReportService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
 import { outstandingReportService } from '../../services/OutstandingReportService';
 import { profitLossService } from '../../services/ProfitLossService';
 import { trialBalanceService } from '../../services/TrialBalanceService';
-
+import { createIpcHandler } from '../wrapper';
 export function registerReportsHandlers() {
   ipcMain.handle(
     'reports:getLedgerStatement',
@@ -209,6 +211,82 @@ export function registerReportsHandlers() {
         args.reportType,
         args.asOfDate,
       );
+    },
+  );
+
+  createIpcHandler<StockSummaryDto>(
+    'reports:getStockSummary',
+    async (_, args: { asOfDate?: Date } = {}) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate Stock Summary: Missing company or financial year context');
+      }
+
+      const data = await inventoryReportService.getStockSummaryReport(
+        companyId,
+        financialYear.id,
+        args.asOfDate,
+      );
+
+      return { success: true, data };
+    },
+  );
+
+  createIpcHandler<StockLedgerDto>(
+    'reports:getStockLedger',
+    async (
+      _,
+      args: {
+        productId: string;
+        productName: string;
+        unitShortName: string;
+        fromDate?: Date;
+        toDate?: Date;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate Stock Ledger: Missing company or financial year context');
+      }
+
+      const data = await inventoryReportService.getStockLedgerReport(
+        companyId,
+        financialYear.id,
+        args.productId,
+        args.productName,
+        args.unitShortName,
+        args.fromDate,
+        args.toDate,
+      );
+
+      return { success: true, data };
+    },
+  );
+
+  createIpcHandler<StockMovementRegisterDto>(
+    'reports:getStockMovementRegister',
+    async (_, args: { fromDate?: Date; toDate?: Date } = {}) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error(
+          'Cannot generate Stock Movement Register: Missing company or financial year context',
+        );
+      }
+
+      const data = await inventoryReportService.getStockMovementRegisterReport(
+        companyId,
+        financialYear.id,
+        args.fromDate,
+        args.toDate,
+      );
+
+      return { success: true, data };
     },
   );
 }
