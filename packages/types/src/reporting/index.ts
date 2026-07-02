@@ -8,3 +8,4 @@ export * from './general-ledger';
 export * from './day-book';
 export * from './cash-book';
 export * from './bank-book';
+export * from './outstanding';

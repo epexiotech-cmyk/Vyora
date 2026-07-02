@@ -8,6 +8,7 @@ import { dayBookService } from '../../services/DayBookService';
 import { financialYearContextService } from '../../services/FinancialYearContextService';
 import { generalLedgerService } from '../../services/GeneralLedgerService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
+import { outstandingReportService } from '../../services/OutstandingReportService';
 import { profitLossService } from '../../services/ProfitLossService';
 import { trialBalanceService } from '../../services/TrialBalanceService';
 
@@ -181,6 +182,33 @@ export function registerReportsHandlers() {
         voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
         searchQuery: args.searchQuery,
       });
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getOutstandingSummary',
+    async (
+      _event,
+      args: {
+        reportType: 'CUSTOMER' | 'SUPPLIER';
+        asOfDate?: Date;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error(
+          'Cannot generate Outstanding Report: Missing company or financial year context',
+        );
+      }
+
+      return await outstandingReportService.getOutstandingSummary(
+        companyId,
+        financialYear.id,
+        args.reportType,
+        args.asOfDate,
+      );
     },
   );
 }

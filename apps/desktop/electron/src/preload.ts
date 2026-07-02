@@ -212,6 +212,8 @@ contextBridge.exposeInMainWorld('vyora', {
       voucherType?: string;
       searchQuery?: string;
     }) => ipcRenderer.invoke('reports:getBankBook', args),
+    getOutstandingSummary: (args: { reportType: 'CUSTOMER' | 'SUPPLIER'; asOfDate?: Date }) =>
+      ipcRenderer.invoke('reports:getOutstandingSummary', args),
   },
 });
 
@@ -400,6 +402,10 @@ export type VyoraReportsAPI = {
     voucherType?: string;
     searchQuery?: string;
   }) => Promise<import('@vyora/types').BankBookReportDto>;
+  getOutstandingSummary: (args: {
+    reportType: 'CUSTOMER' | 'SUPPLIER';
+    asOfDate?: Date;
+  }) => Promise<import('@vyora/types').OutstandingSummaryDto>;
 };
 
 declare global {

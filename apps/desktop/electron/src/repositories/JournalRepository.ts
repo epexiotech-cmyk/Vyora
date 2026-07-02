@@ -316,6 +316,7 @@ export class JournalRepository extends BaseRepository {
       })
       .from(ledgers)
       .where(ledgerConditions)
+      .orderBy(asc(ledgers.name))
       .all();
 
     // 2. Fetch aggregated movements
@@ -440,17 +441,12 @@ export class JournalRepository extends BaseRepository {
       .orderBy(asc(voucher_entries.entryDate), asc(voucher_entries.createdAt))
       .all();
 
-    let runningBalance = currentBalanceValue;
-    const rows: LedgerStatementRowDto[] = [];
-    for (const r of results) {
-      runningBalance += r.debitAmount - r.creditAmount;
-      rows.push({
-        ...r,
-        particulars: r.particulars || 'No narration',
-        balance: Math.abs(runningBalance),
-        balanceType: runningBalance >= 0 ? 'Dr' : 'Cr',
-      });
-    }
+    const rows: LedgerStatementRowDto[] = results.map((r) => ({
+      ...r,
+      particulars: r.particulars || 'No narration',
+      balance: 0,
+      balanceType: 'Dr', // Balance will be calculated by the service layer
+    }));
 
     return { openingBalance, openingType, rows };
   }
