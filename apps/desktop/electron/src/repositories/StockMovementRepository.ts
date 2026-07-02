@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { stock_movements } from '@vyora/database';
 import { CreateStockMovementInput, StockMovementDto, InventoryStockDto } from '@vyora/types';
-import { eq, and, asc, sql } from 'drizzle-orm';
+import { eq, and, sql, asc, lte } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -253,5 +253,45 @@ export class StockMovementRepository extends BaseRepository {
       )
       .all();
     return results;
+  }
+
+  // --- REPORTING EXTENSIONS ---
+
+  public async getBulkStockMovements(
+    companyId: string,
+    financialYearId: string,
+    asOfDate?: Date,
+    productId?: string,
+  ) {
+    let conditions: import('drizzle-orm').SQL<unknown> = and(
+      eq(stock_movements.companyId, companyId),
+      eq(stock_movements.financialYearId, financialYearId),
+    )!;
+
+    if (asOfDate) {
+      conditions = and(conditions, lte(stock_movements.movementDate, asOfDate))!;
+    }
+    if (productId) {
+      conditions = and(conditions, eq(stock_movements.productId, productId))!;
+    }
+
+    return this.db
+      .select({
+        id: stock_movements.id,
+        productId: stock_movements.productId,
+        movementType: stock_movements.movementType,
+        referenceType: stock_movements.referenceType,
+        referenceId: stock_movements.referenceId,
+        quantityIn: stock_movements.quantityIn,
+        quantityOut: stock_movements.quantityOut,
+        rate: stock_movements.rate,
+        movementDate: stock_movements.movementDate,
+        remarks: stock_movements.remarks,
+        createdAt: stock_movements.createdAt,
+      })
+      .from(stock_movements)
+      .where(conditions)
+      .orderBy(asc(stock_movements.movementDate), asc(stock_movements.id))
+      .all();
   }
 }

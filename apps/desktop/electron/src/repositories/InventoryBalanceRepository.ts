@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { inventory_balances, products, units } from '@vyora/database';
 import { InventoryBalanceDto, GlobalInventoryRowDto } from '@vyora/types';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, asc } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -238,5 +238,34 @@ export class InventoryBalanceRepository extends BaseRepository {
         })
         .run();
     }
+  }
+
+  // --- REPORTING EXTENSIONS ---
+
+  public async getActiveInventoryBalances(companyId: string, financialYearId: string) {
+    return this.db
+      .select({
+        productId: inventory_balances.productId,
+        currentQty: inventory_balances.currentQty,
+        currentWacPaise: inventory_balances.currentWacPaise,
+        currentValuePaise: inventory_balances.currentValuePaise,
+        productName: products.name,
+        productSku: products.sku,
+        unitId: units.id,
+        unitName: units.name,
+        unitShortName: units.shortName,
+      })
+      .from(inventory_balances)
+      .innerJoin(products, eq(inventory_balances.productId, products.id))
+      .innerJoin(units, eq(products.unitId, units.id))
+      .where(
+        and(
+          eq(inventory_balances.companyId, companyId),
+          eq(inventory_balances.financialYearId, financialYearId),
+          eq(products.isActive, true),
+        ),
+      )
+      .orderBy(asc(products.name))
+      .all();
   }
 }
