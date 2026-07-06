@@ -5,6 +5,8 @@ import {
   StockLedgerRowDto,
   StockMovementRegisterDto,
   StockMovementRegisterRowDto,
+  StockAgeingDto,
+  StockAgeingRowDto,
 } from '@vyora/types';
 
 import { inventoryQueryService } from './InventoryQueryService';
@@ -179,6 +181,127 @@ export class InventoryReportService {
       fromDate,
       toDate,
       rows,
+    };
+  }
+
+  /**
+   * Retrieves stock movements in bulk and groups them by product.
+   * Simulates FIFO receipt layers to determine the age of remaining stock.
+   * Maps results into bucketing structures for the Stock Ageing Report.
+   */
+  public async getStockAgeingReport(
+    companyId: string,
+    financialYearId: string,
+    asOfDate?: Date,
+  ): Promise<StockAgeingDto> {
+    const [movements, activeBalances] = await Promise.all([
+      inventoryQueryService.getBulkStockMovements(companyId, financialYearId, asOfDate),
+      inventoryQueryService.getActiveInventoryBalances(companyId, financialYearId),
+    ]);
+
+    const productBalanceMap = new Map<string, (typeof activeBalances)[0]>();
+    for (const balance of activeBalances) {
+      productBalanceMap.set(balance.productId, balance);
+    }
+
+    const productMovementsMap = new Map<string, typeof movements>();
+    for (const movement of movements) {
+      if (!productMovementsMap.has(movement.productId)) {
+        productMovementsMap.set(movement.productId, []);
+      }
+      productMovementsMap.get(movement.productId)!.push(movement);
+    }
+
+    const rows: StockAgeingRowDto[] = [];
+    let grandTotalQty = 0;
+    let grandTotalValuePaise = 0;
+
+    const referenceDate = asOfDate || new Date();
+    const msPerDay = 1000 * 60 * 60 * 24;
+
+    for (const [productId, productMovements] of productMovementsMap.entries()) {
+      productMovements.sort((a, b) => a.movementDate.getTime() - b.movementDate.getTime());
+
+      const fifoLayers: { date: Date; qty: number }[] = [];
+      let currentQty = 0;
+
+      for (const movement of productMovements) {
+        if (movement.quantityIn > 0) {
+          fifoLayers.push({ date: movement.movementDate, qty: movement.quantityIn });
+          currentQty += movement.quantityIn;
+        } else if (movement.quantityOut > 0) {
+          let outQty = movement.quantityOut;
+          currentQty -= outQty;
+
+          while (outQty > 0 && fifoLayers.length > 0) {
+            const oldestLayer = fifoLayers[0];
+            if (oldestLayer.qty <= outQty) {
+              outQty -= oldestLayer.qty;
+              fifoLayers.shift();
+            } else {
+              oldestLayer.qty -= outQty;
+              outQty = 0;
+            }
+          }
+        }
+      }
+
+      if (currentQty <= 0) continue;
+
+      const balanceInfo = productBalanceMap.get(productId);
+      const productName = balanceInfo?.productName || 'Unknown Product';
+      const sku = balanceInfo?.productSku || '';
+      const unitShortName = balanceInfo?.unitShortName || 'N/A';
+
+      const wacPaise = balanceInfo?.currentWacPaise || 0;
+      const totalValuePaise = currentQty * wacPaise;
+
+      let age0To30Qty = 0;
+      let age31To60Qty = 0;
+      let age61To90Qty = 0;
+      let age91To180Qty = 0;
+      let age181To365Qty = 0;
+      let ageAbove365Qty = 0;
+
+      for (const layer of fifoLayers) {
+        if (layer.qty <= 0) continue;
+        const daysOld = Math.floor((referenceDate.getTime() - layer.date.getTime()) / msPerDay);
+
+        if (daysOld <= 30) age0To30Qty += layer.qty;
+        else if (daysOld <= 60) age31To60Qty += layer.qty;
+        else if (daysOld <= 90) age61To90Qty += layer.qty;
+        else if (daysOld <= 180) age91To180Qty += layer.qty;
+        else if (daysOld <= 365) age181To365Qty += layer.qty;
+        else ageAbove365Qty += layer.qty;
+      }
+
+      rows.push({
+        productId,
+        sku,
+        productName,
+        unitShortName,
+        totalQuantity: currentQty,
+        age0To30Qty,
+        age31To60Qty,
+        age61To90Qty,
+        age91To180Qty,
+        age181To365Qty,
+        ageAbove365Qty,
+        wacPaise,
+        totalValuePaise,
+      });
+
+      grandTotalQty += currentQty;
+      grandTotalValuePaise += totalValuePaise;
+    }
+
+    return {
+      companyId,
+      financialYearId,
+      asOfDate,
+      rows,
+      totalQuantity: grandTotalQty,
+      totalValuePaise: grandTotalValuePaise,
     };
   }
 }

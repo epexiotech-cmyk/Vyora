@@ -57,3 +57,28 @@ export interface StockMovementRegisterDto {
   toDate?: Date;
   rows: StockMovementRegisterRowDto[];
 }
+
+export interface StockAgeingRowDto {
+  productId: string;
+  sku: string;
+  productName: string;
+  unitShortName: string;
+  totalQuantity: number;
+  age0To30Qty: number;
+  age31To60Qty: number;
+  age61To90Qty: number;
+  age91To180Qty: number;
+  age181To365Qty: number;
+  ageAbove365Qty: number;
+  wacPaise?: number;
+  totalValuePaise?: number;
+}
+
+export interface StockAgeingDto {
+  companyId: string;
+  financialYearId: string;
+  asOfDate?: Date;
+  rows: StockAgeingRowDto[];
+  totalQuantity: number;
+  totalValuePaise: number;
+}
