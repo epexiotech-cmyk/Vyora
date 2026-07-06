@@ -126,11 +126,28 @@ export type VyoraFinancialYearAPI = {
 };
 
 export type VyoraPrintAPI = {
+  render: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+  ) => Promise<string>;
+  print: {
+    (
+      templateName: string,
+      payload: import('@vyora/print-engine').PrintPayload<unknown>,
+      options?: WebContentsPrintOptions,
+    ): Promise<{ success: boolean; failureReason?: string }>;
+    (
+      html: string,
+      options?: WebContentsPrintOptions,
+    ): Promise<{ success: boolean; failureReason?: string }>;
+  };
+  printToPdf: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+    options?: PrintToPDFOptions,
+  ) => Promise<ArrayBuffer>;
   exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
-  print: (
-    html: string,
-    options?: WebContentsPrintOptions,
-  ) => Promise<{ success: boolean; failureReason?: string }>;
+  getAvailablePrinters: () => Promise<import('electron').PrinterInfo[]>;
 };
 
 export type VyoraSplashAPI = {

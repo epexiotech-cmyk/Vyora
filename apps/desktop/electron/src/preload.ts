@@ -124,10 +124,23 @@ contextBridge.exposeInMainWorld('vyora', {
     finished: () => ipcRenderer.send('splash-finished'),
   },
   print: {
+    render: (templateName: string, payload: import('@vyora/print-engine').PrintPayload<unknown>) =>
+      ipcRenderer.invoke('print:render', templateName, payload),
+    print: (
+      templateNameOrHtml: string,
+      payloadOrOptions?:
+        | import('@vyora/print-engine').PrintPayload<unknown>
+        | WebContentsPrintOptions,
+      options?: WebContentsPrintOptions,
+    ) => ipcRenderer.invoke('print:print', templateNameOrHtml, payloadOrOptions, options),
+    printToPdf: (
+      templateName: string,
+      payload: import('@vyora/print-engine').PrintPayload<unknown>,
+      options?: PrintToPDFOptions,
+    ) => ipcRenderer.invoke('print:printToPdf', templateName, payload, options),
     exportPdf: (html: string, options?: PrintToPDFOptions) =>
-      ipcRenderer.invoke('print:export-pdf', html, options),
-    print: (html: string, options?: WebContentsPrintOptions) =>
-      ipcRenderer.invoke('print:print', html, options),
+      ipcRenderer.invoke('print:exportPdf', html, options),
+    getAvailablePrinters: () => ipcRenderer.invoke('print:getAvailablePrinters'),
   },
   directories: {
     pincode: {
@@ -312,11 +325,28 @@ export type VyoraFinancialYearAPI = {
 };
 
 export type VyoraPrintAPI = {
+  render: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+  ) => Promise<string>;
+  print: {
+    (
+      templateName: string,
+      payload: import('@vyora/print-engine').PrintPayload<unknown>,
+      options?: WebContentsPrintOptions,
+    ): Promise<{ success: boolean; failureReason?: string }>;
+    (
+      html: string,
+      options?: WebContentsPrintOptions,
+    ): Promise<{ success: boolean; failureReason?: string }>;
+  };
+  printToPdf: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+    options?: PrintToPDFOptions,
+  ) => Promise<ArrayBuffer>;
   exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
-  print: (
-    html: string,
-    options?: WebContentsPrintOptions,
-  ) => Promise<{ success: boolean; failureReason?: string }>;
+  getAvailablePrinters: () => Promise<import('electron').PrinterInfo[]>;
 };
 
 export interface VyoraDirectoriesAPI {
