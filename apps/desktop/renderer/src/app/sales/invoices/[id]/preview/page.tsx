@@ -1,16 +1,14 @@
 'use client';
 
-import { renderDocument, registerAllTemplates } from '@vyora/print-engine';
-import { SalesInvoiceDto } from '@vyora/types';
+import type { PrintPayload } from '@vyora/print-engine';
+import type { SalesInvoiceDto } from '@vyora/types';
 import { ArrowLeft, Loader2, AlertCircle, Printer, FileDown } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { PrintPreview } from '../../../../../components/print/PrintPreview';
-
-// Ensure templates are registered on the client-side
-registerAllTemplates();
+import { usePrintPreview } from '../../../../../components/print/usePrintPreview';
 
 export default function InvoicePreviewPage() {
   const router = useRouter();
@@ -18,11 +16,10 @@ export default function InvoicePreviewPage() {
   const invoiceId = params?.id as string;
 
   const [invoice, setInvoice] = useState<SalesInvoiceDto | null>(null);
-  const [html, setHtml] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isFetchingInvoice, setIsFetchingInvoice] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -30,37 +27,23 @@ export default function InvoicePreviewPage() {
     async function fetchInvoice() {
       if (!invoiceId) return;
       try {
-        setIsLoading(true);
+        setIsFetchingInvoice(true);
         const response = await window.vyora.db.sales.getById(invoiceId);
 
         if (!response.success || !response.data) {
           throw new Error(response.error || 'Invoice not found');
         }
 
-        const data = response.data as SalesInvoiceDto;
-
         if (mounted) {
-          setInvoice(data);
-
-          // Render HTML string using print-engine
-          const renderedHtml = await renderDocument('gst-invoice-v1', {
-            documentType: 'TAX_INVOICE',
-            data: data,
-          });
-
-          setHtml(renderedHtml);
+          setInvoice(response.data as SalesInvoiceDto);
         }
       } catch (err: unknown) {
         if (mounted) {
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : 'An unexpected error occurred while loading the invoice.';
-          setError(errorMessage);
+          setFetchError(err instanceof Error ? err.message : 'Failed to load invoice');
         }
       } finally {
         if (mounted) {
-          setIsLoading(false);
+          setIsFetchingInvoice(false);
         }
       }
     }
@@ -72,20 +55,43 @@ export default function InvoicePreviewPage() {
     };
   }, [invoiceId]);
 
+  const printPayload = useMemo<PrintPayload<unknown> | null>(() => {
+    if (!invoice) return null;
+    return {
+      documentType: 'TAX_INVOICE',
+      data: invoice,
+    };
+  }, [invoice]);
+
+  const {
+    html,
+    isLoading: isGeneratingPreview,
+    error: previewError,
+    print,
+    printToPdf,
+  } = usePrintPreview('gst-invoice-v1', printPayload);
+
   const handleExportPdf = async () => {
     if (isExporting || isPrinting || !html) return;
     try {
       setIsExporting(true);
-      const res = await window.vyora.print.exportPdf(html, {
+      const res = await printToPdf({
         printBackground: true,
         preferCSSPageSize: true,
       });
-      if (res.filePath) {
-        toast.success(`PDF exported to: ${res.filePath}`);
-      }
+      // Convert returned ArrayBuffer to Blob and trigger browser download
+      const blob = new Blob([res], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice-${invoice?.invoiceNumber || 'Draft'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('PDF exported successfully');
     } catch (err: unknown) {
-      // IPC throws if user cancels the save dialog, which contains 'net::ERR_ABORTED' usually
-      // or we just handle it generically
       const msg = err instanceof Error ? err.message : String(err);
       if (!msg.toLowerCase().includes('cancelled') && !msg.includes('net::ERR_ABORTED')) {
         toast.error('Failed to export PDF');
@@ -100,7 +106,7 @@ export default function InvoicePreviewPage() {
     if (isPrinting || isExporting || !html) return;
     try {
       setIsPrinting(true);
-      const res = await window.vyora.print.print(html, {
+      const res = await print({
         silent: false,
         printBackground: true,
       });
@@ -122,22 +128,22 @@ export default function InvoicePreviewPage() {
     }
   };
 
-  if (isLoading) {
+  if (isFetchingInvoice) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-neutral-50">
         <Loader2 className="mb-4 h-12 w-12 animate-spin text-blue-500" />
-        <h3 className="text-lg font-medium text-neutral-700">Loading Preview...</h3>
+        <h3 className="text-lg font-medium text-neutral-700">Loading Invoice...</h3>
       </div>
     );
   }
 
-  if (error || !invoice) {
+  if (fetchError || !invoice) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-neutral-50">
         <AlertCircle className="mb-4 h-12 w-12 text-red-500" />
         <h3 className="text-xl font-bold text-neutral-800">Preview Error</h3>
         <p className="mt-2 max-w-md text-center text-sm text-neutral-600">
-          {error || 'Invoice could not be loaded.'}
+          {fetchError || 'Invoice could not be loaded.'}
         </p>
         <button
           onClick={() => router.back()}
@@ -221,6 +227,8 @@ export default function InvoicePreviewPage() {
           html={html}
           zoom={0.85}
           title={`Invoice ${invoice.invoiceNumber || 'Draft'}`}
+          isLoading={isGeneratingPreview}
+          error={previewError}
         />
       </div>
     </div>

@@ -1,38 +1,24 @@
 'use client';
 
 import { AlertCircle, Loader2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 
 export type PrintPreviewProps = {
   html: string;
   title?: string;
   zoom?: number;
+  isLoading?: boolean;
+  error?: string | null;
 };
 
 export const PrintPreview: React.FC<PrintPreviewProps> = ({
   html,
   title = 'Document Preview',
   zoom = 1,
+  isLoading = false,
+  error = null,
 }) => {
-  const [isLoading, setIsLoading] = useState(!(!html || html.trim() === ''));
-  const [hasError, setHasError] = useState(!html || html.trim() === '');
-  const [prevHtml, setPrevHtml] = useState(html);
-
-  if (html !== prevHtml) {
-    setPrevHtml(html);
-    const empty = !html || html.trim() === '';
-    setHasError(empty);
-    setIsLoading(!empty);
-  }
-
-  const handleLoad = () => {
-    setIsLoading(false);
-  };
-
-  const handleError = () => {
-    setHasError(true);
-    setIsLoading(false);
-  };
+  const hasError = error || (!isLoading && (!html || html.trim() === ''));
 
   if (hasError) {
     return (
@@ -40,7 +26,8 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
         <AlertCircle className="mb-4 h-12 w-12 text-red-500" />
         <h3 className="text-lg font-semibold text-neutral-800">Preview Failed</h3>
         <p className="mt-2 max-w-sm text-center text-sm text-neutral-600">
-          The document could not be rendered because the HTML content is empty or malformed.
+          {error ||
+            'The document could not be rendered because the HTML content is empty or malformed.'}
         </p>
       </div>
     );
@@ -76,14 +63,14 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             transform: `scale(${zoom})`,
           }}
         >
-          <iframe
-            srcDoc={html}
-            sandbox="allow-same-origin"
-            onLoad={handleLoad}
-            onError={handleError}
-            title={title}
-            className="h-full min-h-[297mm] w-full border-none"
-          />
+          {!isLoading && html && (
+            <iframe
+              srcDoc={html}
+              sandbox="allow-same-origin"
+              title={title}
+              className="h-full min-h-[297mm] w-full border-none"
+            />
+          )}
         </div>
       </div>
     </div>
