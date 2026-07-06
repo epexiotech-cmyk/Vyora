@@ -123,6 +123,18 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.4.1 – Print Runtime Foundation
+    - Template-agnostic PrintService implemented
+    - Dedicated hidden BrowserWindow runtime established
+    - Internal sequential print queue implemented
+    - Native print support integrated
+    - Native PDF generation integrated
+    - Printer enumeration API exposed
+    - Strongly typed preload print APIs
+    - Backward compatibility layer for legacy HTML printing
+    - Runtime Certification passed
+    - Reconciliation Audit passed
+    - Git verification completed
   - ✅ Financial Reporting UI Foundation completed
     - Trial Balance renderer page created
     - Preload bridge expanded with: getProfitLoss(), getBalanceSheet()
@@ -156,7 +168,7 @@
   - Profit & Loss
   - Balance Sheet
 
-- **Next Active**: ▶ Printing Engine
+- **Next Active**: ▶ Phase 8.4.2 – Print Preview Framework
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
