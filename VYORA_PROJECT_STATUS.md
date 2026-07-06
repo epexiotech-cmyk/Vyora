@@ -123,6 +123,15 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.4.3 – Sales Invoice Printing Integration
+    - SalesInvoicePrintAdapter implemented
+    - Business DTO → PrintPayload adapter pattern established
+    - Removed renderer-side payload transformation
+    - Reused Print Runtime Foundation
+    - Reused Print Preview Framework
+    - Runtime Certification passed
+    - Reconciliation Audit passed
+    - Git verification completed
   - ✅ Phase 8.4.2 – Print Preview Framework
     - Generic usePrintPreview hook implemented
     - PrintPreview component refactored into presentation-only component
@@ -177,7 +186,7 @@
   - Profit & Loss
   - Balance Sheet
 
-- **Next Active**: ▶ Phase 8.4.3 – Invoice Printing Integration
+- **Next Active**: ▶ Phase 8.4.4 – Financial Report Printing
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
