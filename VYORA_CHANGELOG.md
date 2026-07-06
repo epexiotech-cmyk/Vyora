@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### 🎉 Financial Reporting Suite Complete
+
+The complete Financial Reporting UI suite for v1.0 is now finished.
+
+### Phase 8 – Balance Sheet UI
+
+- **Summary**: Implemented Balance Sheet renderer
+- **UI**: Reused reporting UI foundation
+- **UI**: Reused AmountCell
+- **Types**: Used shared BalanceSheetReport DTO
+- **Audit**: Passed Runtime Certification
+- **Audit**: Passed Reconciliation Audit
+- **Git**: Successfully committed and pushed to dev
+
 ### Phase 8 – Profit & Loss UI
 
 - **Summary**: Implemented Profit & Loss renderer
