@@ -12,6 +12,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 The complete Financial Reporting UI suite for v1.0 is now finished.
 
+### Phase 8.4.2 – Print Preview Framework
+
+- Added reusable usePrintPreview hook
+- Refactored PrintPreview into generic UI component
+- Removed renderer-side template rendering
+- Added secure sandboxed preview architecture
+- Migrated Sales Invoice Preview to the new framework
+- Passed Runtime Certification
+- Passed Reconciliation Audit
+- Successfully committed and pushed to dev
+
 ### Phase 8.4.1 – Print Runtime Foundation
 
 - Implemented PrintService runtime

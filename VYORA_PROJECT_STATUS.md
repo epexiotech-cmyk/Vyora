@@ -123,6 +123,15 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.4.2 – Print Preview Framework
+    - Generic usePrintPreview hook implemented
+    - PrintPreview component refactored into presentation-only component
+    - Secure iframe + srcDoc + sandbox preview architecture
+    - Removed renderer-side @vyora/print-engine usage
+    - Sales Invoice Preview migrated to runtime-based rendering
+    - Runtime Certification passed
+    - Reconciliation Audit passed
+    - Git verification completed
   - ✅ Phase 8.4.1 – Print Runtime Foundation
     - Template-agnostic PrintService implemented
     - Dedicated hidden BrowserWindow runtime established
@@ -168,7 +177,7 @@
   - Profit & Loss
   - Balance Sheet
 
-- **Next Active**: ▶ Phase 8.4.2 – Print Preview Framework
+- **Next Active**: ▶ Phase 8.4.3 – Invoice Printing Integration
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
