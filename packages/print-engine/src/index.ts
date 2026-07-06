@@ -2,6 +2,7 @@ import Handlebars from 'handlebars';
 
 import { TemplateRegistry } from './registry/TemplateRegistry';
 import { GstInvoiceV1 } from './templates/gst-invoice-v1';
+import { ProfitLossV1 } from './templates/profit-loss-v1';
 import { TrialBalanceV1 } from './templates/trial-balance-v1';
 import { formatCurrencyINR } from './utils/formatCurrency';
 
@@ -11,6 +12,7 @@ export * from './registry/TemplateRegistry';
 export * from './renderers';
 export * from './adapters/SalesInvoicePrintAdapter';
 export * from './adapters/TrialBalancePrintAdapter';
+export * from './adapters/ProfitLossPrintAdapter';
 
 let isRegistered = false;
 export function registerAllTemplates() {
@@ -53,6 +55,7 @@ export function registerAllTemplates() {
   // Register templates
   TemplateRegistry.register(GstInvoiceV1);
   TemplateRegistry.register(TrialBalanceV1);
+  TemplateRegistry.register(ProfitLossV1);
   isRegistered = true;
 }
 
