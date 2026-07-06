@@ -260,6 +260,8 @@ export type VyoraReportsAPI = {
   getStockAgeing: (args?: {
     asOfDate?: Date;
   }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockAgeingDto>>;
+  getProfitLoss: (asOfDate?: Date) => Promise<import('@vyora/types').ProfitLossReport>;
+  getBalanceSheet: (asOfDate?: Date) => Promise<import('@vyora/types').BalanceSheetReport>;
 };
 
 declare global {

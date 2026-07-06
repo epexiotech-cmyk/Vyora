@@ -227,6 +227,8 @@ contextBridge.exposeInMainWorld('vyora', {
       ipcRenderer.invoke('reports:getStockMovementRegister', args),
     getStockAgeing: (args?: { asOfDate?: Date }) =>
       ipcRenderer.invoke('reports:getStockAgeing', args),
+    getProfitLoss: (asOfDate?: Date) => ipcRenderer.invoke('reports:getProfitLoss', asOfDate),
+    getBalanceSheet: (asOfDate?: Date) => ipcRenderer.invoke('reports:getBalanceSheet', asOfDate),
   },
 });
 
