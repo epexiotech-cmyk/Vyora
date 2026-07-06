@@ -1,6 +1,6 @@
 'use client';
 
-import type { PrintPayload } from '@vyora/print-engine';
+import { SalesInvoicePrintAdapter } from '@vyora/print-engine';
 import type { SalesInvoiceDto } from '@vyora/types';
 import { ArrowLeft, Loader2, AlertCircle, Printer, FileDown } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
@@ -55,12 +55,9 @@ export default function InvoicePreviewPage() {
     };
   }, [invoiceId]);
 
-  const printPayload = useMemo<PrintPayload<unknown> | null>(() => {
+  const printPayload = useMemo(() => {
     if (!invoice) return null;
-    return {
-      documentType: 'TAX_INVOICE',
-      data: invoice,
-    };
+    return SalesInvoicePrintAdapter.toPayload(invoice);
   }, [invoice]);
 
   const {

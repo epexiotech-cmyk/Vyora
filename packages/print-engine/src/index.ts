@@ -7,6 +7,7 @@ export * from './utils/numberToWords';
 export * from './types';
 export * from './registry/TemplateRegistry';
 export * from './renderers';
+export * from './adapters/SalesInvoicePrintAdapter';
 
 let isRegistered = false;
 export function registerAllTemplates() {
