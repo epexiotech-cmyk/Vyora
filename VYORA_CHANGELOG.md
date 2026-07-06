@@ -1,0 +1,130 @@
+# Vyora ERP Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [Unreleased] - (v1.0 Core ERP Target)
+
+### Recent Commits (Phase 8 integration)
+
+- **Inventory Reports**: Stock Ageing Backend implemented.
+- **Inventory Reports**: Stock Ageing IPC configured.
+- **Inventory Reports**: Stock Ageing Renderer UI scaffolding added.
+
+---
+
+## [0.8.2.8E] - Accounting Integration
+
+### Features
+
+- **Accounting**: Journal Posting Integration completed.
+- **Accounting**: Inventory Engine Integration completed.
+- **Accounting**: Party Ledger Bootstrap initialized.
+- **Accounting**: System Ledger Bootstrap initialized.
+- **Architecture**: Purchase Reversal Architecture implemented for safe rollback and nullification.
+
+---
+
+## [0.8.2.8D] - Settlement Engine
+
+### Features
+
+- **IPC**: Settlement Engine IPC integrated for invoice and payment matching.
+
+---
+
+## [0.8.2.8C] - Database Restructuring
+
+### Major Architectural Changes
+
+- **Database**: Drizzle Recovery and schema finalization for strict company boundaries.
+
+---
+
+## [0.5.10] - Purchase Finalization
+
+### Features
+
+- **Purchase**: Purchase Release Candidate completed.
+
+---
+
+## [0.5.9] - Purchase Workflow
+
+### Features
+
+- **Purchase**: End-to-end Purchase Workflow integrated with backend.
+
+---
+
+## [0.5.8] - Purchase Forms
+
+### Features
+
+- **UI**: Purchase Form Foundation built in Next.js.
+
+---
+
+## [0.5.7] - Purchase Scaffolding
+
+### Features
+
+- **UI**: Purchase UI Scaffold implemented.
+
+---
+
+## [0.5.6] - Monetary Architecture
+
+### Major Architectural Changes
+
+- **System**: Monetary Migration to ensure exact decimal precision for financial calculations.
+
+---
+
+## [0.5.5] - Purchase Backend
+
+### Features
+
+- **Backend**: Core Purchase Service implemented.
+
+---
+
+## [0.5.4] - Item Master
+
+### Features
+
+- **Masters**: Item Master implemented.
+
+---
+
+## [0.5.3] - Supplier Master
+
+### Features
+
+- **Masters**: Supplier Master implemented.
+
+---
+
+## [0.5.2] - Customer Master
+
+### Features
+
+- **Masters**: Customer Master implemented.
+
+---
+
+## [0.5.1] - Company Profile
+
+### Features
+
+- **Masters**: Company GST Profile implementation.
+
+---
+
+**Last Updated**: 2026-07-06  
+**Purpose**: Official historic record of commits, features, and version updates  
+**Update Frequency**: Upon each release or significant milestone completion  
+**Owner**: Release Manager

@@ -1,0 +1,179 @@
+# Vyora ERP Project Status
+
+## Table of Contents
+
+1. [Current Status Snapshot](#current-status-snapshot)
+2. [Current Active Phase](#current-active-phase)
+3. [Phase Progress](#phase-progress)
+4. [Module Completion Matrix](#module-completion-matrix)
+5. [Release Readiness Dashboard](#release-readiness-dashboard)
+6. [Current Sprint](#current-sprint)
+7. [Immediate Priorities](#immediate-priorities)
+8. [Latest Verified Milestones](#latest-verified-milestones)
+9. [Known Risks](#known-risks)
+10. [Status Legend](#status-legend)
+
+---
+
+## 1. Current Status Snapshot
+
+- **Major Phase**: Phase 8
+- **Current Stage**: Core ERP Completion
+- **Current Focus**: Financial Reporting, Printing, Release Preparation
+- **Current Sprint**: Sprint 21
+- **Latest Verified Commit**: Stock Ageing Backend, IPC, and Renderer updates
+- **Current Branch**: `dev`
+- **Current Release Target**: v1.0 (Core ERP + Plugin Framework + GST Plugin)
+- **Current Risks**: Tight timeline for July 15 launch including Plugin Framework.
+- **Current Blockers**: Print Engine generation blocking final Sales completion.
+- **Current Priorities**: Finish Sales Invoice UI, Financial Reports, Plugin SDK Foundation.
+
+---
+
+## 2. Current Active Phase
+
+### Phase 8
+
+**Checklist**
+
+- [ ] Financial Reports
+- [ ] Printing
+- [ ] Sales Final Validation
+- [ ] QA
+- [ ] Release Candidate
+
+---
+
+## 3. Phase Progress
+
+### COMPLETED
+
+- Phase 0: Foundation
+- Phase 1: Master Data
+- Phase 2: Inventory Engine
+- Phase 3: Accounting Engine
+
+### IN PROGRESS
+
+- Phase 4: Purchase
+- Phase 5: Sales
+- Phase 7: Printing & Export
+- Phase 8: Release Readiness
+
+### NEXT
+
+- Phase 9: Plugin Architecture
+
+### FUTURE
+
+- Phase 10: Advanced Inventory
+- Phase 11: Business Expansion
+- Phase 12: Cloud Ecosystem
+- Phase 13: Mobile Ecosystem
+- Phase 14: AI Ecosystem
+
+---
+
+## 4. Module Completion Matrix
+
+| Module                | Backend | IPC | Renderer | QA  | Release |
+| --------------------- | ------- | --- | -------- | --- | ------- |
+| **Architecture**      | ✅      | ✅  | ✅       | ✅  | 🟢      |
+| **Masters**           | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Company             | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Customer            | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Supplier            | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Item                | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Unit                | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Tax                 | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Warehouse           | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| **Purchase**          | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
+| **Sales**             | ✅      | 🟡  | 🔵       | 🔵  | 🔵      |
+| **Inventory Engine**  | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
+| **Inventory Reports** | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| **Financial Reports** | 🟡      | 🟡  | 🔵       | 🔵  | 🔵      |
+| **Accounting Engine** | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
+| **Printing**          | 🟡      | 🟡  | 🔵       | 🔵  | 🔵      |
+| **Plugin Framework**  | 🔵      | 🔵  | 🔵       | ⚪  | ⚪      |
+| **GST Plugin**        | 🔵      | 🔵  | 🔵       | ⚪  | ⚪      |
+| **Cloud**             | ⚪      | ⚪  | ⚪       | ⚪  | ⚪      |
+| **Mobile**            | ⚪      | ⚪  | ⚪       | ⚪  | ⚪      |
+| **AI**                | ⚪      | ⚪  | ⚪       | ⚪  | ⚪      |
+
+---
+
+## 5. Release Readiness Dashboard
+
+- **Architecture**: 🟢
+- **Masters**: 🟡
+- **Purchase**: 🟡
+- **Sales**: 🔵
+- **Inventory**: 🟡
+- **Accounting**: 🟡
+- **Reporting**: 🟡
+- **Printing**: 🔵
+- **Plugin Framework**: 🔵
+- **GST Plugin**: 🔵
+- **QA**: 🟡
+- **Deployment**: 🔵
+
+---
+
+## 6. Current Sprint
+
+- **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
+- **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+- **Remaining**: Sales Invoice Renderer UI, Trial Balance & P&L UI, Print Engine stabilization.
+- **Exit Criteria**:
+  - Financial Reports complete
+  - Printing complete
+  - QA passed
+  - Git clean
+  - Documentation updated
+
+---
+
+## 7. Immediate Priorities
+
+1. **Priority 1**: Financial Reports
+2. **Priority 2**: Printing
+3. **Priority 3**: QA
+4. **Priority 4**: Plugin Framework
+5. **Priority 5**: GST Plugin
+
+---
+
+## 8. Latest Verified Milestones
+
+- **v0.8.2.8E**: Accounting Integration (Journals, Vouchers, Ledgers)
+- **Inventory Reporting**: Stock Ledger UI completed.
+- **Inventory Reporting**: Stock Ageing Backend, IPC, and Renderer successfully implemented.
+
+---
+
+## 9. Known Risks
+
+- Financial Report UI pending.
+- Print Engine pending.
+- Plugin Framework pending.
+- GST Plugin pending.
+- QA window is short.
+
+---
+
+## 10. Status Legend
+
+- ✅ **Complete**: Fully implemented, tested, and integrated.
+- 🟢 **Release Ready**: Feature complete, QA passed, ready for production.
+- 🟡 **In Progress**: Currently under active development.
+- 🔵 **Planned**: Scheduled for an upcoming phase; implementation defined.
+- ⚪ **Future**: Conceptualized but not yet scheduled.
+- ⏸ **Deferred**: Implementation paused or pushed to a later release.
+- ❓ **Needs Verification**: Implementation status is currently unconfirmed.
+
+---
+
+**Last Updated**: 2026-07-06  
+**Purpose**: Living operational dashboard of project health  
+**Update Frequency**: Daily / End of Sprint  
+**Owner**: Tech Lead
