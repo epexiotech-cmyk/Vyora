@@ -1,4 +1,9 @@
-import { StockSummaryDto, StockLedgerDto, StockMovementRegisterDto } from '@vyora/types';
+import {
+  StockSummaryDto,
+  StockLedgerDto,
+  StockMovementRegisterDto,
+  StockAgeingDto,
+} from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { balanceSheetService } from '../../services/BalanceSheetService';
@@ -284,6 +289,26 @@ export function registerReportsHandlers() {
         financialYear.id,
         args.fromDate,
         args.toDate,
+      );
+
+      return { success: true, data };
+    },
+  );
+
+  createIpcHandler<StockAgeingDto>(
+    'reports:getStockAgeing',
+    async (_, args: { asOfDate?: Date } = {}) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate Stock Ageing: Missing company or financial year context');
+      }
+
+      const data = await inventoryReportService.getStockAgeingReport(
+        companyId,
+        financialYear.id,
+        args.asOfDate,
       );
 
       return { success: true, data };

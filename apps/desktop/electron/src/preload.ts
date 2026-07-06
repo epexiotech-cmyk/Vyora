@@ -225,6 +225,8 @@ contextBridge.exposeInMainWorld('vyora', {
     }) => ipcRenderer.invoke('reports:getStockLedger', args),
     getStockMovementRegister: (args?: { fromDate?: Date; toDate?: Date }) =>
       ipcRenderer.invoke('reports:getStockMovementRegister', args),
+    getStockAgeing: (args?: { asOfDate?: Date }) =>
+      ipcRenderer.invoke('reports:getStockAgeing', args),
   },
 });
 
@@ -433,6 +435,9 @@ export type VyoraReportsAPI = {
   }) => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').StockMovementRegisterDto>
   >;
+  getStockAgeing: (args?: {
+    asOfDate?: Date;
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockAgeingDto>>;
 };
 
 declare global {
