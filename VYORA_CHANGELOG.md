@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8 – Financial Reporting UI Foundation
+
+- **Summary**: Added Trial Balance renderer foundation
+- **Preload**: Completed preload exposure for Profit & Loss and Balance Sheet
+- **Types**: Added strongly typed renderer APIs
+- **UI**: Introduced reusable reporting UI component (AmountCell)
+- **Audit**: Passed Runtime Certification
+- **Audit**: Passed Reconciliation Audit
+- **Git**: Successfully committed and pushed to dev
+
 ### Recent Commits (Phase 8 integration)
 
 - **Inventory Reports**: Stock Ageing Backend implemented.
