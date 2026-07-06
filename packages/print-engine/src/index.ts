@@ -1,6 +1,7 @@
 import Handlebars from 'handlebars';
 
 import { TemplateRegistry } from './registry/TemplateRegistry';
+import { BalanceSheetV1 } from './templates/balance-sheet-v1';
 import { GstInvoiceV1 } from './templates/gst-invoice-v1';
 import { ProfitLossV1 } from './templates/profit-loss-v1';
 import { TrialBalanceV1 } from './templates/trial-balance-v1';
@@ -10,9 +11,10 @@ export * from './utils/numberToWords';
 export * from './types';
 export * from './registry/TemplateRegistry';
 export * from './renderers';
+export * from './adapters/BalanceSheetPrintAdapter';
+export * from './adapters/ProfitLossPrintAdapter';
 export * from './adapters/SalesInvoicePrintAdapter';
 export * from './adapters/TrialBalancePrintAdapter';
-export * from './adapters/ProfitLossPrintAdapter';
 
 let isRegistered = false;
 export function registerAllTemplates() {
@@ -56,6 +58,7 @@ export function registerAllTemplates() {
   TemplateRegistry.register(GstInvoiceV1);
   TemplateRegistry.register(TrialBalanceV1);
   TemplateRegistry.register(ProfitLossV1);
+  TemplateRegistry.register(BalanceSheetV1);
   isRegistered = true;
 }
 

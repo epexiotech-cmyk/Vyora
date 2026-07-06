@@ -1,14 +1,22 @@
 'use client';
 
+import { BalanceSheetPrintAdapter } from '@vyora/print-engine';
 import type { BalanceSheetReport, BalanceSheetGroup } from '@vyora/types';
-import React, { useEffect, useState } from 'react';
+import { Loader2, Printer, FileDown } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
 
+import { PrintPreview } from '@/components/print/PrintPreview';
+import { usePrintPreview } from '@/components/print/usePrintPreview';
 import { AmountCell } from '@/components/reports/AmountCell';
 
 export default function BalanceSheetPage() {
   const [report, setReport] = useState<BalanceSheetReport | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showPreview, setShowPreview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -41,6 +49,19 @@ export default function BalanceSheetPage() {
     };
   }, []);
 
+  const printPayload = useMemo(() => {
+    if (!report) return null;
+    return BalanceSheetPrintAdapter.toPayload(report);
+  }, [report]);
+
+  const {
+    html: previewHtml,
+    isLoading: isGeneratingPreview,
+    error: previewError,
+    print,
+    printToPdf,
+  } = usePrintPreview('balance-sheet-v1', printPayload);
+
   if (loading) {
     return <div className="text-muted-foreground p-8 text-center">Loading Balance Sheet...</div>;
   }
@@ -51,6 +72,68 @@ export default function BalanceSheetPage() {
 
   if (!report) {
     return <div className="text-muted-foreground p-8 text-center">No data available.</div>;
+  }
+
+  if (showPreview) {
+    return (
+      <div className="flex h-screen flex-col bg-slate-50">
+        <div className="bg-background flex items-center justify-between border-b px-6 py-4 shadow-sm">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">Print Preview</h1>
+            <p className="text-muted-foreground text-sm">Balance Sheet</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowPreview(false)}
+              className="hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            >
+              Back to Report
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  setIsExporting(true);
+                  await printToPdf();
+                } finally {
+                  setIsExporting(false);
+                }
+              }}
+              disabled={isGeneratingPreview || !!previewError || isExporting}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+              Export PDF
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  setIsPrinting(true);
+                  await print();
+                } finally {
+                  setIsPrinting(false);
+                }
+              }}
+              disabled={isGeneratingPreview || !!previewError || isPrinting}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+            >
+              {isPrinting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4" />
+              )}
+              Print
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-hidden p-6">
+          <PrintPreview html={previewHtml} isLoading={isGeneratingPreview} error={previewError} />
+        </div>
+      </div>
+    );
   }
 
   const renderGroup = (group: BalanceSheetGroup, depth: number = 0) => {
@@ -138,11 +221,20 @@ export default function BalanceSheetPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Balance Sheet</h1>
-        <p className="text-muted-foreground mt-1">
-          As of {new Date(report.asOfDate).toLocaleDateString()}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Balance Sheet</h1>
+          <p className="text-muted-foreground mt-1">
+            As of {new Date(report.asOfDate).toLocaleDateString()}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowPreview(true)}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors"
+        >
+          <Printer className="h-4 w-4" />
+          Preview / Print
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
