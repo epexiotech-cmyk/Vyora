@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8 – Profit & Loss UI
+
+- **Summary**: Implemented Profit & Loss renderer
+- **UI**: Reused reporting UI foundation
+- **UI**: Reused AmountCell formatting component
+- **Types**: Used shared ProfitLossReport DTO
+- **Audit**: Passed Runtime Certification
+- **Audit**: Passed Reconciliation Audit
+- **Git**: Successfully committed and pushed to dev
+
 ### Phase 8 – Financial Reporting UI Foundation
 
 - **Summary**: Added Trial Balance renderer foundation

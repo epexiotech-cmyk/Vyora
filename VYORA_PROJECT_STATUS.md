@@ -131,7 +131,16 @@
     - Runtime Certification passed
     - Reconciliation Audit passed
     - Git verification completed
-- **Next Active**: ▶ Profit & Loss UI
+  - ✅ Profit & Loss UI
+    - Profit & Loss renderer page implemented
+    - Hierarchical Income/Expense presentation
+    - Reused AmountCell component
+    - Renderer consumes shared ProfitLossReport DTO
+    - Renderer uses preload bridge only
+    - Runtime Certification passed
+    - Reconciliation Audit passed
+    - Git verification completed
+- **Next Active**: ▶ Balance Sheet UI
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
