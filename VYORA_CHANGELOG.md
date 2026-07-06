@@ -12,6 +12,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 The complete Financial Reporting UI suite for v1.0 is now finished.
 
+### Phase 8.4.4B – Profit & Loss Printing
+
+- Added ProfitLossPrintAdapter
+- Added profit-loss-v1 template
+- Established recursive Handlebars rendering for hierarchical financial reports
+- Reused shared PrintPayload contract
+- Established deterministic A4 portrait print layout
+- Passed Runtime Certification
+- Passed Reconciliation Audit
+- Successfully committed and pushed to dev
+
 ### Phase 8.4.4A – Trial Balance Printing
 
 - Added TrialBalancePrintAdapter

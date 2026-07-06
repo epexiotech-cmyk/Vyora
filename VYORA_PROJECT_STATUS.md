@@ -123,6 +123,16 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.4.4B – Profit & Loss Printing
+    - ProfitLossPrintAdapter implemented
+    - profit-loss-v1 template implemented
+    - Recursive Handlebars rendering established
+    - Business DTO → PrintPayload adapter reused
+    - Renderer payload construction removed
+    - Deterministic hierarchical HTML generation established
+    - Runtime Certification passed
+    - Reconciliation Audit passed
+    - Git verification completed
   - ✅ Phase 8.4.4A – Trial Balance Printing
     - TrialBalancePrintAdapter implemented
     - trial-balance-v1 template implemented
@@ -195,7 +205,7 @@
   - Profit & Loss
   - Balance Sheet
 
-- **Next Active**: ▶ Phase 8.4.4B – Profit & Loss Printing
+- **Next Active**: ▶ Phase 8.4.4C – Balance Sheet Printing
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
