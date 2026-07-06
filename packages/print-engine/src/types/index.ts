@@ -11,7 +11,7 @@ export interface PrintOptions {
 }
 
 export interface PrintPayload<T = unknown> {
-  documentType: 'TAX_INVOICE' | 'PROFORMA' | 'CREDIT_NOTE' | 'DEBIT_NOTE';
+  documentType: 'TAX_INVOICE' | 'PROFORMA' | 'CREDIT_NOTE' | 'DEBIT_NOTE' | 'TRIAL_BALANCE';
   data: T;
 }
 

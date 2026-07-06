@@ -1,14 +1,22 @@
 'use client';
 
+import { TrialBalancePrintAdapter } from '@vyora/print-engine';
 import type { TrialBalanceDto } from '@vyora/types';
-import React, { useEffect, useState } from 'react';
+import { Loader2, Printer, FileDown } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
 
+import { PrintPreview } from '@/components/print/PrintPreview';
+import { usePrintPreview } from '@/components/print/usePrintPreview';
 import { AmountCell } from '@/components/reports/AmountCell';
 
 export default function TrialBalancePage() {
   const [report, setReport] = useState<TrialBalanceDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showPreview, setShowPreview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -40,6 +48,19 @@ export default function TrialBalancePage() {
     };
   }, []);
 
+  const printPayload = useMemo(() => {
+    if (!report) return null;
+    return TrialBalancePrintAdapter.toPayload(report);
+  }, [report]);
+
+  const {
+    html: previewHtml,
+    isLoading: isGeneratingPreview,
+    error: previewError,
+    print,
+    printToPdf,
+  } = usePrintPreview('trial-balance-v1', printPayload);
+
   if (loading) {
     return <div className="text-muted-foreground p-8 text-center">Loading Trial Balance...</div>;
   }
@@ -52,11 +73,82 @@ export default function TrialBalancePage() {
     return <div className="text-muted-foreground p-8 text-center">No data available.</div>;
   }
 
+  if (showPreview) {
+    return (
+      <div className="flex h-screen flex-col bg-slate-50">
+        <div className="bg-background flex items-center justify-between border-b px-6 py-4 shadow-sm">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">Print Preview</h1>
+            <p className="text-muted-foreground text-sm">Trial Balance</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowPreview(false)}
+              className="hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2 text-sm font-medium transition-colors"
+            >
+              Back to Report
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  setIsExporting(true);
+                  await printToPdf();
+                } finally {
+                  setIsExporting(false);
+                }
+              }}
+              disabled={isGeneratingPreview || !!previewError || isExporting}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="h-4 w-4" />
+              )}
+              Export PDF
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  setIsPrinting(true);
+                  await print();
+                } finally {
+                  setIsPrinting(false);
+                }
+              }}
+              disabled={isGeneratingPreview || !!previewError || isPrinting}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+            >
+              {isPrinting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4" />
+              )}
+              Print
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-hidden p-6">
+          <PrintPreview html={previewHtml} isLoading={isGeneratingPreview} error={previewError} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Trial Balance</h1>
-        <p className="text-muted-foreground">Live Statement</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Trial Balance</h1>
+          <p className="text-muted-foreground">Live Statement</p>
+        </div>
+        <button
+          onClick={() => setShowPreview(true)}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium shadow-sm transition-colors"
+        >
+          <Printer className="h-4 w-4" />
+          Preview / Print
+        </button>
       </div>
 
       <div className="bg-background overflow-hidden rounded-lg border shadow-sm">
