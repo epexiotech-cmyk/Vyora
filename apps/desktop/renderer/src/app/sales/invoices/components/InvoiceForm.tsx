@@ -1,44 +1,26 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createSalesInvoiceSchema } from '@vyora/types';
+import { SalesInvoiceDto } from '@vyora/types';
 import * as React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { InvoiceHeader } from './InvoiceHeader';
 import { InvoiceItemsTable } from './InvoiceItemsTable';
+import { InvoiceMapper, normalizeError } from './InvoiceMapper';
 import { InvoiceToolbar } from './InvoiceToolbar';
 import { InvoiceTotals } from './InvoiceTotals';
+import { useLeaveWarning } from './useLeaveWarning';
 
 import { usePrintPreview } from '@/components/print/usePrintPreview';
 
-// Stub of validation schema, realistically we'd import createSalesInvoiceSchema
-const stubSchema = z.object({
-  customerId: z.string().min(1, 'Customer is required'),
-  invoiceNumber: z.string().min(1, 'Invoice number is required'),
-  invoiceDate: z.string().min(1, 'Invoice date is required'),
-  dueDate: z.string().optional(),
-  referenceNumber: z.string().optional(),
-  remarks: z.string().optional(),
-  lines: z
-    .array(
-      z.object({
-        productId: z.string().nullable(),
-        productName: z.string().optional(),
-        qty: z.number().min(1),
-        rate: z.number().min(0),
-        discountPercent: z.number().min(0).max(100).optional(),
-        taxPercent: z.number().min(0).max(100).optional(),
-        amount: z.number().min(0),
-      }),
-    )
-    .min(1, 'At least one line item is required'),
-});
-
-type InvoiceFormValues = z.infer<typeof stubSchema>;
+type InvoiceFormValues = z.input<typeof createSalesInvoiceSchema>;
 
 export interface InvoiceFormProps {
-  initialData?: unknown;
+  initialData?: SalesInvoiceDto;
   mode: 'create' | 'edit' | 'view';
 }
 
@@ -46,23 +28,29 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
   const isReadOnly = mode === 'view';
 
   const methods = useForm<InvoiceFormValues>({
-    resolver: zodResolver(stubSchema),
+    resolver: zodResolver(createSalesInvoiceSchema),
     defaultValues: (initialData as InvoiceFormValues) || {
+      companyId: '00000000-0000-0000-0000-000000000000',
+      financialYearId: '00000000-0000-0000-0000-000000000000',
       customerId: '',
       invoiceNumber: '',
-      invoiceDate: new Date().toISOString().split('T')[0],
-      dueDate: '',
-      referenceNumber: '',
-      remarks: '',
-      lines: [
+      invoiceDate: new Date(),
+      isReverseCharge: false,
+      subtotal: 0,
+      discountAmount: 0,
+      taxAmount: 0,
+      roundOffAmount: 0,
+      grandTotal: 0,
+      items: [
         {
-          productId: null,
-          productName: '',
-          qty: 1,
+          productId: '00000000-0000-0000-0000-000000000000',
+          unitId: '00000000-0000-0000-0000-000000000000',
+          taxId: '00000000-0000-0000-0000-000000000000',
+          quantity: 1,
           rate: 0,
-          discountPercent: 0,
-          taxPercent: 0,
-          amount: 0,
+          taxableAmount: 0,
+          taxAmount: 0,
+          lineTotal: 0,
         },
       ],
     },
@@ -71,8 +59,15 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
 
   const {
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isDirty },
+    getValues,
   } = methods;
+
+  useLeaveWarning(isDirty);
+
+  // Status for toolbar rules (e.g. DRAFT or SUBMITTED)
+  const invoiceStatus = initialData?.status || 'DRAFT';
+  const invoiceId = initialData?.id;
 
   // Print hook
   const { print, printToPdf } = usePrintPreview('sales-invoice-v1', null);
@@ -90,13 +85,59 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
     isCalculating: false,
   });
 
-  const onSubmit = async (data: unknown) => {
-    // Call window.vyora.db.sales.createInvoice
+  const onSubmit = async (data: InvoiceFormValues) => {
     try {
-      console.log('Submitting invoice', data);
-      // Wait for IPC call...
+      const companyId = '00000000-0000-0000-0000-000000000000'; // To be loaded from context
+      const fyId = '00000000-0000-0000-0000-000000000000'; // To be loaded from context
+
+      const payload = InvoiceMapper.formToCreateDto(data, companyId, fyId, calculationState);
+
+      if (mode === 'create') {
+        const res = await window.vyora.db.sales.createInvoice(payload);
+        if (!res.success) throw new Error(res.error || 'Failed to create invoice');
+
+        if (res.data) {
+          // Immediately submit since they clicked Submit (not Save Draft)
+          const submitRes = await window.vyora.db.sales.submitInvoice(res.data.invoiceId);
+          if (!submitRes.success) throw new Error(submitRes.error || 'Failed to submit invoice');
+        }
+      } else if (invoiceId) {
+        // Update draft first
+        const updateRes = await window.vyora.db.sales.updateDraft(invoiceId, payload);
+        if (!updateRes.success) throw new Error(updateRes.error || 'Failed to update draft');
+
+        // Submit
+        const submitRes = await window.vyora.db.sales.submitInvoice(invoiceId);
+        if (!submitRes.success) throw new Error(submitRes.error || 'Failed to submit invoice');
+      }
+
+      toast.success('Invoice submitted successfully');
     } catch (e) {
-      console.error(e);
+      const uiErr = normalizeError(e);
+      toast.error(uiErr.message);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      const data = getValues();
+      const companyId = '00000000-0000-0000-0000-000000000000';
+      const fyId = '00000000-0000-0000-0000-000000000000';
+
+      const payload = InvoiceMapper.formToCreateDto(data, companyId, fyId, calculationState);
+
+      if (mode === 'create') {
+        const res = await window.vyora.db.sales.createInvoice(payload);
+        if (!res.success) throw new Error(res.error || 'Failed to create draft');
+      } else if (invoiceId) {
+        const res = await window.vyora.db.sales.updateDraft(invoiceId, payload);
+        if (!res.success) throw new Error(res.error || 'Failed to update draft');
+      }
+
+      toast.success('Draft saved successfully');
+    } catch (e) {
+      const uiErr = normalizeError(e);
+      toast.error(uiErr.message);
     }
   };
 
@@ -114,11 +155,12 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
         <InvoiceToolbar
           disabled={isReadOnly}
           isSubmitting={isSubmitting}
+          invoiceStatus={invoiceStatus}
           onSubmit={handleSubmit(onSubmit)}
           onPrint={handlePrintAction}
           onPdf={handlePdfAction}
-          onSaveDraft={() => console.log('Save draft')}
-          onCancel={() => console.log('Cancel')}
+          onSaveDraft={handleSaveDraft}
+          onCancel={() => window.history.back()}
         />
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">

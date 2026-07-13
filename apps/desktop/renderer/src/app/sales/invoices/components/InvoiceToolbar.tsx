@@ -13,6 +13,7 @@ export interface InvoiceToolbarProps {
   onCancel?: () => void;
   isSubmitting?: boolean;
   disabled?: boolean;
+  invoiceStatus?: string;
 }
 
 export function InvoiceToolbar({
@@ -23,7 +24,10 @@ export function InvoiceToolbar({
   onCancel,
   isSubmitting,
   disabled,
+  invoiceStatus = 'DRAFT',
 }: InvoiceToolbarProps) {
+  const canPrint = invoiceStatus === 'SUBMITTED';
+
   return (
     <div className="flex items-center justify-between border-b p-4">
       <h1 className="text-xl font-bold">Sales Invoice</h1>
@@ -41,14 +45,14 @@ export function InvoiceToolbar({
         <AppButton
           variant="secondary"
           onClick={onPrint}
-          disabled={disabled || isSubmitting || !onPrint}
+          disabled={disabled || isSubmitting || !onPrint || !canPrint}
         >
           <Printer className="mr-2 h-4 w-4" /> Print
         </AppButton>
         <AppButton
           variant="secondary"
           onClick={onPdf}
-          disabled={disabled || isSubmitting || !onPdf}
+          disabled={disabled || isSubmitting || !onPdf || !canPrint}
         >
           <FileText className="mr-2 h-4 w-4" /> PDF
         </AppButton>

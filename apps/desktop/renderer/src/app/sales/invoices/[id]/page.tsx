@@ -1,11 +1,12 @@
 'use client';
 
+import { SalesInvoiceDto } from '@vyora/types';
 import * as React from 'react';
 
 import { InvoiceForm } from '../components/InvoiceForm';
 
 export default function EditSalesInvoicePage({ params }: { params: { id: string } }) {
-  const [initialData, setInitialData] = React.useState<unknown | null>(null);
+  const [initialData, setInitialData] = React.useState<SalesInvoiceDto | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
