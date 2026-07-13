@@ -88,7 +88,7 @@
 | - Tax                 | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | - Warehouse           | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | **Purchase**          | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
-| **Sales**             | ✅      | 🟡  | 🔵       | 🔵  | 🔵      |
+| **Sales**             | ✅      | ✅  | 🔵       | 🔵  | 🔵      |
 | **Inventory Engine**  | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
 | **Inventory Reports** | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | **Financial Reports** | 🟡      | 🟡  | 🔵       | 🔵  | 🔵      |
@@ -139,6 +139,24 @@
     - Reused existing Print Preview infrastructure
     - Preserves renderer purity
     - Introduces no business logic
+  - ✅ Phase 8.5.2 – Sales Invoice Workflow Integration
+    - Save Draft workflow
+    - Update Draft workflow
+    - Load Existing Invoice workflow
+    - Submit Invoice workflow
+    - Canonical DTO integration
+    - Canonical Zod validation
+    - InvoiceMapper layer
+    - useLeaveWarning hook
+    - Backend workflow integration
+    - Status-aware toolbar
+    - UIError normalization
+    - Toast notification integration
+    - Existing preload reused
+    - Existing IPC reused
+    - Renderer purity preserved
+    - Zero business logic introduced
+    - Strict TypeScript maintained
   - ✅ Phase 8.4.4D – Remaining Financial Books Printing
     - General Ledger Printing
     - Ledger Statement Printing
@@ -245,8 +263,8 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Sales Invoice Workflow Integration
-- **Remaining**: Sales Invoice Workflow Integration, Print Engine stabilization.
+- **Next Active**: ▶ Sales Final Validation
+- **Remaining**: Sales Final Validation, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
   - Printing complete

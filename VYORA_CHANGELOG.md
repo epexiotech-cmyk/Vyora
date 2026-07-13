@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.5.2 – Sales Invoice Workflow Integration
+
+Highlights:
+
+- Connected renderer to certified backend
+- Canonical DTO adoption
+- Canonical Zod schema adoption
+- Mapper-based DTO transformation
+- Save Draft / Update Draft / Submit workflow
+- Existing preload reuse
+- Existing IPC reuse
+- UIError normalization
+- useLeaveWarning integration
+- Strict TypeScript compliance
+- Zero renderer business logic
+
 ### Phase 8.5.1 – Sales Invoice Renderer UI Foundation
 
 Summary:
