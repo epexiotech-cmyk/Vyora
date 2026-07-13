@@ -2,7 +2,13 @@ import Handlebars from 'handlebars';
 
 import { TemplateRegistry } from './registry/TemplateRegistry';
 import { BalanceSheetV1 } from './templates/balance-sheet-v1';
+import { BankBookV1 } from './templates/bank-book-v1';
+import { CashBookV1 } from './templates/cash-book-v1';
+import { DayBookV1 } from './templates/day-book-v1';
+import { GeneralLedgerV1 } from './templates/general-ledger-v1';
 import { GstInvoiceV1 } from './templates/gst-invoice-v1';
+import { LedgerStatementV1 } from './templates/ledger-statement-v1';
+import { OutstandingV1 } from './templates/outstanding-v1';
 import { ProfitLossV1 } from './templates/profit-loss-v1';
 import { TrialBalanceV1 } from './templates/trial-balance-v1';
 import { formatCurrencyINR } from './utils/formatCurrency';
@@ -12,6 +18,12 @@ export * from './types';
 export * from './registry/TemplateRegistry';
 export * from './renderers';
 export * from './adapters/BalanceSheetPrintAdapter';
+export * from './adapters/BankBookPrintAdapter';
+export * from './adapters/CashBookPrintAdapter';
+export * from './adapters/DayBookPrintAdapter';
+export * from './adapters/GeneralLedgerPrintAdapter';
+export * from './adapters/LedgerStatementPrintAdapter';
+export * from './adapters/OutstandingPrintAdapter';
 export * from './adapters/ProfitLossPrintAdapter';
 export * from './adapters/SalesInvoicePrintAdapter';
 export * from './adapters/TrialBalancePrintAdapter';
@@ -55,10 +67,16 @@ export function registerAllTemplates() {
     }
   });
   // Register templates
-  TemplateRegistry.register(GstInvoiceV1);
-  TemplateRegistry.register(TrialBalanceV1);
-  TemplateRegistry.register(ProfitLossV1);
   TemplateRegistry.register(BalanceSheetV1);
+  TemplateRegistry.register(BankBookV1);
+  TemplateRegistry.register(CashBookV1);
+  TemplateRegistry.register(DayBookV1);
+  TemplateRegistry.register(GeneralLedgerV1);
+  TemplateRegistry.register(GstInvoiceV1);
+  TemplateRegistry.register(LedgerStatementV1);
+  TemplateRegistry.register(OutstandingV1);
+  TemplateRegistry.register(ProfitLossV1);
+  TemplateRegistry.register(TrialBalanceV1);
   isRegistered = true;
 }
 

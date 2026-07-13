@@ -18,7 +18,13 @@ export interface PrintPayload<T = unknown> {
     | 'DEBIT_NOTE'
     | 'TRIAL_BALANCE'
     | 'PROFIT_LOSS'
-    | 'BALANCE_SHEET';
+    | 'BALANCE_SHEET'
+    | 'GENERAL_LEDGER'
+    | 'LEDGER_STATEMENT'
+    | 'DAY_BOOK'
+    | 'CASH_BOOK'
+    | 'BANK_BOOK'
+    | 'OUTSTANDING_REPORT';
   data: T;
 }
 
