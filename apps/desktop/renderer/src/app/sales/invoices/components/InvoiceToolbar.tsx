@@ -1,6 +1,6 @@
 'use client';
 
-import { Save, Printer, FileText, Send, X } from 'lucide-react';
+import { Save, Printer, FileText, Send, X, Ban } from 'lucide-react';
 import * as React from 'react';
 
 import { AppButton } from '@/components/ui/AppButton';
@@ -11,6 +11,7 @@ export interface InvoiceToolbarProps {
   onPrint?: () => void;
   onPdf?: () => void;
   onCancel?: () => void;
+  onVoidInvoice?: () => void;
   isSubmitting?: boolean;
   disabled?: boolean;
   invoiceStatus?: string;
@@ -22,6 +23,7 @@ export function InvoiceToolbar({
   onPrint,
   onPdf,
   onCancel,
+  onVoidInvoice,
   isSubmitting,
   disabled,
   invoiceStatus = 'DRAFT',
@@ -35,13 +37,24 @@ export function InvoiceToolbar({
         <AppButton variant="outline" onClick={onCancel} disabled={disabled || isSubmitting}>
           <X className="mr-2 h-4 w-4" /> Cancel
         </AppButton>
-        <AppButton
-          variant="secondary"
-          onClick={onSaveDraft}
-          disabled={disabled || isSubmitting || !onSaveDraft}
-        >
-          <Save className="mr-2 h-4 w-4" /> Save Draft
-        </AppButton>
+        {invoiceStatus === 'SUBMITTED' && (
+          <AppButton
+            variant="destructive"
+            onClick={onVoidInvoice}
+            disabled={disabled || isSubmitting || !onVoidInvoice}
+          >
+            <Ban className="mr-2 h-4 w-4" /> Void Invoice
+          </AppButton>
+        )}
+        {invoiceStatus === 'DRAFT' && (
+          <AppButton
+            variant="secondary"
+            onClick={onSaveDraft}
+            disabled={disabled || isSubmitting || !onSaveDraft}
+          >
+            <Save className="mr-2 h-4 w-4" /> Save Draft
+          </AppButton>
+        )}
         <AppButton
           variant="secondary"
           onClick={onPrint}
@@ -56,13 +69,15 @@ export function InvoiceToolbar({
         >
           <FileText className="mr-2 h-4 w-4" /> PDF
         </AppButton>
-        <AppButton
-          variant="default"
-          onClick={onSubmit}
-          disabled={disabled || isSubmitting || !onSubmit}
-        >
-          <Send className="mr-2 h-4 w-4" /> Submit
-        </AppButton>
+        {invoiceStatus === 'DRAFT' && (
+          <AppButton
+            variant="default"
+            onClick={onSubmit}
+            disabled={disabled || isSubmitting || !onSubmit}
+          >
+            <Send className="mr-2 h-4 w-4" /> Submit
+          </AppButton>
+        )}
       </div>
     </div>
   );

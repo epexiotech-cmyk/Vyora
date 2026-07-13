@@ -72,6 +72,8 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
   // Print hook
   const { print, printToPdf } = usePrintPreview('sales-invoice-v1', null);
 
+  const [isVoiding, setIsVoiding] = React.useState(false);
+
   // Placeholder for calculation state which would normally be fetched via IPC
   const [calculationState] = React.useState({
     totals: {
@@ -141,6 +143,30 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
     }
   };
 
+  const handleVoidInvoice = async () => {
+    if (!invoiceId) return;
+
+    const confirmMessage = `Void this invoice?\n\nThis action will reverse:\n• Inventory movements\n• Accounting journals\n\nThis operation cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setIsVoiding(true);
+      const res = await window.vyora.db.sales.cancelInvoice(invoiceId);
+      if (!res.success) throw new Error(res.error || 'Failed to void invoice');
+
+      toast.success('Invoice voided successfully');
+      // Refresh UI so status becomes CANCELLED
+      window.location.reload();
+    } catch (e) {
+      const uiErr = normalizeError(e);
+      toast.error(uiErr.message);
+      setIsVoiding(false);
+    }
+  };
+
   const handlePrintAction = () => {
     print();
   };
@@ -154,12 +180,13 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="bg-background flex h-full flex-col">
         <InvoiceToolbar
           disabled={isReadOnly}
-          isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting || isVoiding}
           invoiceStatus={invoiceStatus}
           onSubmit={handleSubmit(onSubmit)}
           onPrint={handlePrintAction}
           onPdf={handlePdfAction}
           onSaveDraft={handleSaveDraft}
+          onVoidInvoice={handleVoidInvoice}
           onCancel={() => window.history.back()}
         />
 
