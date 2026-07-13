@@ -8,6 +8,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.4.4C – Balance Sheet Printing
+
+- BalanceSheetPrintAdapter
+- balance-sheet-v1 template
+- Recursive rendering
+- DTO-driven balance verification
+- Runtime Certification
+- Reconciliation Audit
+- Git completion
+
+### 🎉 Financial Report Printing Suite Complete
+
+The Financial Report Printing Suite for v1.0 is complete.
+
+Completed reports:
+
+- Trial Balance
+- Profit & Loss
+- Balance Sheet
+
+Architecture highlights:
+
+- Shared Print Runtime
+- Shared Print Preview Framework
+- Shared Adapter architecture
+- Deterministic A4 printing
+- Recursive Handlebars support
+
 ### 🎉 Financial Reporting Suite Complete
 
 The complete Financial Reporting UI suite for v1.0 is now finished.
