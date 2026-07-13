@@ -123,6 +123,22 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.5.1 – Sales Invoice Renderer UI Foundation
+    - Sales Invoice List page
+    - New Sales Invoice page
+    - Edit/View Sales Invoice page
+    - InvoiceForm
+    - InvoiceHeader
+    - InvoiceItemsTable
+    - InvoiceTotals
+    - InvoiceToolbar
+    - Reused existing preload APIs
+    - Reused shared form components
+    - Reused InvoiceLineGrid
+    - Reused InvoiceTotalsCard
+    - Reused existing Print Preview infrastructure
+    - Preserves renderer purity
+    - Introduces no business logic
   - ✅ Phase 8.4.4D – Remaining Financial Books Printing
     - General Ledger Printing
     - Ledger Statement Printing
@@ -229,8 +245,8 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Sales Invoice Renderer UI
-- **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
+- **Next Active**: ▶ Sales Invoice Workflow Integration
+- **Remaining**: Sales Invoice Workflow Integration, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
   - Printing complete

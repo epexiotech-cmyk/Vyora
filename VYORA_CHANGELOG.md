@@ -8,6 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.5.1 – Sales Invoice Renderer UI Foundation
+
+Summary:
+
+Implemented the Sales Invoice renderer foundation.
+
+Highlights:
+
+- New invoice routes
+- Componentized renderer architecture
+- React Hook Form integration
+- Zod integration
+- useFieldArray support
+- Shared component reuse
+- Existing preload API reuse
+- Existing Print Preview integration
+- Strict TypeScript compliance
+- Zero renderer business logic
+
 ### Phase 8.4.4D – Remaining Financial Books Printing
 
 Implemented printing support for:
