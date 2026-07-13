@@ -8,6 +8,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.4.4D – Remaining Financial Books Printing
+
+Implemented printing support for:
+
+- General Ledger
+- Ledger Statement
+- Day Book
+- Cash Book
+- Bank Book
+- Outstanding Report
+
+Implementation highlights:
+
+- Six new print adapters
+- Six versioned Handlebars templates
+- Additive PrintDocumentType updates
+- Reused existing Print Runtime
+- Reused Template Registry
+- Multi-page A4 templates
+- Native PDF export compatibility
+- Native printing compatibility
+- Zero architectural regressions
+- Strict TypeScript compliance
+
 ### Phase 8.4.4C – Balance Sheet Printing
 
 - BalanceSheetPrintAdapter

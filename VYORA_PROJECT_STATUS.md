@@ -123,6 +123,14 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.4.4D – Remaining Financial Books Printing
+    - General Ledger Printing
+    - Ledger Statement Printing
+    - Day Book Printing
+    - Cash Book Printing
+    - Bank Book Printing
+    - Outstanding Report Printing
+    - Reused Print Runtime, Print Preview Framework, Adapter Pattern, Handlebars Template Registry, Native Print, Native PDF Export
   - ✅ Phase 8.4.4C – Balance Sheet Printing
     - BalanceSheetPrintAdapter implemented
     - balance-sheet-v1 template implemented
@@ -221,7 +229,7 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Phase 8.4.4D – Remaining Financial Books
+- **Next Active**: ▶ Sales Invoice Renderer UI
 - **Remaining**: Sales Invoice Renderer UI, Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
