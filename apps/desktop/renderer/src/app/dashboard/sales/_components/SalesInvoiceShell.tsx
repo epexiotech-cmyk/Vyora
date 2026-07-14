@@ -566,8 +566,9 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
 
             {!isReadOnly && (
               <AppButton
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                onClick={methods.handleSubmit(onSubmit as any)}
+                onClick={methods.handleSubmit((data) =>
+                  onSubmit(data as unknown as SalesInvoiceFormValues),
+                )}
                 disabled={isSaving || isSubmitting || isCancelling}
               >
                 <Save className="mr-2 h-4 w-4" />

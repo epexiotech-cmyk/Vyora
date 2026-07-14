@@ -18,7 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    // eslint-disable-next-line
+    // eslint-disable-next-line -- Necessary for Next.js hydration mismatch prevention
     setMounted(true);
   }, []);
 

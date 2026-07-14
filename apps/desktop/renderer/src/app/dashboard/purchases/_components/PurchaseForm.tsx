@@ -430,8 +430,9 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
           {!isReadOnly && (
             <AppButton
               variant="secondary"
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={methods.handleSubmit(onSubmit as any)}
+              onClick={methods.handleSubmit((data) =>
+                onSubmit(data as unknown as z.infer<typeof purchaseUiSchema>),
+              )}
               disabled={isSaving || isSubmitting || isCancelling}
             >
               <Save className="mr-2 h-4 w-4" />

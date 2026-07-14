@@ -1,10 +1,8 @@
-/* eslint-disable */
-import { CompanyRepository, SettingsRepository } from '../repositories';
-import { dbService } from './database/DatabaseService';
-
 import { CreateCompanyInput } from '@vyora/types';
 
-import { companyContextService } from './CompanyContextService';
+import { CompanyRepository, SettingsRepository } from '../repositories';
+
+import { dbService } from './database/DatabaseService';
 import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
 
 export class CompanyBootstrapService {
