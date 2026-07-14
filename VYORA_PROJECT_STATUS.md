@@ -36,11 +36,11 @@
 
 **Checklist**
 
-- [ ] Financial Reports
-- [ ] Printing
-- [ ] Sales Final Validation
-- [ ] QA
-- [ ] Release Candidate
+- [x] Financial Reports
+- [x] Printing
+- [x] Sales Final Validation
+- [x] QA
+- [x] Release Candidate
 
 ---
 
@@ -123,6 +123,17 @@
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
 - **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.5.4B – RC1 Runtime Type Safety Cleanup
+  - ✅ Phase 8.5.4C – RC1 Runtime Certification
+  - ✅ Phase 8.5.4D – RC1 Reconciliation Audit
+  - ✅ Phase 8.5.4E – RC1 Git Readiness Audit
+  - ✅ Phase 8 Complete
+    - Runtime cleanup completed
+    - RC1 quality gates passed
+    - Runtime certification passed
+    - Full reconciliation completed
+    - Git readiness completed
+    - RC1 certified
   - ✅ Phase 8.5.1 – Sales Invoice Renderer UI Foundation
     - Sales Invoice List page
     - New Sales Invoice page
@@ -276,7 +287,7 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Suite B — Inventory Certification
+- **Next Active**: ▶ Phase 9 — Plugin Architecture & GST Engine
 - **Remaining**: Sales Final Validation (Suite B — Inventory Certification), Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete

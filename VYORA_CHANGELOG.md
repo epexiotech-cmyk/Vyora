@@ -8,6 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.5.4
+
+Highlights:
+
+- Runtime Type Safety Cleanup
+- Removal of unnecessary any
+- Removal of unnecessary eslint-disable
+- Documentation of framework-required exceptions
+- Runtime Certification PASS
+- Reconciliation PASS
+- Git Readiness PASS
+- RC1 Release Readiness achieved
+
+_Note: Vyora ERP v1.0 has successfully completed Phase 8 and is officially certified as Release Candidate 1 (RC1)._
+
 ### Phase 8.5.3A – Sales Cancellation UI Integration
 
 Highlights:
