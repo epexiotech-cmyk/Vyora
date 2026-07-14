@@ -157,6 +157,19 @@
     - Renderer purity preserved
     - Zero business logic introduced
     - Strict TypeScript maintained
+  - ✅ Phase 8.5.3A – Sales Cancellation UI Integration
+    - Renderer integration for invoice cancellation
+    - Existing backend cancellation workflow reused
+    - Existing preload reused
+    - Existing IPC reused
+    - Void Invoice action added
+    - Confirmation dialog
+    - Loading state
+    - Success/Error toast integration
+    - Print disabled for CANCELLED invoices
+    - Renderer purity maintained
+    - Strict TypeScript maintained
+    - SWC-05 successfully re-certified.
   - ✅ Phase 8.4.4D – Remaining Financial Books Printing
     - General Ledger Printing
     - Ledger Statement Printing
@@ -263,12 +276,13 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Sales Final Validation
-- **Remaining**: Sales Final Validation, Print Engine stabilization.
+- **Next Active**: ▶ Suite B — Inventory Certification
+- **Remaining**: Sales Final Validation (Suite B — Inventory Certification), Print Engine stabilization.
 - **Exit Criteria**:
   - Financial Reports complete
   - Printing complete
   - QA passed
+  - Suite A — Sales Workflow Certification: ✅ 100% CERTIFIED
   - Git clean
   - Documentation updated
 

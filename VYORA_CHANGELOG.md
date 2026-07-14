@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.5.3A – Sales Cancellation UI Integration
+
+Highlights:
+
+- Added Void Invoice renderer action
+- Integrated existing cancelInvoice backend workflow
+- Added confirmation flow
+- Added loading protection
+- Added success/error feedback
+- Enforced print disablement for CANCELLED invoices
+- SWC-05 certification passed
+
 ### Phase 8.5.2 – Sales Invoice Workflow Integration
 
 Highlights:
