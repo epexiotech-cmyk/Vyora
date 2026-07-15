@@ -1,16 +1,19 @@
 'use client';
 
 import { VoucherDetailDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import { useParams } from 'next/navigation';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function VoucherDetail() {
   const params = useParams();
   const id = params.id as string;
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
   const [voucher, setVoucher] = useState<VoucherDetailDto | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -72,8 +75,16 @@ export default function VoucherDetail() {
             {voucher.entries?.map((entry) => (
               <tr key={entry.id} className="border-b">
                 <td className="p-2">{voucher.ledgerNames?.[entry.ledgerId] || entry.ledgerId}</td>
-                <td className="p-2 text-right">{(entry.debitAmount / 100).toFixed(2)}</td>
-                <td className="p-2 text-right">{(entry.creditAmount / 100).toFixed(2)}</td>
+                <td className="p-2 text-right">
+                  {companyLoading || !companyContext?.currency
+                    ? ''
+                    : formatMoney(entry.debitAmount, companyContext.currency)}
+                </td>
+                <td className="p-2 text-right">
+                  {companyLoading || !companyContext?.currency
+                    ? ''
+                    : formatMoney(entry.creditAmount, companyContext.currency)}
+                </td>
                 <td className="p-2">{entry.narration}</td>
               </tr>
             ))}
@@ -81,8 +92,16 @@ export default function VoucherDetail() {
           <tfoot className="bg-muted/20 font-bold">
             <tr>
               <td className="p-2 text-right">Total</td>
-              <td className="p-2 text-right">{(voucher.totalDebit / 100).toFixed(2)}</td>
-              <td className="p-2 text-right">{(voucher.totalCredit / 100).toFixed(2)}</td>
+              <td className="p-2 text-right">
+                {companyLoading || !companyContext?.currency
+                  ? ''
+                  : formatMoney(voucher.totalDebit, companyContext.currency)}
+              </td>
+              <td className="p-2 text-right">
+                {companyLoading || !companyContext?.currency
+                  ? ''
+                  : formatMoney(voucher.totalCredit, companyContext.currency)}
+              </td>
               <td className="p-2"></td>
             </tr>
           </tfoot>

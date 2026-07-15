@@ -113,6 +113,7 @@ export type VyoraBootstrapAPI = {
 
 export type VyoraCompanyAPI = {
   getActive: () => Promise<ApiResponse<string | null>>;
+  getContext: () => Promise<ApiResponse<import('@vyora/types').CompanyContextDto | null>>;
   setActive: (id: string) => Promise<ApiResponse<void>>;
   getProfile: (id: string) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto | null>>;
   updateProfile: (
@@ -171,6 +172,8 @@ export type VyoraDirectoriesAPI = {
   currency: {
     get: (code: string) => Promise<ApiResponse<unknown>>;
     search: (query: string) => Promise<ApiResponse<unknown>>;
+    getActive: () => Promise<ApiResponse<import('@vyora/types').CurrencyDto[]>>;
+    getPrimary: () => Promise<ApiResponse<import('@vyora/types').CurrencyDto | null>>;
   };
   state: {
     get: (code: string) => Promise<ApiResponse<unknown>>;

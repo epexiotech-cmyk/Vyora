@@ -13,13 +13,18 @@ export function StartupGuard({ children }: { children: React.ReactNode }) {
 
     async function checkSetup() {
       try {
-        const res = await window.vyora.bootstrap.status();
-        if (res.success && mounted) {
-          const isCompleted = res.data;
+        const [statusRes, companyRes] = await Promise.all([
+          window.vyora.bootstrap.status(),
+          window.vyora.company.getActive(),
+        ]);
 
-          if (!isCompleted && pathname !== '/setup') {
+        if (statusRes.success && companyRes.success && mounted) {
+          const isCompleted = statusRes.data;
+          const hasActiveCompany = !!companyRes.data;
+
+          if ((!isCompleted || !hasActiveCompany) && pathname !== '/setup') {
             router.replace('/setup');
-          } else if (isCompleted && pathname === '/setup') {
+          } else if (isCompleted && hasActiveCompany && pathname === '/setup') {
             router.replace('/dashboard');
           } else {
             setIsReady(true);

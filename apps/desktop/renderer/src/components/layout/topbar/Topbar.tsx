@@ -14,14 +14,10 @@ export function Topbar() {
   useEffect(() => {
     const loadCompany = async () => {
       try {
-        const response = await window.vyora.company.getActive();
+        const response = await window.vyora.company.getContext();
         if (response.success && response.data) {
-          const profileResponse = await window.vyora.company.getProfile(response.data);
-          if (profileResponse.success && profileResponse.data) {
-            setCompanyName(profileResponse.data.tradeName || profileResponse.data.legalName);
-          } else {
-            setCompanyName('No Active Company');
-          }
+          const { company } = response.data;
+          setCompanyName(company.tradeName || company.legalName);
         } else {
           setCompanyName('No Active Company');
         }

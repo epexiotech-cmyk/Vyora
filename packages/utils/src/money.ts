@@ -25,6 +25,7 @@ export const paiseToMoney = (paise: number | null | undefined): number => {
 };
 
 /**
+ * @deprecated Use formatMoney() instead.
  * Formats integer paise into a localized currency string.
  * @param paise Integer paise (e.g., 9995)
  * @param currencyCode Standard currency code, defaults to 'INR'
@@ -39,4 +40,54 @@ export const formatCurrency = (
     style: 'currency',
     currency: currencyCode,
   }).format(amount);
+};
+
+export interface CurrencyMetaPartial {
+  currencyCode: string;
+  currencyName: string;
+  symbol: string;
+  locale: string;
+  decimalPlaces: number;
+  symbolPosition: 'PREFIX' | 'SUFFIX';
+}
+
+export interface FormatMoneyOptions {
+  showSymbol?: boolean;
+  symbolOverride?: string;
+  decimalOverride?: number;
+}
+
+/**
+ * Enterprise money formatter that uses CurrencyMeta for dynamic localization.
+ * Pure function, zero IPC.
+ */
+export const formatMoney = (
+  paise: number | null | undefined,
+  meta: CurrencyMetaPartial,
+  options?: FormatMoneyOptions,
+): string => {
+  const safePaise = paise ?? 0;
+  const amount = paiseToMoney(safePaise);
+
+  const showSymbol = options?.showSymbol ?? true;
+  const decimalPlaces = options?.decimalOverride ?? meta.decimalPlaces;
+
+  const formattedNumber = new Intl.NumberFormat(meta.locale, {
+    style: 'decimal',
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
+  }).format(Math.abs(amount));
+
+  const symbol = options?.symbolOverride !== undefined ? options.symbolOverride : meta.symbol;
+
+  let resultString = formattedNumber;
+  if (showSymbol && symbol) {
+    if (meta.symbolPosition === 'PREFIX') {
+      resultString = `${symbol}${resultString}`;
+    } else {
+      resultString = `${resultString} ${symbol}`;
+    }
+  }
+
+  return amount < 0 ? `-${resultString}` : resultString;
 };

@@ -1,9 +1,10 @@
 import { ProductDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { cn } from '@/lib/utils';
 
 interface SalesProductSelectorProps {
@@ -24,6 +25,7 @@ export function SalesProductSelector({
   // Use useFormContext safely if available. If we use this outside of a form context later, we should handle that,
   // but for now it aligns with the existing AppForm/FormProvider patterns.
   const context = useFormContext();
+  const { context: companyContext } = useCompanyContext();
   const setValue = context?.setValue;
   const watch = context?.watch;
 
@@ -248,7 +250,7 @@ export function SalesProductSelector({
                     </div>
                     <div className="flex shrink-0 flex-col items-end pl-2 text-xs">
                       <span className="text-foreground font-semibold">
-                        {formatCurrency(product.salePrice)}
+                        {formatMoney(product.salePrice, companyContext!.currency)}
                       </span>
                       <span className="text-muted-foreground">Stock: {product.stock}</span>
                     </div>

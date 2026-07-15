@@ -122,7 +122,33 @@
 ## 6. Current Sprint
 
 - **Sprint Objective**: Finalize Frontend Integration and prepare RC1.
-- **Completed**: Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+- **Completed**: Phase 8.6.2C - Currency Master Enhancement, Stock Ledger Report, Stock Ageing Backend, IPC, and Renderer integration.
+  - ✅ Phase 8.6.2C – Currency Master Enhancement
+    - Added locale, symbolPosition, and isPrimary to DB schema
+    - Generated Drizzle migration for currency_master
+    - Created and exported CurrencyDto
+    - Implemented getActive() and getPrimary() in CurrencyRepository and CurrencyService
+    - Added validatePrimaryCurrencyAssignment() business rule
+    - Exposed getActive and getPrimary IPC handlers
+    - Updated preload renderer typings
+    - Wrote tests for CurrencyRepository and CurrencyService
+  - ✅ Phase 8.6.2D - Company Backend Currency Integration
+  - ✅ Phase 8.6.2E - Enterprise Currency Context API
+  - ✅ Phase 8.6.2F - Component Formatters (Context Infrastructure)
+    - ✅ Phase 8.6.2F-A - Context Injection Readiness
+    - ✅ Phase 8.6.2F-B1 - Topbar Company Context Migration
+  - ✅ Phase 8.6.2G - Renderer Currency Injection
+    - ✅ Phase 8.6.2G-A - Money Formatting Architecture Audit
+    - ✅ Phase 8.6.2G-B - Enterprise Money Formatter Implementation
+    - ✅ Phase 8.6.2G-C1 - Dashboard & Shared Components Money Formatter Migration
+    - ✅ Phase 8.6.2G-C2 - Sales Money Formatter Migration
+    - ✅ Phase 8.6.2G-C3 - Purchase Money Formatter Migration
+    - ✅ Phase 8.6.2G-C4 - Inventory & Masters Money Formatter Migration
+    - ✅ Phase 8.6.2G-C5 - Reports Money Formatter Migration
+  - ✅ Phase 8.6.2H - Print Engine Integration
+    - ✅ Phase 8.6.2H-A - Print Engine Currency Integration Audit
+    - ✅ Phase 8.6.2H-B - Print Engine Enterprise Currency Formatter Integration
+  - ✅ Phase 8.6.2J - Final Currency Cleanup & RC1 Certification
   - ✅ Phase 8.5.4B – RC1 Runtime Type Safety Cleanup
   - ✅ Phase 8.5.4C – RC1 Runtime Certification
   - ✅ Phase 8.5.4D – RC1 Reconciliation Audit

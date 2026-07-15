@@ -1,11 +1,12 @@
 'use client';
 
 import { CustomerProfileDto, CustomerListDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Plus, Edit2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef, AppSelect } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -14,6 +15,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 export function CustomerList() {
   const router = useRouter();
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
 
   const [data, setData] = React.useState<CustomerListDto>({ data: [], total: 0 });
   const [isLoading, setIsLoading] = React.useState(true);
@@ -83,14 +85,20 @@ export function CustomerList() {
       key: 'balance',
       header: 'Balance',
       className: 'text-right',
-      cell: (c) => (
-        <div>
-          <div className="font-medium">{formatCurrency(c.openingBalance)}</div>
-          {c.openingBalance > 0 && c.openingType && (
-            <div className="text-muted-foreground text-xs">{c.openingType}</div>
-          )}
-        </div>
-      ),
+      cell: (c) => {
+        if (companyLoading || !companyContext?.currency)
+          return <div className="font-medium">-</div>;
+        return (
+          <div>
+            <div className="font-medium">
+              {formatMoney(c.openingBalance, companyContext.currency)}
+            </div>
+            {c.openingBalance > 0 && c.openingType && (
+              <div className="text-muted-foreground text-xs">{c.openingType}</div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'status',

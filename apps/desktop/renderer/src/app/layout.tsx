@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 
 import './globals.css';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { CompanyContextProvider } from '@/components/providers/CompanyContextProvider';
 import { CommandPalette } from '@/components/system/CommandPalette';
 import { Toaster } from '@/components/system/notifications/Toaster';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
@@ -30,9 +31,11 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <AppLayout>{children}</AppLayout>
-          <Toaster />
-          <CommandPalette />
+          <CompanyContextProvider>
+            <AppLayout>{children}</AppLayout>
+            <Toaster />
+            <CommandPalette />
+          </CompanyContextProvider>
         </ThemeProvider>
       </body>
     </html>

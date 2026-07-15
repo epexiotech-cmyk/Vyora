@@ -1,13 +1,16 @@
 'use client';
 
 import { StockSummaryDto, StockSummaryRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function StockSummaryPage() {
+  const { context: companyContext } = useCompanyContext();
   const [data, setData] = useState<StockSummaryDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,29 +39,32 @@ export default function StockSummaryPage() {
     load();
   }, []);
 
-  const columns: ColumnDef<StockSummaryRowDto>[] = [
-    { key: 'productName', header: 'Product' },
-    { key: 'sku', header: 'SKU' },
-    { key: 'unitShortName', header: 'Unit' },
-    {
-      key: 'closingQuantity',
-      header: 'Closing Quantity',
-      className: 'text-right',
-      cell: (row) => row.closingQuantity.toFixed(4),
-    },
-    {
-      key: 'wacPaise',
-      header: 'WAC',
-      className: 'text-right',
-      cell: (row) => (row.wacPaise / 100).toFixed(2),
-    },
-    {
-      key: 'totalValuePaise',
-      header: 'Inventory Value',
-      className: 'text-right',
-      cell: (row) => (row.totalValuePaise / 100).toFixed(2),
-    },
-  ];
+  const columns: ColumnDef<StockSummaryRowDto>[] = useMemo(
+    () => [
+      { key: 'productName', header: 'Product' },
+      { key: 'sku', header: 'SKU' },
+      { key: 'unitShortName', header: 'Unit' },
+      {
+        key: 'closingQuantity',
+        header: 'Closing Quantity',
+        className: 'text-right',
+        cell: (row) => row.closingQuantity.toFixed(4),
+      },
+      {
+        key: 'wacPaise',
+        header: 'WAC',
+        className: 'text-right',
+        cell: (row) => formatMoney(row.wacPaise, companyContext!.currency),
+      },
+      {
+        key: 'totalValuePaise',
+        header: 'Inventory Value',
+        className: 'text-right',
+        cell: (row) => formatMoney(row.totalValuePaise, companyContext!.currency),
+      },
+    ],
+    [companyContext],
+  );
 
   const paginatedRows = useMemo(() => {
     if (!data?.rows) return [];
@@ -100,7 +106,7 @@ export default function StockSummaryPage() {
         {!loading && data && (
           <div className="bg-muted/50 flex items-center justify-between border-t p-4 font-bold">
             <div>Total Inventory Value</div>
-            <div>{(data.totalValuePaise / 100).toFixed(2)}</div>
+            <div>{formatMoney(data.totalValuePaise, companyContext!.currency)}</div>
           </div>
         )}
       </div>

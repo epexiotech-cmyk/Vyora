@@ -1,13 +1,16 @@
 'use client';
 
 import { StockAgeingDto, StockAgeingRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker, DataTable, ColumnDef, TablePagination } from '@/components/shared';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function StockAgeingPage() {
+  const { context: companyContext } = useCompanyContext();
   const [asOfDate, setAsOfDate] = useState<string>('');
 
   const [data, setData] = useState<StockAgeingDto | null>(null);
@@ -111,16 +114,16 @@ export default function StockAgeingPage() {
         key: 'wacPaise',
         header: 'WAC',
         className: 'text-right',
-        cell: (row) => ((row.wacPaise || 0) / 100).toFixed(2),
+        cell: (row) => formatMoney(row.wacPaise || 0, companyContext!.currency),
       },
       {
         key: 'totalValuePaise',
         header: 'Value',
         className: 'text-right',
-        cell: (row) => ((row.totalValuePaise || 0) / 100).toFixed(2),
+        cell: (row) => formatMoney(row.totalValuePaise || 0, companyContext!.currency),
       },
     ],
-    [],
+    [companyContext],
   );
 
   const paginatedRows = useMemo(() => {
@@ -164,7 +167,7 @@ export default function StockAgeingPage() {
                 Grand Total Value
               </h3>
               <p className="text-primary mt-2 text-4xl font-bold">
-                {(data.totalValuePaise / 100).toFixed(2)}
+                {formatMoney(data.totalValuePaise, companyContext!.currency)}
               </p>
             </div>
           </div>

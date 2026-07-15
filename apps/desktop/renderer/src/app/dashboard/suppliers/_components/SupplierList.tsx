@@ -1,11 +1,12 @@
 'use client';
 
 import { SupplierProfileDto, SupplierListDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Plus, Edit2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef, AppSelect } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -14,6 +15,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 export function SupplierList() {
   const router = useRouter();
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
 
   const [data, setData] = React.useState<SupplierListDto>({ data: [], total: 0 });
   const [isLoading, setIsLoading] = React.useState(true);
@@ -83,14 +85,20 @@ export function SupplierList() {
       key: 'balance',
       header: 'Balance',
       className: 'text-right',
-      cell: (s) => (
-        <div>
-          <div className="font-medium">{formatCurrency(s.openingBalance)}</div>
-          {s.openingBalance > 0 && s.openingType && (
-            <div className="text-muted-foreground text-xs">{s.openingType}</div>
-          )}
-        </div>
-      ),
+      cell: (s) => {
+        if (companyLoading || !companyContext?.currency)
+          return <div className="font-medium">-</div>;
+        return (
+          <div>
+            <div className="font-medium">
+              {formatMoney(s.openingBalance, companyContext.currency)}
+            </div>
+            {s.openingBalance > 0 && s.openingType && (
+              <div className="text-muted-foreground text-xs">{s.openingType}</div>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'status',

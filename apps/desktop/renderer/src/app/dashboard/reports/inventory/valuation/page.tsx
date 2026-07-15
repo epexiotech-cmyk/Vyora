@@ -1,13 +1,16 @@
 'use client';
 
 import { StockSummaryDto, StockSummaryRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker, DataTable, ColumnDef, TablePagination } from '@/components/shared';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function InventoryValuationPage() {
+  const { context: companyContext } = useCompanyContext();
   const [asOfDate, setAsOfDate] = useState<string>('');
 
   const [data, setData] = useState<StockSummaryDto | null>(null);
@@ -75,16 +78,16 @@ export default function InventoryValuationPage() {
         key: 'wacPaise',
         header: 'Weighted Average Cost',
         className: 'text-right',
-        cell: (row) => (row.wacPaise / 100).toFixed(2),
+        cell: (row) => formatMoney(row.wacPaise, companyContext!.currency),
       },
       {
         key: 'totalValuePaise',
         header: 'Inventory Value',
         className: 'text-right',
-        cell: (row) => (row.totalValuePaise / 100).toFixed(2),
+        cell: (row) => formatMoney(row.totalValuePaise, companyContext!.currency),
       },
     ],
-    [],
+    [companyContext],
   );
 
   const paginatedRows = useMemo(() => {
@@ -119,7 +122,7 @@ export default function InventoryValuationPage() {
               Grand Total Inventory Value
             </h3>
             <p className="text-primary mt-2 text-4xl font-bold">
-              {(data.totalValuePaise / 100).toFixed(2)}
+              {formatMoney(data.totalValuePaise, companyContext!.currency)}
             </p>
           </div>
 

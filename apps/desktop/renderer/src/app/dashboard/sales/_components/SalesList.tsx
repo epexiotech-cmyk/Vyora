@@ -1,11 +1,12 @@
 'use client';
 
 import { SalesInvoiceDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Plus, Edit2, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef, AppSelect } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -13,6 +14,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 
 export function SalesList() {
   const router = useRouter();
+  const { context } = useCompanyContext();
 
   const [data, setData] = React.useState<SalesInvoiceDto[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -90,7 +92,9 @@ export function SalesList() {
       key: 'grandTotal',
       header: 'Grand Total',
       className: 'text-right',
-      cell: (i) => <div className="font-medium">{formatCurrency(i.grandTotal)}</div>,
+      cell: (i) => (
+        <div className="font-medium">{formatMoney(i.grandTotal, context!.currency)}</div>
+      ),
     },
     {
       key: 'status',

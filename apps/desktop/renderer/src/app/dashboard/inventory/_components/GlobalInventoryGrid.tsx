@@ -1,10 +1,11 @@
 'use client';
 
 import { GlobalInventoryRowDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { ColumnDef, DataTable } from '@/components/shared/table/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
@@ -26,6 +27,7 @@ export function GlobalInventoryGrid({
   onToggleNegativeOnly,
 }: GlobalInventoryGridProps) {
   const router = useRouter();
+  const { context } = useCompanyContext();
 
   const columns: ColumnDef<GlobalInventoryRowDto>[] = [
     {
@@ -58,13 +60,19 @@ export function GlobalInventoryGrid({
       key: 'currentWacPaise',
       header: 'Current WAC',
       cell: (item) => (
-        <span className="text-muted-foreground">{formatCurrency(item.currentWacPaise)}</span>
+        <span className="text-muted-foreground">
+          {formatMoney(item.currentWacPaise, context!.currency)}
+        </span>
       ),
     },
     {
       key: 'currentValuePaise',
       header: 'Current Value',
-      cell: (item) => <span className="font-medium">{formatCurrency(item.currentValuePaise)}</span>,
+      cell: (item) => (
+        <span className="font-medium">
+          {formatMoney(item.currentValuePaise, context!.currency)}
+        </span>
+      ),
     },
     {
       key: 'status',

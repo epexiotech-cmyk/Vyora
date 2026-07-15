@@ -7,9 +7,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 
 import { PrintPreview } from '@/components/print/PrintPreview';
 import { usePrintPreview } from '@/components/print/usePrintPreview';
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AmountCell } from '@/components/reports/AmountCell';
 
 export default function BalanceSheetPage() {
+  const { context: companyContext } = useCompanyContext();
   const [report, setReport] = useState<BalanceSheetReport | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,6 +154,7 @@ export default function BalanceSheetPage() {
             <AmountCell
               amount={group.totalBalance.amount}
               type={group.totalBalance.type}
+              currency={companyContext!.currency}
               hideType
             />
           </td>
@@ -168,7 +171,12 @@ export default function BalanceSheetPage() {
               {ledger.ledgerName}
             </td>
             <td className="p-3 text-right">
-              <AmountCell amount={ledger.balance.amount} type={ledger.balance.type} hideType />
+              <AmountCell
+                amount={ledger.balance.amount}
+                type={ledger.balance.type}
+                currency={companyContext!.currency}
+                hideType
+              />
             </td>
           </tr>
         ))}
@@ -213,7 +221,12 @@ export default function BalanceSheetPage() {
           Total {title}
         </span>
         <span className="text-primary text-lg font-bold">
-          <AmountCell amount={totalAmount} type={totalType} hideType />
+          <AmountCell
+            amount={totalAmount}
+            type={totalType}
+            currency={companyContext!.currency}
+            hideType
+          />
         </span>
       </div>
     </div>
@@ -282,6 +295,7 @@ export default function BalanceSheetPage() {
               <AmountCell
                 amount={report.difference.amount}
                 type={report.difference.type}
+                currency={companyContext!.currency}
                 hideType={true}
               />
             </span>

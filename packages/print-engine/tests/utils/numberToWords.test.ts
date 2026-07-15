@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { numberToWordsINR } from '../../src/utils/numberToWords';
 
 describe('numberToWordsINR', () => {

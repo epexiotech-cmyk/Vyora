@@ -74,12 +74,14 @@ async function bootstrap() {
       loggerService.warn('Failed to load active company context: ' + e);
     }
 
-    try {
-      loggerService.info('STARTING SALES RUNTIME TEST');
-      await runTest();
-      loggerService.info('SALES RUNTIME TEST FINISHED');
-    } catch (e) {
-      loggerService.error('RUNTEST FAILED', e);
+    if (process.env.RUN_SALES_TEST === 'true') {
+      try {
+        loggerService.info('STARTING SALES RUNTIME TEST');
+        await runTest();
+        loggerService.info('SALES RUNTIME TEST FINISHED');
+      } catch (e) {
+        loggerService.error('RUNTEST FAILED', e);
+      }
     }
   } catch (err) {
     console.error('Failed to initialize database:', err);

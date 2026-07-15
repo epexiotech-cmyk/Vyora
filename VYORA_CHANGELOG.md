@@ -8,6 +8,130 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased] - (v1.0 Core ERP Target)
 
+### Phase 8.6.2J - Final Currency Cleanup & RC1 Certification
+
+Highlights:
+
+- Removed the final two hardcoded legacy currency formatters (`₹`) from `InvoiceLineGrid` and `PurchaseLineGrid`.
+- Ensured strict fallback propagation through `currencyMeta`.
+- Passed full repository audit confirming 0 legacy formatters remaining in `apps/desktop/renderer`.
+- Successfully re-verified build pipeline with `tsc --noEmit`.
+- Certified RC1 status for Enterprise Currency Architecture.
+
+### Phase 8.6.2H-B - Print Engine Enterprise Currency Formatter Integration
+
+Highlights:
+
+- Successfully integrated the enterprise `formatMoney()` architecture into the Print Engine.
+- Extended the `PrintPayload` to accept the `CurrencyMeta` from the frontend renderer.
+- Refactored `usePrintPreview` hook to inject the current `CompanyContext` currency securely into all print operations.
+- Deprecated legacy `formatCurrencyINR` and converted it into a thin wrapper around `formatMoney`.
+- Reused Handlebars `formatCurrency` helper globally, avoiding any disruption to existing templates.
+- Retained strict presentation purity by parsing raw numerical paise values directly within the print context without breaking underlying calculations.
+
+### Phase 8.6.2G-B - Enterprise Money Formatter Implementation
+
+Highlights:
+
+- Established the `formatMoney` pure utility in `@vyora/utils` as part of the Enterprise Currency architecture.
+- Designed it strictly around the new `CurrencyMeta` payload.
+- Added comprehensive unit tests for different locales (`en-IN`, `en-US`, `ar-AE`) and scenarios.
+- Zero dependencies on IPC, React Context, or the Database, maintaining 100% testability.
+- Added future-ready formatting options (e.g. `showSymbol`, `decimalOverride`, `symbolOverride`).
+
+### Phase 8.6.2G-C5 - Reports Money Formatter Migration
+
+Highlights:
+
+- Successfully migrated `AmountCell` using the enterprise `formatMoney` utility.
+- Migrated all Accounting Reports (`TrialBalancePage`, `ProfitLossPage`, `BalanceSheetPage`) to consume the new `AmountCell` API.
+- Migrated all Inventory Reports (`InventoryValuationPage`, `StockSummaryPage`, `StockLedgerPage`, `StockMovementRegisterPage`, `StockAgeingPage`) to use `formatMoney`.
+- Maintained Zero duplicate symbols and proper representation of positive, negative, zero values across reports without affecting calculations.
+- Cleaned the entire Renderer application codebase of legacy presentation formats (`Intl.NumberFormat`, `formatCurrency`, `toFixed(2)`).
+
+### Phase 8.6.2G-C4 - Inventory & Masters Money Formatter Migration
+
+Highlights:
+
+- Successfully migrated Inventory components (`InventoryKpiCards`, `GlobalInventoryGrid`, `InventoryLedgerTable`, `InventoryDetailPage`) to the new `formatMoney` architecture.
+- Verified Master Data lists (Customers, Suppliers, Items) were accurately migrated.
+- Conducted repository search ensuring only `Reports` modules contained legacy fallback values.
+
+### Phase 8.6.2G-C3 - Purchase Money Formatter Migration
+
+Highlights:
+
+- Successfully migrated Purchase components (`PurchaseList`, `PurchaseLineGrid`, `PurchaseTotalsCard`) to the new `formatMoney` architecture.
+- Followed presentation-only rules, preserving the underlying `paiseToMoney` computations used in form state models and logic.
+- Maintained Context consumption purity by lifting `CurrencyMeta` to the grid component level and passing as a prop into high-frequency `PurchaseLineRow` components.
+
+### Phase 8.6.2G-C2 - Sales Money Formatter Migration
+
+Highlights:
+
+- Successfully migrated Sales components (`SalesList`, `InvoiceLineGrid`, `InvoiceTotalsCard`, `SalesProductSelector`) to the new `formatMoney` architecture.
+- Replaced legacy formatting (manual concatenations and `paiseToMoney(...).toFixed(2)`) with robust negative-aware `formatMoney` calls.
+- Adhered to renderer purity, accessing `CurrencyMeta` exclusively through the React `CompanyContextProvider`.
+- Maintained business logic formatting separation for reactive editable fields.
+
+### Phase 8.6.2G-C1 - Dashboard & Shared Components Money Formatter Migration
+
+Highlights:
+
+- Created a global `CompanyContextProvider` with `refresh` capability, wrapping the application to securely fetch and provide the company context synchronously downward.
+- Migrated Dashboard Master Lists (CustomerList, SupplierList, ItemList) to dynamically format displayed currencies based on the unified runtime context `CurrencyMeta`.
+- Migrated Accounting Dashboard Views (Ledger, Trial Balance, Voucher Details) to correctly handle formatted values.
+- Removed legacy formatters, maintaining zero transactional module modification during this phase.
+
+### Phase 8.6.2F-B1 - Topbar Company Context Migration
+
+Highlights:
+
+- Successfully migrated `Topbar.tsx` to consume the new `company.getContext()` API.
+- Reduced redundant `getActive()` and `getProfile()` IPC calls down to a single optimized context fetch.
+- Demonstrated and validated the CompanyContext architecture on an existing consumer.
+
+### Phase 8.6.2F-A - Company Context Currency Injection Implementation
+
+Highlights:
+
+- Introduced `CompanyContextDto` as the application's unified runtime session context.
+- Added `CurrencyMeta` payload to gracefully attach localized format settings dynamically.
+- Implemented `CompanyContextService.getContext()` to build, resolve, and cache the runtime session.
+- Exposes `company:get-context` over IPC for frontend consumption, replacing separate profile calls in the future.
+- Ensures existing IPC legacy consumers continue to work untouched.
+
+### Phase 8.6.2E-B - Company Setup Currency Dropdown Implementation
+
+Highlights:
+
+- Implemented dynamic currency selection in the Company Setup UI.
+- Fetches active currencies via IPC and auto-selects the Primary currency, falling back to INR or the first available active currency.
+- Safely handles IPC failures and empty currency states to prevent malformed company setups.
+- Updated Preload typings for `getActive` and `getPrimary` to strictly return `CurrencyDto` instead of `unknown`.
+
+### Phase 8.6.2D - Company Backend Currency Integration
+
+Highlights:
+
+- Added Zod validation for `currency` ensuring exact 3-character ISO code
+- Added `getByCode` utility in `CurrencyService`
+- Added validation check to `CompanyBootstrapService.createCompany` ensuring currency exists and is active
+- Added similar validation check and settings update flow to `CompanyContextService.updateProfile`
+- Extended testing to ensure valid, invalid, missing, and inactive currencies fail or succeed correctly during company setup and profile updates
+
+### Phase 8.6.2C - Currency Master Enhancement
+
+Highlights:
+
+- Database: Added locale, symbolPosition, and isPrimary fields to currency_master
+- Types: Created and exported CurrencyDto with backward compatibility
+- Repository: Implemented getActive() and getPrimary() methods
+- Service: Implemented getActive(), getPrimary(), and validatePrimaryCurrencyAssignment()
+- IPC: Exposed directory:currency:getActive and directory:currency:getPrimary
+- Tests: Validated currency repository and service logic
+- Migration: Safely generated Drizzle migrations for existing databases
+
 ### Phase 8.5.4
 
 Highlights:

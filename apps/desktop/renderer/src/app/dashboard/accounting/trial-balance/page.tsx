@@ -1,13 +1,16 @@
 'use client';
 
 import { TrialBalanceDto, TrialBalanceRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function TrialBalance() {
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
   const [data, setData] = useState<TrialBalanceDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +43,19 @@ export default function TrialBalance() {
       key: 'debitTotal',
       header: 'Debit',
       className: 'text-right',
-      cell: (row) => (row.debitTotal / 100).toFixed(2),
+      cell: (row) => {
+        if (companyLoading || !companyContext?.currency) return '';
+        return formatMoney(row.debitTotal, companyContext.currency);
+      },
     },
     {
       key: 'creditTotal',
       header: 'Credit',
       className: 'text-right',
-      cell: (row) => (row.creditTotal / 100).toFixed(2),
+      cell: (row) => {
+        if (companyLoading || !companyContext?.currency) return '';
+        return formatMoney(row.creditTotal, companyContext.currency);
+      },
     },
   ];
 
@@ -79,8 +88,16 @@ export default function TrialBalance() {
           <div className="bg-muted/50 flex items-center justify-between border-t p-4 font-bold">
             <div>Total</div>
             <div className="flex space-x-12">
-              <div>{(data.totalDebit / 100).toFixed(2)}</div>
-              <div>{(data.totalCredit / 100).toFixed(2)}</div>
+              <div>
+                {companyContext?.currency
+                  ? formatMoney(data.totalDebit, companyContext.currency)
+                  : ''}
+              </div>
+              <div>
+                {companyContext?.currency
+                  ? formatMoney(data.totalCredit, companyContext.currency)
+                  : ''}
+              </div>
             </div>
           </div>
         )}

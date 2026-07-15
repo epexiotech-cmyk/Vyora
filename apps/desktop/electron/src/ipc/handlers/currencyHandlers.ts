@@ -13,4 +13,14 @@ export function registerCurrencyHandlers() {
     loggerService.debug(`[IPC] directory:currency:search called with ${query}`);
     return currencyService.search(query);
   });
+
+  ipcMain.handle('directory:currency:getActive', async () => {
+    loggerService.debug(`[IPC] directory:currency:getActive called`);
+    return currencyService.getActive();
+  });
+
+  ipcMain.handle('directory:currency:getPrimary', async () => {
+    loggerService.debug(`[IPC] directory:currency:getPrimary called`);
+    return currencyService.getPrimary();
+  });
 }

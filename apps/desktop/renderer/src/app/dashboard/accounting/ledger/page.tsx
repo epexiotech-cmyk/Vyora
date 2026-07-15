@@ -1,15 +1,18 @@
 'use client';
 
 import { LedgerStatementDto, LedgerStatementRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker } from '@/components/shared/form/AppDatePicker';
 import { AppSelect } from '@/components/shared/form/AppSelect';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function LedgerStatement() {
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
   const [data, setData] = useState<LedgerStatementDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [ledgerId, setLedgerId] = useState<string>('');
@@ -73,19 +76,28 @@ export default function LedgerStatement() {
       key: 'debitAmount',
       header: 'Debit',
       className: 'text-right',
-      cell: (row) => (row.debitAmount > 0 ? (row.debitAmount / 100).toFixed(2) : ''),
+      cell: (row) => {
+        if (companyLoading || !companyContext?.currency) return '';
+        return row.debitAmount > 0 ? formatMoney(row.debitAmount, companyContext.currency) : '';
+      },
     },
     {
       key: 'creditAmount',
       header: 'Credit',
       className: 'text-right',
-      cell: (row) => (row.creditAmount > 0 ? (row.creditAmount / 100).toFixed(2) : ''),
+      cell: (row) => {
+        if (companyLoading || !companyContext?.currency) return '';
+        return row.creditAmount > 0 ? formatMoney(row.creditAmount, companyContext.currency) : '';
+      },
     },
     {
       key: 'balance',
       header: 'Balance',
       className: 'text-right font-semibold',
-      cell: (row) => (row.balance / 100).toFixed(2) + ' ' + row.balanceType,
+      cell: (row) => {
+        if (companyLoading || !companyContext?.currency) return '';
+        return `${formatMoney(row.balance, companyContext.currency)} ${row.balanceType}`;
+      },
     },
   ];
 
@@ -118,7 +130,10 @@ export default function LedgerStatement() {
             <div className="bg-muted/50 flex justify-between border-b p-4 font-semibold">
               <div>Opening Balance:</div>
               <div>
-                {(data.openingBalance / 100).toFixed(2)} {data.openingType}
+                {companyContext?.currency
+                  ? formatMoney(data.openingBalance, companyContext.currency)
+                  : ''}{' '}
+                {data.openingType}
               </div>
             </div>
           )}
@@ -132,7 +147,10 @@ export default function LedgerStatement() {
             <div className="bg-muted/50 flex justify-between border-t p-4 font-semibold">
               <div>Closing Balance:</div>
               <div>
-                {(data.closingBalance / 100).toFixed(2)} {data.closingType}
+                {companyContext?.currency
+                  ? formatMoney(data.closingBalance, companyContext.currency)
+                  : ''}{' '}
+                {data.closingType}
               </div>
             </div>
           )}

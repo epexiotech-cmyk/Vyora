@@ -1,9 +1,10 @@
 'use client';
 
 import { GlobalInventoryRowDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard';
 
 export interface InventoryKpiCardsProps {
@@ -11,6 +12,7 @@ export interface InventoryKpiCardsProps {
 }
 
 export function InventoryKpiCards({ data }: InventoryKpiCardsProps) {
+  const { context } = useCompanyContext();
   const totalProducts = data.length;
   const itemsInStock = data.filter((row) => row.currentQty > 0).length;
   const negativeStockItems = data.filter((row) => row.currentQty < 0).length;
@@ -50,7 +52,9 @@ export function InventoryKpiCards({ data }: InventoryKpiCardsProps) {
           <AppCardTitle className="text-sm font-medium">Total Inventory Value</AppCardTitle>
         </AppCardHeader>
         <AppCardContent>
-          <div className="text-2xl font-bold">{formatCurrency(totalInventoryValue)}</div>
+          <div className="text-2xl font-bold">
+            {formatMoney(totalInventoryValue, context!.currency)}
+          </div>
         </AppCardContent>
       </AppCard>
     </div>

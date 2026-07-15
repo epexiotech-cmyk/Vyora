@@ -10,7 +10,9 @@
   "devDependencies": {
     "eslint": "^8.57.0",
     "typescript": "latest",
-    "@vyora/config": "workspace:*"
+    "@vyora/config": "workspace:*",
+    "@vyora/types": "workspace:*",
+    "vitest": "^4.1.8"
   },
   "types": "src/index.ts",
   "exports": {

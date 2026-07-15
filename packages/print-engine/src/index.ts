@@ -32,9 +32,10 @@ let isRegistered = false;
 export function registerAllTemplates() {
   if (isRegistered) return;
   // Register Handlebars helpers
-  Handlebars.registerHelper('formatCurrency', function (value) {
-    if (value === undefined || value === null) return '0.00';
-    return formatCurrencyINR(value);
+  Handlebars.registerHelper('formatCurrency', function (value, options) {
+    if (value === undefined || value === null)
+      return formatCurrencyINR(0, options?.data?.root?.currencyMeta);
+    return formatCurrencyINR(value, options?.data?.root?.currencyMeta);
   });
   Handlebars.registerHelper('formatDate', function (dateStr) {
     if (!dateStr) return '';

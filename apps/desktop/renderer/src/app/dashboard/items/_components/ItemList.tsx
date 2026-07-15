@@ -1,11 +1,12 @@
 'use client';
 
 import { ProductListDto, TaxDto, UnitDto, ProductDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef, AppSelect } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -14,6 +15,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 export function ItemList() {
   const router = useRouter();
+  const { context: companyContext, loading: companyLoading } = useCompanyContext();
 
   const [data, setData] = React.useState<ProductListDto>({ data: [], total: 0 });
   const [units, setUnits] = React.useState<Record<string, UnitDto>>({});
@@ -139,14 +141,20 @@ export function ItemList() {
       key: 'pricing',
       header: 'Pricing',
       className: 'text-right',
-      cell: (item) => (
-        <div>
-          <div className="font-medium">{formatCurrency(item.salePrice)}</div>
-          <div className="text-muted-foreground text-xs">
-            Pur: {formatCurrency(item.purchasePrice)}
+      cell: (item) => {
+        if (companyLoading || !companyContext?.currency)
+          return <div className="font-medium">-</div>;
+        return (
+          <div>
+            <div className="font-medium">
+              {formatMoney(item.salePrice, companyContext.currency)}
+            </div>
+            <div className="text-muted-foreground text-xs">
+              Pur: {formatMoney(item.purchasePrice, companyContext.currency)}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'status',

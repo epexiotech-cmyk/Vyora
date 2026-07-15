@@ -1,13 +1,16 @@
 'use client';
 
 import { StockMovementRegisterDto, StockMovementRegisterRowDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker, DataTable, ColumnDef, TablePagination } from '@/components/shared';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export default function StockMovementRegisterPage() {
+  const { context: companyContext } = useCompanyContext();
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
 
@@ -89,11 +92,11 @@ export default function StockMovementRegisterPage() {
         key: 'ratePaise',
         header: 'Rate',
         className: 'text-right',
-        cell: (row) => (row.ratePaise ? (row.ratePaise / 100).toFixed(2) : '-'),
+        cell: (row) => (row.ratePaise ? formatMoney(row.ratePaise, companyContext!.currency) : '-'),
       },
       { key: 'remarks', header: 'Remarks' },
     ],
-    [],
+    [companyContext],
   );
 
   const paginatedRows = useMemo(() => {

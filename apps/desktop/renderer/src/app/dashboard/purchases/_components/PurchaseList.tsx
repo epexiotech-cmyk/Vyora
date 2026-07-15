@@ -1,17 +1,19 @@
 'use client';
 
 import { PurchaseListDto } from '@vyora/types';
-import { formatCurrency } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import { Plus, Search, Filter, Edit2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppButton } from '@/components/ui/AppButton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useDebounce } from '@/hooks/useDebounce';
 
 export function PurchaseList() {
   const router = useRouter();
+  const { context } = useCompanyContext();
 
   const [data, setData] = React.useState<PurchaseListDto>({ data: [], total: 0 });
   const [isLoading, setIsLoading] = React.useState(true);
@@ -171,7 +173,7 @@ export function PurchaseList() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
-                      {formatCurrency(purchase.grandTotal)}
+                      {formatMoney(purchase.grandTotal, context!.currency)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge

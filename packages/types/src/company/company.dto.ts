@@ -1,4 +1,26 @@
+import { z } from 'zod';
+
 // Phase 4.4B Foundation DTO
+
+export const currencyValidationSchema = z
+  .string()
+  .min(1, 'Currency is required')
+  .length(3, 'Currency code must be exactly 3 characters')
+  .toUpperCase();
+
+export interface CurrencyMeta {
+  currencyCode: string;
+  currencyName: string;
+  symbol: string;
+  locale: string;
+  decimalPlaces: number;
+  symbolPosition: 'PREFIX' | 'SUFFIX';
+}
+
+export interface CompanyContextDto {
+  company: CompanyProfileDto;
+  currency: CurrencyMeta;
+}
 
 export interface CompanyProfileDto {
   id: string;
@@ -52,6 +74,7 @@ export interface UpdateCompanyProfileRequest {
   mobile?: string | null;
   telephone?: string | null;
   website?: string | null;
+  currency?: string;
 }
 
 // Backward compatibility for existing bootstrap code

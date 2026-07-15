@@ -1,12 +1,14 @@
 import { ProductDto } from '@vyora/types';
 import { InvoiceCalculationResult } from '@vyora/types';
-import { paiseToMoney } from '@vyora/utils';
+import { paiseToMoney, formatMoney } from '@vyora/utils';
+import { CurrencyMetaPartial } from '@vyora/utils';
 import { Plus, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
 import { PurchaseItemSelector } from './PurchaseItemSelector';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppButton } from '@/components/ui/AppButton';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +19,7 @@ interface PurchaseLineRowProps {
   totalRows: number;
   engineLineResult?: InvoiceCalculationResult['items'][0];
   isReadOnly?: boolean;
+  currencyMeta?: CurrencyMetaPartial;
 }
 
 const emptyLine = {
@@ -41,6 +44,7 @@ function PurchaseLineRow({
   totalRows,
   engineLineResult,
   isReadOnly,
+  currencyMeta,
 }: PurchaseLineRowProps) {
   const {
     register,
@@ -164,7 +168,10 @@ function PurchaseLineRow({
 
         {/* 6. Amount */}
         <div className="border-border/50 flex h-12 w-36 shrink-0 items-center justify-end border-r px-4 text-sm font-medium">
-          ₹{lineTotal.toFixed(2)}
+          {formatMoney(
+            engineLineResult ? engineLineResult.lineTotal : 0,
+            currencyMeta as CurrencyMetaPartial,
+          )}
         </div>
 
         {/* 7. Delete */}
@@ -206,6 +213,7 @@ export function PurchaseLineGrid({
   calculationState?: { totals: InvoiceCalculationResult; isCalculating: boolean };
   isReadOnly?: boolean;
 }) {
+  const { context } = useCompanyContext();
   const { control, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -288,6 +296,7 @@ export function PurchaseLineGrid({
               totalRows={fields.length}
               engineLineResult={calculationState?.totals?.items?.[index]}
               isReadOnly={isReadOnly}
+              currencyMeta={context?.currency}
             />
           ))}
         </div>

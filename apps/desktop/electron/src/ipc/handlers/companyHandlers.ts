@@ -19,6 +19,19 @@ export function registerCompanyHandlers() {
     }
   });
 
+  ipcMain.handle(
+    'company:get-context',
+    async (): Promise<ApiResponse<import('@vyora/types').CompanyContextDto | null>> => {
+      try {
+        const context = await companyContextService.getContext();
+        return { success: true, data: context };
+      } catch (error) {
+        console.error('Error getting company context:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
   ipcMain.handle('company:set-active', async (_, companyId: string): Promise<ApiResponse<void>> => {
     try {
       await companyContextService.setActiveCompany(companyId);

@@ -1,15 +1,28 @@
 import type { WebContentsPrintOptions, PrintToPDFOptions } from 'electron';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 
 export function usePrintPreview(
   templateId: string,
   payload: import('@vyora/print-engine').PrintPayload<unknown> | null,
 ) {
+  const { context: companyContext } = useCompanyContext();
   const [html, setHtml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const payloadStr = payload ? JSON.stringify(payload) : null;
+  const currency = companyContext?.currency;
+
+  const payloadWithMeta = useMemo(() => {
+    if (!payload || !currency) return null;
+    return {
+      ...payload,
+      currencyMeta: currency,
+    };
+  }, [payload, currency]);
+
+  const payloadStr = payloadWithMeta ? JSON.stringify(payloadWithMeta) : null;
 
   const reload = useCallback(async () => {
     if (!templateId || !payloadStr) {

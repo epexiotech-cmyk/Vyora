@@ -1,13 +1,12 @@
 'use client';
 
 import { StockMovementDto } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { ColumnDef, DataTable } from '@/components/shared/table/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount / 100);
 
 const formatDate = (date: Date | string) => new Date(date).toLocaleDateString();
 
@@ -17,6 +16,7 @@ interface InventoryLedgerTableProps {
 }
 
 export function InventoryLedgerTable({ ledger, isLoading }: InventoryLedgerTableProps) {
+  const { context } = useCompanyContext();
   const [page, setPage] = React.useState(0);
   const pageSize = 15;
 
@@ -70,7 +70,7 @@ export function InventoryLedgerTable({ ledger, isLoading }: InventoryLedgerTable
       key: 'rate',
       header: 'Rate',
       className: 'text-right',
-      cell: (item) => formatCurrency(item.rate),
+      cell: (item) => formatMoney(item.rate, context!.currency),
     },
     {
       key: 'remarks',

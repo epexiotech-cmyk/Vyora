@@ -1,5 +1,6 @@
-import { CreateCompanyInput } from '@vyora/types';
+import { CreateCompanyInput, currencyValidationSchema } from '@vyora/types';
 
+import { currencyService } from '../modules/directories/currency/CurrencyService';
 import { CompanyRepository, SettingsRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
@@ -20,6 +21,19 @@ export class CompanyBootstrapService {
   }
 
   public async createCompany(input: CreateCompanyInput): Promise<string> {
+    // Phase 8.6.2D: Validate Currency
+    const currencyValidation = currencyValidationSchema.safeParse(input.currency);
+    if (!currencyValidation.success) {
+      throw new Error(currencyValidation.error.issues[0]?.message || 'Invalid currency format');
+    }
+
+    const currencyCode = currencyValidation.data;
+    const currencyCheck = await currencyService.getByCode(currencyCode);
+
+    if (!currencyCheck.success) {
+      throw new Error(currencyCheck.error);
+    }
+
     return dbService.getDb().transaction((tx) => {
       // 1. Create base company record
       const company = this.companyRepo.createSync(

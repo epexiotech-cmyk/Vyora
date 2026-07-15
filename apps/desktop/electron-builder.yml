@@ -1,5 +1,6 @@
 appId: com.vyora.desktop
 productName: Vyora
+npmRebuild: false
 directories:
   output: dist-installers
   buildResources: build

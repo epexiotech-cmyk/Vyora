@@ -17,6 +17,7 @@ vi.mock('../../../services/database/DirectoryDatabaseService', () => {
           select: vi.fn().mockReturnThis(),
           from: vi.fn().mockReturnThis(),
           where: vi.fn().mockReturnThis(),
+          orderBy: vi.fn().mockReturnThis(),
           limit: vi.fn().mockReturnThis(),
           get: vi.fn(),
           all: vi.fn(),
@@ -51,6 +52,16 @@ describe('CurrencyRepository', () => {
 
   it('count executes via directoryDatabaseService.execute', async () => {
     await repository.count();
+    expect(directoryDatabaseService.execute).toHaveBeenCalled();
+  });
+
+  it('getActive executes via directoryDatabaseService.execute', async () => {
+    await repository.getActive();
+    expect(directoryDatabaseService.execute).toHaveBeenCalled();
+  });
+
+  it('getPrimary executes via directoryDatabaseService.execute', async () => {
+    await repository.getPrimary();
     expect(directoryDatabaseService.execute).toHaveBeenCalled();
   });
 });

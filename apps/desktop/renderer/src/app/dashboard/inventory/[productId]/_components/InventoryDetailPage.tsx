@@ -6,18 +6,17 @@ import {
   StockMovementDto,
   ProductStockStatusDto,
 } from '@vyora/types';
+import { formatMoney } from '@vyora/utils';
 import { ArrowLeft, History, Loader2, Package, Tag, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { InventoryLedgerTable } from './InventoryLedgerTable';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount / 100);
 
 interface InventoryDetailPageProps {
   productId: string;
@@ -25,6 +24,7 @@ interface InventoryDetailPageProps {
 
 export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
   const router = useRouter();
+  const { context: companyContext } = useCompanyContext();
 
   const [product, setProduct] = React.useState<ProductDto | null>(null);
   const [stockSummary, setStockSummary] = React.useState<ProductStockStatusDto | null>(null);
@@ -128,7 +128,9 @@ export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
               <Wallet className="text-primary h-4 w-4" />
             </div>
             <div className="text-2xl font-bold">
-              {stockSummary ? formatCurrency(stockSummary.totalValue) : formatCurrency(0)}
+              {stockSummary
+                ? formatMoney(stockSummary.totalValue, companyContext!.currency)
+                : formatMoney(0, companyContext!.currency)}
             </div>
           </AppCardContent>
         </AppCard>
@@ -142,7 +144,9 @@ export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
               <Tag className="text-primary h-4 w-4" />
             </div>
             <div className="text-2xl font-bold">
-              {stockSummary ? formatCurrency(stockSummary.wac) : formatCurrency(0)}
+              {stockSummary
+                ? formatMoney(stockSummary.wac, companyContext!.currency)
+                : formatMoney(0, companyContext!.currency)}
             </div>
           </AppCardContent>
         </AppCard>

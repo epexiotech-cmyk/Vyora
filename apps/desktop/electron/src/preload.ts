@@ -112,6 +112,7 @@ contextBridge.exposeInMainWorld('vyora', {
   },
   company: {
     getActive: () => ipcRenderer.invoke('company:get-active'),
+    getContext: () => ipcRenderer.invoke('company:get-context'),
     setActive: (id: string) => ipcRenderer.invoke('company:set-active', id),
     getProfile: (id: string) => ipcRenderer.invoke('company:get-profile', id),
     updateProfile: (id: string, payload: UpdateCompanyProfileRequest) =>
@@ -157,6 +158,8 @@ contextBridge.exposeInMainWorld('vyora', {
     currency: {
       get: (code: string) => ipcRenderer.invoke('directory:currency:get', code),
       search: (query: string) => ipcRenderer.invoke('directory:currency:search', query),
+      getActive: () => ipcRenderer.invoke('directory:currency:getActive'),
+      getPrimary: () => ipcRenderer.invoke('directory:currency:getPrimary'),
     },
     state: {
       get: (code: string) => ipcRenderer.invoke('directory:state:get', code),
@@ -312,6 +315,7 @@ export type VyoraBootstrapAPI = {
 
 export type VyoraCompanyAPI = {
   getActive: () => Promise<ApiResponse<string | null>>;
+  getContext: () => Promise<ApiResponse<import('@vyora/types').CompanyContextDto | null>>;
   setActive: (id: string) => Promise<ApiResponse<void>>;
   getProfile: (id: string) => Promise<ApiResponse<CompanyProfileDto | null>>;
   updateProfile: (
@@ -362,6 +366,8 @@ export interface VyoraDirectoriesAPI {
   currency: {
     getByCode(code: string): Promise<unknown>;
     search(query: string): Promise<unknown>;
+    getActive(): Promise<ApiResponse<import('@vyora/types').CurrencyDto[]>>;
+    getPrimary(): Promise<ApiResponse<import('@vyora/types').CurrencyDto | null>>;
   };
   state: {
     getByCode(code: string): Promise<unknown>;

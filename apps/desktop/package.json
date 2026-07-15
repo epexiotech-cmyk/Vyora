@@ -1,6 +1,8 @@
 {
   "name": "@vyora/desktop",
   "version": "1.0.0",
+  "description": "Vyora ERP",
+  "author": "Epexio Tech",
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
@@ -13,7 +15,8 @@
     "build:renderer": "cd renderer && pnpm build",
     "build:electron": "pnpm exec tsup",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "pnpm exec tsc --noEmit -p electron/tsconfig.json && cd renderer && pnpm typecheck"
+    "typecheck": "pnpm exec tsc --noEmit -p electron/tsconfig.json && cd renderer && pnpm typecheck",
+    "test:sales": "pnpm run build:electron && cross-env NODE_ENV=development RUN_SALES_TEST=true electron ."
   },
   "devDependencies": {
     "@electron/rebuild": "^3.2.13",
@@ -31,6 +34,7 @@
   },
   "dependencies": {
     "@vyora/database": "workspace:*",
+    "@vyora/print-engine": "workspace:*",
     "@vyora/types": "workspace:*",
     "@vyora/utils": "workspace:*",
     "bcryptjs": "^2.4.3",

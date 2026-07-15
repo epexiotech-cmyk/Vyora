@@ -7,9 +7,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 
 import { PrintPreview } from '@/components/print/PrintPreview';
 import { usePrintPreview } from '@/components/print/usePrintPreview';
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AmountCell } from '@/components/reports/AmountCell';
 
 export default function TrialBalancePage() {
+  const { context: companyContext } = useCompanyContext();
   const [report, setReport] = useState<TrialBalanceDto | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -172,10 +174,18 @@ export default function TrialBalancePage() {
                 <tr key={row.ledgerId} className="hover:bg-muted/10 border-b transition-colors">
                   <td className="text-foreground p-3 font-medium">{row.ledgerName}</td>
                   <td className="p-3 text-right">
-                    <AmountCell amount={row.debitTotal} hideType />
+                    <AmountCell
+                      amount={row.debitTotal}
+                      currency={companyContext!.currency}
+                      hideType
+                    />
                   </td>
                   <td className="p-3 text-right">
-                    <AmountCell amount={row.creditTotal} hideType />
+                    <AmountCell
+                      amount={row.creditTotal}
+                      currency={companyContext!.currency}
+                      hideType
+                    />
                   </td>
                 </tr>
               ))
@@ -186,10 +196,18 @@ export default function TrialBalancePage() {
               <tr>
                 <td className="p-3 text-right text-xs tracking-wider uppercase">Grand Total</td>
                 <td className="text-primary p-3 text-right">
-                  <AmountCell amount={report.totalDebit} hideType />
+                  <AmountCell
+                    amount={report.totalDebit}
+                    currency={companyContext!.currency}
+                    hideType
+                  />
                 </td>
                 <td className="text-primary p-3 text-right">
-                  <AmountCell amount={report.totalCredit} hideType />
+                  <AmountCell
+                    amount={report.totalCredit}
+                    currency={companyContext!.currency}
+                    hideType
+                  />
                 </td>
               </tr>
             </tfoot>

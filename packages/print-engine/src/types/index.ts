@@ -25,6 +25,7 @@ export interface PrintPayload<T = unknown> {
     | 'CASH_BOOK'
     | 'BANK_BOOK'
     | 'OUTSTANDING_REPORT';
+  currencyMeta?: import('@vyora/types').CurrencyMeta;
   data: T;
 }
 

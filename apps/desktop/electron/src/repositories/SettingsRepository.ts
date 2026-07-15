@@ -112,4 +112,25 @@ export class SettingsRepository extends BaseRepository {
       .get();
     return created as CompanySetting;
   }
+
+  public async updateCompanySettings(
+    companyId: string,
+    data: Partial<Omit<CompanySetting, 'id' | 'companyId' | 'createdAt' | 'updatedAt'>>,
+    tx?: DbTransaction,
+  ): Promise<CompanySetting | undefined> {
+    const executor = tx || this.db;
+    const now = new Date();
+
+    const updateData = {
+      ...data,
+      updatedAt: now,
+    };
+
+    await executor
+      .update(company_settings)
+      .set(updateData)
+      .where(eq(company_settings.companyId, companyId));
+
+    return this.getCompanySettings(companyId, tx);
+  }
 }

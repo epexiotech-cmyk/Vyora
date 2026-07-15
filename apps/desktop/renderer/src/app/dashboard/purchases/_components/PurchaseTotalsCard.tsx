@@ -1,7 +1,8 @@
 import { InvoiceCalculationResult } from '@vyora/types';
-import { paiseToMoney } from '@vyora/utils';
+import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppCard } from '@/components/ui/AppCard';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +12,7 @@ interface PurchaseTotalsCardProps {
 }
 
 export function PurchaseTotalsCard({ className, calculationState }: PurchaseTotalsCardProps) {
+  const { context } = useCompanyContext();
   const { totals, isCalculating } = calculationState || {
     totals: {
       subtotal: 0,
@@ -35,29 +37,29 @@ export function PurchaseTotalsCard({ className, calculationState }: PurchaseTota
       <div className="flex flex-col gap-3 text-sm">
         <div className="text-muted-foreground flex items-center justify-between">
           <span>Subtotal</span>
-          <span>₹{paiseToMoney(totals.subtotal).toFixed(2)}</span>
+          <span>{formatMoney(totals.subtotal, context!.currency)}</span>
         </div>
 
         {totals.totalDiscount > 0 && (
           <div className="text-muted-foreground flex items-center justify-between">
             <span>Discount (Sum of line discounts)</span>
             <span className="text-destructive">
-              -₹{paiseToMoney(totals.totalDiscount).toFixed(2)}
+              {formatMoney(-totals.totalDiscount, context!.currency)}
             </span>
           </div>
         )}
 
         <div className="text-muted-foreground flex items-center justify-between">
           <span>Tax Total</span>
-          <span>₹{paiseToMoney(totals.totalTax).toFixed(2)}</span>
+          <span>{formatMoney(totals.totalTax, context!.currency)}</span>
         </div>
 
         {totals.roundOffAmount !== 0 && (
           <div className="text-muted-foreground flex items-center justify-between">
             <span>Round Off</span>
             <span>
-              {totals.roundOffAmount > 0 ? '+' : ''}₹
-              {paiseToMoney(totals.roundOffAmount).toFixed(2)}
+              {totals.roundOffAmount > 0 ? '+' : ''}
+              {formatMoney(totals.roundOffAmount, context!.currency)}
             </span>
           </div>
         )}
@@ -65,7 +67,7 @@ export function PurchaseTotalsCard({ className, calculationState }: PurchaseTota
         <div className="border-border/50 mt-2 border-t pt-3">
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>Grand Total</span>
-            <span>₹{paiseToMoney(totals.grandTotal).toFixed(2)}</span>
+            <span>{formatMoney(totals.grandTotal, context!.currency)}</span>
           </div>
         </div>
       </div>
