@@ -10,7 +10,9 @@ files:
   - package.json
   - assets/**/*
 win:
-  target: nsis
+  target: 
+    - nsis
+    - portable
   icon: "assets/icons/Vyora Logo.ico"
 mac:
   target: dmg

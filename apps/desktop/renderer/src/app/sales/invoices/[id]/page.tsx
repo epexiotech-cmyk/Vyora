@@ -1,18 +1,21 @@
 'use client';
 
 import { SalesInvoiceDto } from '@vyora/types';
+import { useParams } from 'next/navigation';
 import * as React from 'react';
 
 import { InvoiceForm } from '../components/InvoiceForm';
 
-export default function EditSalesInvoicePage({ params }: { params: { id: string } }) {
+export default function EditSalesInvoicePage() {
+  const params = useParams();
+  const id = params.id as string;
   const [initialData, setInitialData] = React.useState<SalesInvoiceDto | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const res = await window.vyora.db.sales.getById(params.id);
+        const res = await window.vyora.db.sales.getById(id);
         if (res.success && res.data) {
           setInitialData(res.data);
         }
@@ -23,7 +26,7 @@ export default function EditSalesInvoicePage({ params }: { params: { id: string 
       }
     };
     fetchInvoice();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return <div className="flex h-full items-center justify-center">Loading Invoice...</div>;

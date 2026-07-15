@@ -147,7 +147,10 @@ export function SupplierList() {
             },
             placeholder: 'Search by Name, Code, Mobile or GSTIN',
             actions: (
-              <AppButton onClick={() => router.push('/dashboard/suppliers/new')}>
+              <AppButton
+                data-testid="create-supplier-btn"
+                onClick={() => router.push('/dashboard/suppliers/new')}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Supplier
               </AppButton>

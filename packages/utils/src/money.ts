@@ -63,26 +63,35 @@ export interface FormatMoneyOptions {
  */
 export const formatMoney = (
   paise: number | null | undefined,
-  meta: CurrencyMetaPartial,
+  meta?: CurrencyMetaPartial | null,
   options?: FormatMoneyOptions,
 ): string => {
   const safePaise = paise ?? 0;
   const amount = paiseToMoney(safePaise);
 
-  const showSymbol = options?.showSymbol ?? true;
-  const decimalPlaces = options?.decimalOverride ?? meta.decimalPlaces;
+  const activeMeta: CurrencyMetaPartial = meta || {
+    currencyCode: 'INR',
+    currencyName: 'Indian Rupee',
+    symbol: '₹',
+    locale: 'en-IN',
+    decimalPlaces: 2,
+    symbolPosition: 'PREFIX',
+  };
 
-  const formattedNumber = new Intl.NumberFormat(meta.locale, {
+  const showSymbol = options?.showSymbol ?? true;
+  const decimalPlaces = options?.decimalOverride ?? activeMeta.decimalPlaces;
+
+  const formattedNumber = new Intl.NumberFormat(activeMeta.locale, {
     style: 'decimal',
     minimumFractionDigits: decimalPlaces,
     maximumFractionDigits: decimalPlaces,
   }).format(Math.abs(amount));
 
-  const symbol = options?.symbolOverride !== undefined ? options.symbolOverride : meta.symbol;
+  const symbol = options?.symbolOverride !== undefined ? options.symbolOverride : activeMeta.symbol;
 
   let resultString = formattedNumber;
   if (showSymbol && symbol) {
-    if (meta.symbolPosition === 'PREFIX') {
+    if (activeMeta.symbolPosition === 'PREFIX') {
       resultString = `${symbol}${resultString}`;
     } else {
       resultString = `${resultString} ${symbol}`;

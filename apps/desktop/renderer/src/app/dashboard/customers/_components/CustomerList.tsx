@@ -137,6 +137,7 @@ export function CustomerList() {
           data={data.data}
           columns={columns}
           keyExtractor={(item) => item.id}
+          rowTestIdExtractor={(item) => `customer-row-${item.name}`}
           isLoading={isLoading}
           emptyMessage="No customers found."
           toolbar={{
@@ -147,7 +148,10 @@ export function CustomerList() {
             },
             placeholder: 'Search by Name, Code, Mobile or GSTIN',
             actions: (
-              <AppButton onClick={() => router.push('/dashboard/customers/new')}>
+              <AppButton
+                data-testid="create-customer-btn"
+                onClick={() => router.push('/dashboard/customers/new')}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Customer
               </AppButton>

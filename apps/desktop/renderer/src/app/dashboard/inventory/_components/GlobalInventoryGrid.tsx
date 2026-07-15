@@ -61,7 +61,7 @@ export function GlobalInventoryGrid({
       header: 'Current WAC',
       cell: (item) => (
         <span className="text-muted-foreground">
-          {formatMoney(item.currentWacPaise, context!.currency)}
+          {formatMoney(item.currentWacPaise, context?.currency)}
         </span>
       ),
     },
@@ -70,7 +70,7 @@ export function GlobalInventoryGrid({
       header: 'Current Value',
       cell: (item) => (
         <span className="font-medium">
-          {formatMoney(item.currentValuePaise, context!.currency)}
+          {formatMoney(item.currentValuePaise, context?.currency)}
         </span>
       ),
     },

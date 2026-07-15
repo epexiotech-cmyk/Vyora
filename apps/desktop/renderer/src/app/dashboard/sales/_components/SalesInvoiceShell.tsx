@@ -48,6 +48,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
           })) || [],
       }
     : {
+        invoiceDate: new Date().toISOString().split('T')[0],
         lines: [
           {
             productId: null,
@@ -138,7 +139,8 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
   const currentStatus = initialData?.status || 'DRAFT';
   const isReadOnly = currentStatus === 'SUBMITTED' || currentStatus === 'CANCELLED';
 
-  const calculationState = useAsyncInvoiceCalculation('sales');
+  // @ts-expect-error - react-hook-form strict typing mismatch
+  const calculationState = useAsyncInvoiceCalculation('sales', methods.control);
 
   const onSubmit = async (data: SalesInvoiceFormValues) => {
     try {
@@ -161,7 +163,10 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
         return;
       }
 
-      const engineInput = mapLinesToEngineInput(data.lines || [], 'sales');
+      const validLines = (data.lines || []).filter((line) => !!line.productId);
+      data.lines = validLines; // ensure the mapper only processes valid lines
+
+      const engineInput = mapLinesToEngineInput(validLines, 'sales');
       const calcResponse = await window.vyora.calculation.calculateInvoice(engineInput);
 
       if (!calcResponse || !calcResponse.success || !calcResponse.data) {
@@ -196,6 +201,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
           setSuccessMsg(`Invoice saved successfully! (ID: ${res.data?.invoiceId})`);
           setSavedInvoiceId(res.data?.invoiceId || null);
           methods.reset(); // clear form
+          router.push(`/dashboard/sales/${res.data?.invoiceId}/edit`);
         } else {
           setErrorMsg(res.error || 'Failed to save invoice.');
         }
@@ -293,12 +299,13 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
           />
           <div className="flex items-center gap-3">
             <StatusBadge
+              data-testid="sales-status-badge"
               variant={
                 currentStatus === 'SUBMITTED'
                   ? 'success'
-                  : currentStatus === 'DRAFT'
-                    ? 'warning'
-                    : 'destructive'
+                  : currentStatus === 'CANCELLED'
+                    ? 'destructive'
+                    : 'warning'
               }
             >
               {currentStatus}
@@ -549,6 +556,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                 className="bg-green-600 text-white hover:bg-green-700"
                 onClick={handleSubmitInvoice}
                 disabled={isSubmitting || isCancelling || isSaving}
+                data-testid="submit-sales-btn"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Invoice'}
               </AppButton>
@@ -559,6 +567,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                 variant="destructive"
                 onClick={handleCancelInvoice}
                 disabled={isSubmitting || isCancelling || isSaving}
+                data-testid="cancel-sales-btn"
               >
                 {isCancelling ? 'Cancelling...' : 'Cancel Invoice'}
               </AppButton>
@@ -570,6 +579,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                   onSubmit(data as unknown as SalesInvoiceFormValues),
                 )}
                 disabled={isSaving || isSubmitting || isCancelling}
+                data-testid="save-draft-sales-btn"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {isSaving ? 'Saving...' : isEditMode ? 'Update Draft' : 'Save Draft'}

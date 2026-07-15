@@ -37,21 +37,21 @@ export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotals
       <div className="flex flex-col gap-3 text-sm">
         <div className="text-muted-foreground flex items-center justify-between">
           <span>Subtotal</span>
-          <span>{formatMoney(totals.subtotal, context!.currency)}</span>
+          <span>{formatMoney(totals.subtotal, context?.currency)}</span>
         </div>
 
         {totals.totalDiscount > 0 && (
           <div className="text-muted-foreground flex items-center justify-between">
             <span>Discount</span>
             <span className="text-destructive">
-              {formatMoney(-totals.totalDiscount, context!.currency)}
+              {formatMoney(-totals.totalDiscount, context?.currency)}
             </span>
           </div>
         )}
 
         <div className="text-muted-foreground flex items-center justify-between">
           <span>Tax Total</span>
-          <span>{formatMoney(totals.totalTax, context!.currency)}</span>
+          <span>{formatMoney(totals.totalTax, context?.currency)}</span>
         </div>
 
         {totals.roundOffAmount !== 0 && (
@@ -59,7 +59,7 @@ export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotals
             <span>Round Off</span>
             <span>
               {totals.roundOffAmount > 0 ? '+' : ''}
-              {formatMoney(totals.roundOffAmount, context!.currency)}
+              {formatMoney(totals.roundOffAmount, context?.currency)}
             </span>
           </div>
         )}
@@ -68,7 +68,7 @@ export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotals
 
         <div className="text-foreground flex items-center justify-between text-base font-semibold">
           <span>Grand Total</span>
-          <span className="text-lg">{formatMoney(totals.grandTotal, context!.currency)}</span>
+          <span className="text-lg">{formatMoney(totals.grandTotal, context?.currency)}</span>
         </div>
       </div>
     </AppCard>

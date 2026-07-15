@@ -209,6 +209,7 @@ export function ItemList() {
           data={data.data}
           columns={columns}
           keyExtractor={(item) => item.id}
+          rowTestIdExtractor={(item) => `item-row-${item.name}`}
           isLoading={isLoading}
           emptyMessage="No items found."
           toolbar={{
@@ -219,7 +220,10 @@ export function ItemList() {
             },
             placeholder: 'Search by Name, SKU, or HSN',
             actions: (
-              <AppButton onClick={() => router.push('/dashboard/items/new')}>
+              <AppButton
+                data-testid="create-item-btn"
+                onClick={() => router.push('/dashboard/items/new')}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Item
               </AppButton>

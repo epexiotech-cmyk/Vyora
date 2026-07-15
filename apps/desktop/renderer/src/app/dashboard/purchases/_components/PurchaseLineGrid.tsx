@@ -94,6 +94,7 @@ function PurchaseLineRow({
         >
           <PurchaseItemSelector
             name={`lines.${index}.productId`}
+            dataTestId={`line-item-select-${index}`}
             className={cn(
               'w-full border-transparent bg-transparent px-0 shadow-none focus-within:border-transparent focus-within:ring-0',
               lineErrors.productId && 'text-destructive',
@@ -115,6 +116,7 @@ function PurchaseLineRow({
             type="number"
             min="1"
             step="any"
+            data-testid={`line-qty-input-${index}`}
             className={cn(
               'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
               lineErrors.quantity && 'text-destructive font-bold',
@@ -136,6 +138,7 @@ function PurchaseLineRow({
             type="number"
             min="0"
             step="any"
+            data-testid={`line-rate-input-${index}`}
             className={cn(
               'placeholder:text-muted-foreground w-full bg-transparent text-right text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50',
               lineErrors.rate && 'text-destructive font-bold',
@@ -309,6 +312,7 @@ export function PurchaseLineGrid({
             type="button"
             variant="ghost"
             size="sm"
+            data-testid="add-purchase-line-btn"
             onClick={handleAddLine}
             className="text-primary hover:text-primary hover:bg-primary/10"
           >

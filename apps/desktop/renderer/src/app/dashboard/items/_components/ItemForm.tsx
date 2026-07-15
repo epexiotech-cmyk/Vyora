@@ -51,7 +51,9 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
   }, []);
 
   const methods = useForm<CreateProductInput>({
-    resolver: zodResolver(createProductSchema) as unknown as Resolver<CreateProductInput>,
+    resolver: zodResolver(
+      createProductSchema.omit({ companyId: true }),
+    ) as unknown as Resolver<CreateProductInput>,
     defaultValues: initialData
       ? {
           ...initialData,
@@ -165,10 +167,13 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
       <div className="scrollbar-thumb-border bg-muted/20 flex-1 scrollbar-thin scrollbar-track-transparent overflow-y-auto px-6 py-6">
         <FormProvider {...methods}>
           <form
-            onSubmit={methods.handleSubmit(onSubmit as SubmitHandler<CreateProductInput>)}
+            onSubmit={methods.handleSubmit(onSubmit, (errors) => {
+              console.error('Validation errors:', errors);
+            })}
             className="mx-auto flex w-full max-w-4xl flex-col gap-6"
             id="item-form"
           >
+            <input type="hidden" {...methods.register('companyId')} />
             {/* Basic Information */}
             <AppCard className="p-6 shadow-sm">
               <div className="mb-6 flex items-center gap-2 border-b pb-3">
@@ -179,7 +184,12 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <AppField name="name" label="Item Name *">
-                  <FormInput name="name" type="text" placeholder="e.g. Wireless Mouse" />
+                  <FormInput
+                    name="name"
+                    type="text"
+                    placeholder="e.g. Wireless Mouse"
+                    data-testid="item-name-input"
+                  />
                 </AppField>
                 <AppField name="itemType" label="Item Type *">
                   <select
@@ -254,7 +264,12 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <AppField name="salePrice" label="Sales Rate">
-                  <FormInput name="salePrice" type="number" step="0.01" />
+                  <FormInput
+                    name="salePrice"
+                    type="number"
+                    step="0.01"
+                    data-testid="item-price-input"
+                  />
                 </AppField>
                 <AppField name="purchasePrice" label="Purchase Rate">
                   <FormInput name="purchasePrice" type="number" step="0.01" />
@@ -309,6 +324,7 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
             <AppButton
               type="submit"
               form="item-form"
+              data-testid="save-item-btn"
               disabled={isSaving || (!methods.formState.isDirty && !errorMsg)}
             >
               <Save className="mr-2 h-4 w-4" />

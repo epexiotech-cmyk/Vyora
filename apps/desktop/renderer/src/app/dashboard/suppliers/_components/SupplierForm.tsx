@@ -217,19 +217,34 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <AppField name="name" label="Supplier Name *">
-                  <FormInput name="name" type="text" placeholder="e.g. Acme Corp" />
+                  <FormInput
+                    data-testid="supplier-name-input"
+                    name="name"
+                    type="text"
+                    placeholder="e.g. Acme Corp"
+                  />
                 </AppField>
                 <AppField name="contactPerson" label="Contact Person">
                   <FormInput name="contactPerson" type="text" placeholder="John Doe" />
                 </AppField>
                 <AppField name="mobile" label="Mobile">
-                  <FormInput name="mobile" type="tel" placeholder="9999999999" />
+                  <FormInput
+                    data-testid="supplier-phone-input"
+                    name="mobile"
+                    type="tel"
+                    placeholder="9999999999"
+                  />
                 </AppField>
                 <AppField name="alternateMobile" label="Alternate Mobile">
                   <FormInput name="alternateMobile" type="tel" placeholder="8888888888" />
                 </AppField>
                 <AppField name="email" label="Email">
-                  <FormInput name="email" type="email" placeholder="john@acme.com" />
+                  <FormInput
+                    data-testid="supplier-email-input"
+                    name="email"
+                    type="email"
+                    placeholder="john@acme.com"
+                  />
                 </AppField>
               </div>
             </AppCard>
@@ -397,6 +412,7 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
             <AppButton
               type="submit"
               form="supplier-form"
+              data-testid="save-supplier-btn"
               disabled={isSaving || (!methods.formState.isDirty && !errorMsg)}
             >
               <Save className="mr-2 h-4 w-4" />

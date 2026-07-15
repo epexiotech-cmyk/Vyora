@@ -28,10 +28,7 @@ export default function EditSalesInvoicePage() {
           return;
         }
 
-        if (res.data.status !== 'DRAFT') {
-          setError('DRAFT invoices only can be edited.');
-          return;
-        }
+        // Removed DRAFT check to allow read-only view
 
         setInvoice(res.data);
       } catch (err: unknown) {

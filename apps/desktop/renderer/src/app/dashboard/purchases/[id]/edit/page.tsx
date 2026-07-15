@@ -2,15 +2,17 @@
 
 import { PurchaseDto } from '@vyora/types';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { PurchaseForm } from '../../_components/PurchaseForm';
 
 import { AppButton } from '@/components/ui/AppButton';
 
-export default function EditPurchasePage({ params }: { params: { id: string } }) {
+export default function EditPurchasePage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [data, setData] = React.useState<PurchaseDto | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -19,13 +21,8 @@ export default function EditPurchasePage({ params }: { params: { id: string } })
     async function fetchPurchase() {
       try {
         setLoading(true);
-        const res = await window.vyora.db.purchases.getById(params.id);
+        const res = await window.vyora.db.purchases.getById(id);
         if (res.success && res.data) {
-          if (res.data.status !== 'DRAFT') {
-            // Redirect non-DRAFT invoices to read-only view
-            router.replace(`/dashboard/purchases/${params.id}`);
-            return;
-          }
           setData(res.data);
         } else {
           setError(res.error || 'Failed to load purchase');
@@ -37,7 +34,7 @@ export default function EditPurchasePage({ params }: { params: { id: string } })
       }
     }
     fetchPurchase();
-  }, [params.id, router]);
+  }, [id, router]);
 
   if (loading) {
     return (

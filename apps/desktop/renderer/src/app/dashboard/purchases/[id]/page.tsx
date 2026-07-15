@@ -2,15 +2,17 @@
 
 import { PurchaseDto } from '@vyora/types';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { PurchaseForm } from '../_components/PurchaseForm';
 
 import { AppButton } from '@/components/ui/AppButton';
 
-export default function ViewPurchasePage({ params }: { params: { id: string } }) {
+export default function ViewPurchasePage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [data, setData] = React.useState<PurchaseDto | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -19,7 +21,7 @@ export default function ViewPurchasePage({ params }: { params: { id: string } })
     async function fetchPurchase() {
       try {
         setLoading(true);
-        const res = await window.vyora.db.purchases.getById(params.id);
+        const res = await window.vyora.db.purchases.getById(id);
         if (res.success && res.data) {
           setData(res.data);
         } else {
@@ -32,7 +34,7 @@ export default function ViewPurchasePage({ params }: { params: { id: string } })
       }
     }
     fetchPurchase();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (

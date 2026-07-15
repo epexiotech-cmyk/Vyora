@@ -1,18 +1,14 @@
-import {
-  CompanyDto,
-  CompanyProfileDto,
-  UpdateCompanyProfileRequest,
-  ApiResponse,
-} from '@vyora/types';
+import { CompanyProfileDto, UpdateCompanyProfileRequest, ApiResponse } from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { companyContextService } from '../../services/CompanyContextService';
 
 export function registerCompanyHandlers() {
-  ipcMain.handle('company:get-active', async (): Promise<ApiResponse<CompanyDto | null>> => {
+  ipcMain.handle('company:get-active', async (): Promise<ApiResponse<string | null>> => {
     try {
-      const activeCompany = await companyContextService.loadActiveCompany();
-      return { success: true, data: activeCompany as CompanyDto | null };
+      await companyContextService.loadActiveCompany();
+      const activeCompanyId = companyContextService.getActiveCompany();
+      return { success: true, data: activeCompanyId };
     } catch (error) {
       console.error('Error fetching active company:', error);
       return { success: false, error: (error as Error).message };

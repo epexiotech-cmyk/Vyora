@@ -220,19 +220,34 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <AppField name="name" label="Customer Name *">
-                  <FormInput name="name" type="text" placeholder="e.g. Acme Corp" />
+                  <FormInput
+                    name="name"
+                    type="text"
+                    placeholder="e.g. Acme Corp"
+                    data-testid="customer-name-input"
+                  />
                 </AppField>
                 <AppField name="contactPerson" label="Contact Person">
                   <FormInput name="contactPerson" type="text" placeholder="John Doe" />
                 </AppField>
                 <AppField name="mobile" label="Mobile">
-                  <FormInput name="mobile" type="tel" placeholder="+91 9999999999" />
+                  <FormInput
+                    name="mobile"
+                    type="tel"
+                    placeholder="+91 9999999999"
+                    data-testid="customer-phone-input"
+                  />
                 </AppField>
                 <AppField name="alternateMobile" label="Alternate Mobile">
                   <FormInput name="alternateMobile" type="tel" placeholder="+91 8888888888" />
                 </AppField>
                 <AppField name="email" label="Email">
-                  <FormInput name="email" type="email" placeholder="john@acme.com" />
+                  <FormInput
+                    name="email"
+                    type="email"
+                    placeholder="john@acme.com"
+                    data-testid="customer-email-input"
+                  />
                 </AppField>
               </div>
             </AppCard>
@@ -401,6 +416,7 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
             <AppButton
               type="submit"
               form="customer-form"
+              data-testid="save-customer-btn"
               disabled={isSaving || (!methods.formState.isDirty && !errorMsg)}
             >
               <Save className="mr-2 h-4 w-4" />

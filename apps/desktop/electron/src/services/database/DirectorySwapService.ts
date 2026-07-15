@@ -66,7 +66,7 @@ export class DirectorySwapService {
     const isDev = !app?.isPackaged;
     // Base dir resolution depends on where resources are. Assuming same as manager
     const baseDir = isDev
-      ? path.join(__dirname, '../../resources')
+      ? path.join(__dirname, '../resources')
       : path.join(process.resourcesPath || '', 'resources');
 
     const newAbsolutePath = path.join(baseDir, fileName);
@@ -116,7 +116,7 @@ export class DirectorySwapService {
 
     const isDev = !app?.isPackaged;
     const baseDir = isDev
-      ? path.join(__dirname, '../../resources')
+      ? path.join(__dirname, '../resources')
       : path.join(process.resourcesPath || '', 'resources');
 
     const rollbackPath = path.join(baseDir, lastKnownGood);

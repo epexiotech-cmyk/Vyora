@@ -43,6 +43,22 @@ export class FinancialYearRepository extends BaseRepository {
     return mapToDto(created!);
   }
 
+  public createSync(data: CreateFinancialYearInput, tx: DbTransaction): FinancialYearDto {
+    const id = randomUUID();
+    const newFy: InsertFinancialYear = {
+      id,
+      companyId: data.companyId,
+      label: data.label,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      isActive: data.isActive || false,
+    };
+
+    tx.insert(financial_years).values(newFy).run();
+    const created = tx.select().from(financial_years).where(eq(financial_years.id, id)).get();
+    return mapToDto(created!);
+  }
+
   public async getById(id: string, tx?: DbTransaction): Promise<FinancialYearDto | undefined> {
     const executor = tx || this.db;
     const result = await executor

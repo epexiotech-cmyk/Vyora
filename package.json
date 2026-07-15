@@ -11,6 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,json}\"",
     "typecheck": "turbo run typecheck",
+    "test:e2e": "playwright test",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -23,6 +24,8 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/better-sqlite3": "^7.6.11",
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "eslint": "^8.57.0",

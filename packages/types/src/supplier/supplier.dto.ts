@@ -13,12 +13,12 @@ export const createSupplierSchema = z.object({
     .nullable(),
   mobile: z
     .string()
-    .refine((val) => !val || /^\\d{10}$/.test(val), 'Mobile must be 10 digits')
+    .refine((val) => !val || /^\d{10}$/.test(val), 'Mobile must be 10 digits')
     .optional()
     .nullable(),
   alternateMobile: z
     .string()
-    .refine((val) => !val || /^\\d{10}$/.test(val), 'Alternate Mobile must be 10 digits')
+    .refine((val) => !val || /^\d{10}$/.test(val), 'Alternate Mobile must be 10 digits')
     .optional()
     .nullable(),
   email: z.string().email('Invalid email address').or(z.literal('')).optional().nullable(),

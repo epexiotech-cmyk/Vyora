@@ -13,6 +13,7 @@ interface SalesProductSelectorProps {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  'data-testid'?: string;
 }
 
 export function SalesProductSelector({
@@ -21,6 +22,7 @@ export function SalesProductSelector({
   className,
   placeholder = 'Search by Name, SKU, or HSN...',
   disabled,
+  'data-testid': dataTestId,
 }: SalesProductSelectorProps) {
   // Use useFormContext safely if available. If we use this outside of a form context later, we should handle that,
   // but for now it aligns with the existing AppForm/FormProvider patterns.
@@ -159,6 +161,7 @@ export function SalesProductSelector({
     <div className={cn('relative w-full', className)} ref={containerRef}>
       {/* Trigger Input Area */}
       <div
+        data-testid={dataTestId}
         className={cn(
           'border-input bg-background focus-within:ring-ring flex h-9 w-full cursor-text items-center rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1',
           isOpen && 'ring-ring ring-1',
@@ -227,6 +230,7 @@ export function SalesProductSelector({
                 return (
                   <li
                     key={product.id}
+                    data-testid={`item-option-${product.name}`}
                     className={cn(
                       'relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm transition-colors outline-none select-none',
                       isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
@@ -250,7 +254,7 @@ export function SalesProductSelector({
                     </div>
                     <div className="flex shrink-0 flex-col items-end pl-2 text-xs">
                       <span className="text-foreground font-semibold">
-                        {formatMoney(product.salePrice, companyContext!.currency)}
+                        {formatMoney(product.salePrice, companyContext?.currency)}
                       </span>
                       <span className="text-muted-foreground">Stock: {product.stock}</span>
                     </div>

@@ -1,13 +1,14 @@
 import { CalculationEngineInput, InvoiceCalculationResult } from '@vyora/types';
 import { moneyToPaise } from '@vyora/utils';
 import { useState, useEffect, useRef } from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useFormContext, useWatch, Control } from 'react-hook-form';
 
 import { useDebounce } from '@/hooks/useDebounce';
 
 // Shared type for UI form lines across Sales and Purchases
 export interface UiInvoiceLine {
   quantity?: number | string;
+  qty?: number | string;
   rate?: number | string;
   // Sales uses discountPercent, Purchases uses discountAmount
   discountPercent?: number | string;
@@ -34,7 +35,7 @@ export function mapLinesToEngineInput(
   type: 'sales' | 'purchase',
 ): CalculationEngineInput {
   const items = lines.map((line) => {
-    const qty = Number(line.quantity) || 0;
+    const qty = Number(line.quantity) || Number(line.qty) || 0;
     const ratePaise = moneyToPaise(Number(line.rate) || 0);
 
     let discountPaise = 0;
@@ -63,9 +64,18 @@ export function mapLinesToEngineInput(
  * Hook to automatically compute totals as the user types.
  * Debounces the input and uses the IPC calculation engine.
  */
-export function useAsyncInvoiceCalculation(type: 'sales' | 'purchase') {
-  const { control } = useFormContext();
-  const watchedLines = useWatch({ control, name: 'lines' }) as UiInvoiceLine[];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useAsyncInvoiceCalculation(type: 'sales' | 'purchase', control?: Control<any>) {
+  const formContext = useFormContext();
+  const actualControl = control || formContext?.control;
+
+  if (!actualControl) {
+    throw new Error(
+      'useAsyncInvoiceCalculation requires either a control argument or to be used within a FormProvider',
+    );
+  }
+
+  const watchedLines = useWatch({ control: actualControl, name: 'lines' }) as UiInvoiceLine[];
 
   const [totals, setTotals] = useState<InvoiceCalculationResult>(defaultTotals);
   const [isCalculating, setIsCalculating] = useState(false);

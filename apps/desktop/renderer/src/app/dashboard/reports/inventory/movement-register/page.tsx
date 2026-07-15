@@ -92,7 +92,7 @@ export default function StockMovementRegisterPage() {
         key: 'ratePaise',
         header: 'Rate',
         className: 'text-right',
-        cell: (row) => (row.ratePaise ? formatMoney(row.ratePaise, companyContext!.currency) : '-'),
+        cell: (row) => (row.ratePaise ? formatMoney(row.ratePaise, companyContext?.currency) : '-'),
       },
       { key: 'remarks', header: 'Remarks' },
     ],

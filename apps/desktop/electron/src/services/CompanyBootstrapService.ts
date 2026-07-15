@@ -2,6 +2,7 @@ import { CreateCompanyInput, currencyValidationSchema } from '@vyora/types';
 
 import { currencyService } from '../modules/directories/currency/CurrencyService';
 import { CompanyRepository, SettingsRepository } from '../repositories';
+import { FinancialYearRepository } from '../repositories/FinancialYearRepository';
 
 import { dbService } from './database/DatabaseService';
 import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
@@ -9,6 +10,7 @@ import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
 export class CompanyBootstrapService {
   private companyRepo = new CompanyRepository();
   private settingsRepo = new SettingsRepository();
+  private fyRepo = new FinancialYearRepository();
 
   public async hasCompany(): Promise<boolean> {
     const firstCompany = await this.companyRepo.getFirst();
@@ -55,6 +57,25 @@ export class CompanyBootstrapService {
           salesPrefix: 'INV',
           purchasePrefix: 'PUR',
           defaultInvoiceNotes: 'Thank you for your business!',
+        },
+        tx,
+      );
+
+      // Create the active financial year for the new company
+      const startYear = input.financialYearStart.getFullYear();
+      const endYear = startYear + 1;
+      const fyLabel = `FY ${startYear}-${endYear.toString().slice(2)}`;
+
+      const fyStart = new Date(`${startYear}-04-01T00:00:00.000Z`);
+      const fyEnd = new Date(`${endYear}-03-31T23:59:59.999Z`);
+
+      this.fyRepo.createSync(
+        {
+          companyId: company.id,
+          label: fyLabel,
+          startDate: fyStart,
+          endDate: fyEnd,
+          isActive: true,
         },
         tx,
       );

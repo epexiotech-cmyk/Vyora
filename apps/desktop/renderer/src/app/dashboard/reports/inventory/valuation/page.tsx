@@ -78,13 +78,13 @@ export default function InventoryValuationPage() {
         key: 'wacPaise',
         header: 'Weighted Average Cost',
         className: 'text-right',
-        cell: (row) => formatMoney(row.wacPaise, companyContext!.currency),
+        cell: (row) => formatMoney(row.wacPaise, companyContext?.currency),
       },
       {
         key: 'totalValuePaise',
         header: 'Inventory Value',
         className: 'text-right',
-        cell: (row) => formatMoney(row.totalValuePaise, companyContext!.currency),
+        cell: (row) => formatMoney(row.totalValuePaise, companyContext?.currency),
       },
     ],
     [companyContext],
@@ -122,7 +122,7 @@ export default function InventoryValuationPage() {
               Grand Total Inventory Value
             </h3>
             <p className="text-primary mt-2 text-4xl font-bold">
-              {formatMoney(data.totalValuePaise, companyContext!.currency)}
+              {formatMoney(data.totalValuePaise, companyContext?.currency)}
             </p>
           </div>
 

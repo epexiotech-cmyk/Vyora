@@ -67,24 +67,6 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
   const [activeCompanyId, setActiveCompanyId] = React.useState<string>('');
   const [activeFinancialYearId, setActiveFinancialYearId] = React.useState<string>('');
 
-  const calculationState = useAsyncInvoiceCalculation('purchase');
-
-  React.useEffect(() => {
-    const fetchDependencies = async () => {
-      try {
-        const companyRes = await window.vyora.company.getActive();
-        if (companyRes.success && companyRes.data) {
-          setActiveCompanyId(companyRes.data);
-        }
-        // In a real app we'd fetch active financial year, for now use a placeholder
-        setActiveFinancialYearId('fy-2026-2027');
-      } catch (err) {
-        console.error('Failed to load active contexts', err);
-      }
-    };
-    fetchDependencies();
-  }, []);
-
   const defaultValues = initialData
     ? {
         supplierId: initialData.supplierId,
@@ -136,6 +118,30 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
     defaultValues: defaultValues as import('react-hook-form').DefaultValues<PurchaseUiValues>,
   });
 
+  // @ts-expect-error - react-hook-form strict typing mismatch for complex dynamic forms
+  const calculationState = useAsyncInvoiceCalculation('purchase', methods.control);
+
+  React.useEffect(() => {
+    const fetchDependencies = async () => {
+      try {
+        const companyRes = await window.vyora.company.getActive();
+        if (companyRes.success && companyRes.data) {
+          setActiveCompanyId(companyRes.data);
+        }
+
+        const fyRes = await window.vyora.financialYear.getCurrent();
+        if (fyRes.success && fyRes.data) {
+          setActiveFinancialYearId(fyRes.data.id);
+        } else {
+          setActiveFinancialYearId('33333333-3333-3333-3333-333333333333');
+        }
+      } catch (err) {
+        console.error('Failed to load active contexts', err);
+      }
+    };
+    fetchDependencies();
+  }, []);
+
   const onSubmit = async (data: PurchaseUiValues) => {
     try {
       setIsSaving(true);
@@ -144,7 +150,10 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
       if (!activeCompanyId) throw new Error('No active company found');
 
-      const engineInput = mapLinesToEngineInput(data.lines || [], 'purchase');
+      // Filter out empty lines (where productId is null or empty)
+      const validLines = (data.lines || []).filter((line) => !!line.productId);
+
+      const engineInput = mapLinesToEngineInput(validLines, 'purchase');
       const calcResponse = await window.vyora.calculation.calculateInvoice(engineInput);
 
       if (
@@ -159,12 +168,12 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
       const computedTotals = calcResponse.data;
 
       const items = computedTotals.items.map((line, index) => {
-        const uiLine = data.lines[index];
+        const uiLine = validLines[index];
         const engineIn = engineInput.items[index];
         return {
           productId: uiLine.productId!,
-          unitId: uiLine.unitId || 'default-unit',
-          taxId: uiLine.taxId || 'default-tax',
+          unitId: uiLine.unitId || '11111111-1111-4111-8111-111111111111',
+          taxId: uiLine.taxId || '22222222-2222-4222-8222-222222222222',
           description: uiLine.description || undefined,
           quantity: engineIn.quantity,
           rate: engineIn.rate,
@@ -203,7 +212,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
         if (res.success) {
           setSuccessMsg(`Purchase updated successfully!`);
-          router.push('/dashboard/purchases');
+          // Stay on edit page
         } else {
           setErrorMsg(res.error || 'Failed to update purchase');
         }
@@ -215,7 +224,8 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
         if (res.success) {
           setSuccessMsg(`Purchase saved successfully!`);
-          router.push('/dashboard/purchases');
+          // Purchases returns a string ID directly, unlike Sales which returns an object
+          router.push(`/dashboard/purchases/${res.data}/edit`);
         } else {
           setErrorMsg(res.error || 'Failed to save purchase');
         }
@@ -308,6 +318,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
           />
           <div className="flex items-center gap-3">
             <StatusBadge
+              data-testid="purchase-status-badge"
               variant={
                 currentStatus === 'SUBMITTED'
                   ? 'success'
@@ -412,6 +423,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
               className="bg-green-600 text-white hover:bg-green-700"
               onClick={handleSubmitPurchase}
               disabled={isSubmitting || isCancelling || isSaving}
+              data-testid="submit-purchase-btn"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Purchase'}
             </AppButton>
@@ -422,6 +434,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
               variant="destructive"
               onClick={handleCancelPurchase}
               disabled={isSubmitting || isCancelling || isSaving}
+              data-testid="cancel-purchase-btn"
             >
               {isCancelling ? 'Cancelling...' : 'Cancel Purchase'}
             </AppButton>
@@ -434,6 +447,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
                 onSubmit(data as unknown as z.infer<typeof purchaseUiSchema>),
               )}
               disabled={isSaving || isSubmitting || isCancelling}
+              data-testid="save-draft-purchase-btn"
             >
               <Save className="mr-2 h-4 w-4" />
               {isSaving ? 'Saving...' : 'Save as Draft'}

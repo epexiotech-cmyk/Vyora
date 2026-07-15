@@ -70,7 +70,7 @@ export function InventoryLedgerTable({ ledger, isLoading }: InventoryLedgerTable
       key: 'rate',
       header: 'Rate',
       className: 'text-right',
-      cell: (item) => formatMoney(item.rate, context!.currency),
+      cell: (item) => formatMoney(item.rate, context?.currency),
     },
     {
       key: 'remarks',

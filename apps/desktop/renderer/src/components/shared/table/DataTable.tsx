@@ -23,6 +23,7 @@ export interface DataTableProps<T> {
   toolbar?: TableToolbarProps;
   pagination?: TablePaginationProps;
   className?: string;
+  rowTestIdExtractor?: (item: T) => string;
 }
 
 export function DataTable<T>({
@@ -35,6 +36,7 @@ export function DataTable<T>({
   toolbar,
   pagination,
   className,
+  rowTestIdExtractor,
 }: DataTableProps<T>) {
   return (
     <div className={cn('space-y-4', className)}>
@@ -74,6 +76,7 @@ export function DataTable<T>({
               data.map((item) => (
                 <tr
                   key={keyExtractor(item)}
+                  data-testid={rowTestIdExtractor ? rowTestIdExtractor(item) : undefined}
                   className={cn(
                     'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
                     onRowClick && 'cursor-pointer',

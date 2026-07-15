@@ -80,6 +80,7 @@ function InvoiceLineRow({
       >
         <SalesProductSelector
           name={`lines.${index}.productId`}
+          data-testid={`line-item-select-${index}`}
           placeholder="Select product..."
           className={cn(
             'w-full border-transparent bg-transparent px-0 shadow-none focus-within:border-transparent focus-within:ring-0',
@@ -108,6 +109,7 @@ function InvoiceLineRow({
           )}
           disabled={isReadOnly}
           {...register(`lines.${index}.qty`, { valueAsNumber: true })}
+          data-testid={`line-qty-input-${index}`}
         />
       </div>
 
@@ -129,6 +131,7 @@ function InvoiceLineRow({
           )}
           disabled={isReadOnly}
           {...register(`lines.${index}.rate`, { valueAsNumber: true })}
+          data-testid={`line-rate-input-${index}`}
         />
       </div>
 
@@ -302,6 +305,7 @@ export function InvoiceLineGrid({
             size="sm"
             onClick={handleAddLine}
             className="text-primary hover:text-primary hover:bg-primary/10"
+            data-testid="add-sales-line-btn"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Line

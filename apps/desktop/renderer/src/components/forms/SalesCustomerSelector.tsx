@@ -187,6 +187,7 @@ export function SalesCustomerSelector({
     <div className={cn('relative w-full', className)} ref={containerRef}>
       {/* Trigger Input Area */}
       <div
+        data-testid="sales-customer-select"
         className={cn(
           'border-input bg-background focus-within:ring-ring flex h-9 w-full cursor-text items-center rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1',
           isOpen && 'ring-ring ring-1',
@@ -259,6 +260,7 @@ export function SalesCustomerSelector({
                 return (
                   <li
                     key={customer.id}
+                    data-testid={`customer-option-${customer.name}`}
                     className={cn(
                       'relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm transition-colors outline-none select-none',
                       isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',

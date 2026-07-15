@@ -114,13 +114,13 @@ export default function StockAgeingPage() {
         key: 'wacPaise',
         header: 'WAC',
         className: 'text-right',
-        cell: (row) => formatMoney(row.wacPaise || 0, companyContext!.currency),
+        cell: (row) => formatMoney(row.wacPaise || 0, companyContext?.currency),
       },
       {
         key: 'totalValuePaise',
         header: 'Value',
         className: 'text-right',
-        cell: (row) => formatMoney(row.totalValuePaise || 0, companyContext!.currency),
+        cell: (row) => formatMoney(row.totalValuePaise || 0, companyContext?.currency),
       },
     ],
     [companyContext],
@@ -167,7 +167,7 @@ export default function StockAgeingPage() {
                 Grand Total Value
               </h3>
               <p className="text-primary mt-2 text-4xl font-bold">
-                {formatMoney(data.totalValuePaise, companyContext!.currency)}
+                {formatMoney(data.totalValuePaise, companyContext?.currency)}
               </p>
             </div>
           </div>

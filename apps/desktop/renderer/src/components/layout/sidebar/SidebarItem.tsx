@@ -20,11 +20,16 @@ export function SidebarItem({ icon: Icon, label, href, activeMatches }: SidebarI
   const { isSidebarExpanded } = useLayoutStore();
 
   const isActive =
-    pathname === href || (activeMatches && activeMatches.some((m) => pathname.startsWith(m)));
+    pathname === href ||
+    (activeMatches && activeMatches.some((match) => pathname.startsWith(match)));
+
+  const testId = `nav-module-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
   return (
-    <Link href={href} className="outline-none">
-      <div
+    <div className="group relative">
+      <Link
+        href={href}
+        data-testid={testId}
         className={cn(
           'group relative my-0.5 flex h-8 cursor-pointer items-center rounded-sm px-2.5 transition-colors',
           isActive
@@ -58,7 +63,7 @@ export function SidebarItem({ icon: Icon, label, href, activeMatches }: SidebarI
         >
           {label}
         </motion.span>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

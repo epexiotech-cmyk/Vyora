@@ -72,10 +72,10 @@ export const createProductSchema = z.object({
   hsnCode: z.string().nullable().optional(),
   unitId: z.string().min(1, 'Unit ID is required'),
   taxId: z.string().min(1, 'Tax ID is required'),
-  salePrice: z.number().int().min(0).optional(),
-  purchasePrice: z.number().int().min(0).optional(),
-  stock: z.number().optional(),
-  reorderLevel: z.number().min(0).optional(),
+  salePrice: z.coerce.number().min(0).optional(),
+  purchasePrice: z.coerce.number().min(0).optional(),
+  stock: z.coerce.number().optional(),
+  reorderLevel: z.coerce.number().min(0).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -87,10 +87,10 @@ export const updateProductSchema = z.object({
   hsnCode: z.string().nullable().optional(),
   unitId: z.string().min(1, 'Unit ID is required').optional(),
   taxId: z.string().min(1, 'Tax ID is required').optional(),
-  salePrice: z.number().int().min(0).optional(),
-  purchasePrice: z.number().int().min(0).optional(),
-  stock: z.number().optional(),
-  reorderLevel: z.number().min(0).optional(),
+  salePrice: z.coerce.number().min(0).optional(),
+  purchasePrice: z.coerce.number().min(0).optional(),
+  stock: z.coerce.number().optional(),
+  reorderLevel: z.coerce.number().min(0).optional(),
   isActive: z.boolean().optional(),
 });
 

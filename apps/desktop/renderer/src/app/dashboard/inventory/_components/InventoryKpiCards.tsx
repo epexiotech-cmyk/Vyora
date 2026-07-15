@@ -53,7 +53,7 @@ export function InventoryKpiCards({ data }: InventoryKpiCardsProps) {
         </AppCardHeader>
         <AppCardContent>
           <div className="text-2xl font-bold">
-            {formatMoney(totalInventoryValue, context!.currency)}
+            {formatMoney(totalInventoryValue, context?.currency)}
           </div>
         </AppCardContent>
       </AppCard>

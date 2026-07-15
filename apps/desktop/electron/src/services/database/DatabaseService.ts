@@ -18,7 +18,8 @@ export class DatabaseService {
   private migrationsFolder: string;
 
   constructor() {
-    this.dbPath = companyStorageService.getCompanyDatabasePath('vyora');
+    this.dbPath =
+      process.env.VYORA_DB_PATH || companyStorageService.getCompanyDatabasePath('vyora');
     const dbDir = path.dirname(this.dbPath);
 
     // Ensure directory exists
@@ -57,8 +58,9 @@ export class DatabaseService {
         await databaseEncryptionMigrationService.runMigration(this.dbPath);
 
         // Important: After successful migration, the original .db file is renamed.
-        // We must fetch the new path (.vyr) from the storage service.
-        this.dbPath = companyStorageService.getCompanyDatabasePath('vyora');
+        // We must fetch the new path (.vyr) from the storage service, unless overridden by env.
+        this.dbPath =
+          process.env.VYORA_DB_PATH || companyStorageService.getCompanyDatabasePath('vyora');
       }
 
       // Engine is now always SQLCIPHER

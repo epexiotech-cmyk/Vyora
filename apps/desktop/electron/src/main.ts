@@ -1,23 +1,15 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 
-import {
-  registerCustomerHandlers,
-  registerProductHandlers,
-  registerSalesInvoiceHandlers,
-  registerPurchaseHandlers,
-  registerInventoryHandlers,
-  registerBootstrapHandlers,
-  registerCompanyHandlers,
-  registerCalculationHandlers,
-  registerJournalHandlers,
-} from './ipc/handlers';
+import { registerAllHandlers } from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
 import { encryptionService } from './main/security/EncryptionService';
 import { keyManagementService } from './main/security/KeyManagementService';
 import { runTest } from './run-sales-test';
 import { companyContextService } from './services/CompanyContextService';
 import { dbService } from './services/database/DatabaseService';
+import { directoryManagerDatabaseService } from './services/database/DirectoryManagerDatabaseService';
 import { fileSystemService } from './services/filesystem/FileSystemService';
+import { financialYearContextService } from './services/FinancialYearContextService';
 import { loggerService } from './services/logger/LoggerService';
 import { MainWindow } from './windows/MainWindow';
 import { SplashWindow } from './windows/SplashWindow';
@@ -57,18 +49,15 @@ async function bootstrap() {
 
   try {
     await dbService.init();
-    registerCustomerHandlers();
-    registerProductHandlers();
-    registerSalesInvoiceHandlers();
-    registerPurchaseHandlers();
-    registerInventoryHandlers();
-    registerBootstrapHandlers();
-    registerCompanyHandlers();
-    registerCalculationHandlers();
-    registerJournalHandlers();
+    await directoryManagerDatabaseService.bootDirectoryDatabase();
+    registerAllHandlers();
 
     try {
       await companyContextService.loadActiveCompany();
+      const activeCompanyId = companyContextService.getActiveCompany();
+      if (activeCompanyId) {
+        await financialYearContextService.loadActiveFinancialYear(activeCompanyId);
+      }
       loggerService.info('Active company context loaded');
     } catch (e) {
       loggerService.warn('Failed to load active company context: ' + e);

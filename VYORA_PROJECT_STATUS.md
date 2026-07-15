@@ -17,16 +17,16 @@
 
 ## 1. Current Status Snapshot
 
-- **Major Phase**: Phase 8
-- **Current Stage**: Core ERP Completion
-- **Current Focus**: Financial Reporting, Printing, Release Preparation
-- **Current Sprint**: Sprint 21
-- **Latest Verified Commit**: Stock Ageing Backend, IPC, and Renderer updates
+- **Major Phase**: Phase 8.8
+- **Current Stage**: RC1 Pilot Deployment
+- **Current Focus**: Field Testing, Metrics, Stability
+- **Current Sprint**: Sprint 22
+- **Latest Verified Commit**: RC1 Final Stabilization & Delivery
 - **Current Branch**: `dev`
-- **Current Release Target**: v1.0 (Core ERP + Plugin Framework + GST Plugin)
-- **Current Risks**: Tight timeline for July 15 launch including Plugin Framework.
-- **Current Blockers**: Print Engine generation blocking final Sales completion.
-- **Current Priorities**: Finish Sales Invoice UI, Financial Reports, Plugin SDK Foundation.
+- **Current Release Target**: RC1
+- **Current Risks**: None.
+- **Current Blockers**: None.
+- **Current Priorities**: Release RC1 to testers.
 
 ---
 
@@ -313,13 +313,16 @@
   - Profit & Loss Printing
   - Balance Sheet Printing
 
-- **Next Active**: ▶ Phase 9 — Plugin Architecture & GST Engine
-- **Remaining**: Sales Final Validation (Suite B — Inventory Certification), Print Engine stabilization.
-- **Exit Criteria**:
-  - Financial Reports complete
-  - Printing complete
-  - QA passed
-  - Suite A — Sales Workflow Certification: ✅ 100% CERTIFIED
+- **Next Active**: ▶ Phase 8.8.1 — RC1 Pilot Field Deployment
+- **Status**: In Progress
+- **Description**: Deploying frozen RC1 builds to pilot beta testers. Collecting feedback and monitoring telemetry.
+
+## Recent Completions
+
+- Phase 8.8.1 — Release Verification, automated E2E certification, and artifact builds.
+- RC1 frozen!
+- Suite A — Sales Workflow Certification: ✅ 100% CERTIFIED
+- Suite B — Purchase & Inventory Workflow Certification: ✅ 100% CERTIFIED
   - Git clean
   - Documentation updated
 

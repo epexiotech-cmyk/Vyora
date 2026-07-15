@@ -87,6 +87,8 @@ contextBridge.exposeInMainWorld('vyora', {
       create: (data: CreatePurchaseInput) => ipcRenderer.invoke('db:purchases:create', data),
       update: (data: UpdatePurchaseInput) => ipcRenderer.invoke('db:purchases:update', data),
       delete: (id: string) => ipcRenderer.invoke('db:purchases:delete', id),
+      submit: (id: string) => ipcRenderer.invoke('db:purchases:submit', id),
+      cancel: (id: string) => ipcRenderer.invoke('db:purchases:cancel', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>

@@ -11,6 +11,7 @@ interface PurchaseItemSelectorProps {
   onProductSelect?: (product: ProductDto | null) => void;
   className?: string;
   disabled?: boolean;
+  dataTestId?: string;
 }
 
 export function PurchaseItemSelector({
@@ -18,6 +19,7 @@ export function PurchaseItemSelector({
   onProductSelect,
   className,
   disabled,
+  dataTestId,
 }: PurchaseItemSelectorProps) {
   const { setValue, watch } = useFormContext();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -184,6 +186,7 @@ export function PurchaseItemSelector({
     <div className={cn('relative w-full', className)} ref={containerRef}>
       {/* Trigger Input Area */}
       <div
+        data-testid={dataTestId}
         className={cn(
           'border-input bg-background focus-within:ring-ring flex h-9 w-full cursor-text items-center rounded-md border px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1',
           isOpen && 'ring-ring ring-1',
@@ -252,6 +255,7 @@ export function PurchaseItemSelector({
                 return (
                   <li
                     key={product.id}
+                    data-testid={`item-option-${product.name}`}
                     className={cn(
                       'relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm transition-colors outline-none select-none',
                       isActive ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',

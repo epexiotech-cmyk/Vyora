@@ -54,13 +54,13 @@ export default function StockSummaryPage() {
         key: 'wacPaise',
         header: 'WAC',
         className: 'text-right',
-        cell: (row) => formatMoney(row.wacPaise, companyContext!.currency),
+        cell: (row) => formatMoney(row.wacPaise, companyContext?.currency),
       },
       {
         key: 'totalValuePaise',
         header: 'Inventory Value',
         className: 'text-right',
-        cell: (row) => formatMoney(row.totalValuePaise, companyContext!.currency),
+        cell: (row) => formatMoney(row.totalValuePaise, companyContext?.currency),
       },
     ],
     [companyContext],
@@ -106,7 +106,7 @@ export default function StockSummaryPage() {
         {!loading && data && (
           <div className="bg-muted/50 flex items-center justify-between border-t p-4 font-bold">
             <div>Total Inventory Value</div>
-            <div>{formatMoney(data.totalValuePaise, companyContext!.currency)}</div>
+            <div>{formatMoney(data.totalValuePaise, companyContext?.currency)}</div>
           </div>
         )}
       </div>

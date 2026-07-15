@@ -3,6 +3,7 @@ import { ipcMain } from 'electron';
 
 import { companyBootstrapService } from '../../services/CompanyBootstrapService';
 import { companyContextService } from '../../services/CompanyContextService';
+import { financialYearContextService } from '../../services/FinancialYearContextService';
 
 export function registerBootstrapHandlers() {
   ipcMain.handle('bootstrap:status', async (): Promise<ApiResponse<boolean>> => {
@@ -21,6 +22,7 @@ export function registerBootstrapHandlers() {
       try {
         const companyId = await companyBootstrapService.createCompany(payload);
         await companyContextService.loadActiveCompany();
+        await financialYearContextService.loadActiveFinancialYear(companyId);
         return { success: true, data: companyId };
       } catch (error) {
         console.error('Error creating company during bootstrap:', error);

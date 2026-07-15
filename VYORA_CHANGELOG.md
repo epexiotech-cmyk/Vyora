@@ -4,9 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-RC1] - 2026-07-15
+
+### Status
+
+- **Release Verification**: Certified and Frozen.
+- **Pilot Phase**: Enabled.
+
+### Verified
+
+- Automated Smoke, Regression, Stress, and Release suites passed 100%.
+- Installer packaging, portable generation, and metadata verified.
+- Database scaling tested to 1,000 IPC throughput operations under 1000ms.
+- 0 exceptions in Crash Log Audit.
+
 ---
 
 ## [Unreleased] - (v1.0 Core ERP Target)
+
+### Phase 8.8 — RC1 Pilot Build & Field Testing
+
+Highlights:
+
+- Configured `electron-builder.yml` to generate both NSIS (`Setup.exe`) and `portable` distributions for pilot deployment.
+- Resolved End-to-End (E2E) Test flakiness by implementing robust database prerequisites and explicit text matching rather than index-based interactions.
+- Validated E2E Setup Wizard workflow by introducing context-aware fixture configuration in Playwright.
+- Executed high-volume Database Concurrency Stress Tests (1000 bulk item creations) measuring sub-second IPC/SQLite throughput with zero locks or deadlocks.
+- Generated comprehensive RC1 delivery reports (Pilot Testing, Performance, Stability, Bug Register, RC2 Readiness, and Release Notes).
 
 ### Phase 8.6.2J - Final Currency Cleanup & RC1 Certification
 
@@ -456,3 +480,9 @@ The complete Financial Reporting UI suite for v1.0 is now finished.
 **Purpose**: Official historic record of commits, features, and version updates  
 **Update Frequency**: Upon each release or significant milestone completion  
 **Owner**: Release Manager
+
+### Fixed
+
+- Fixed Sales Invoice submission 'Outbound quantity must be > 0' bug due to incorrect qty mapping.
+- Fixed Sales Invoice Edit page erroring on SUBMITTED invoices (now opens in read-only mode).
+- Fixed Sales Invoice double-submission race condition and regression test verification SQL queries.

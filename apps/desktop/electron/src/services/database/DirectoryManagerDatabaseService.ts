@@ -27,7 +27,7 @@ export class DirectoryManagerDatabaseService {
   constructor() {
     const isDev = !app.isPackaged;
     if (isDev) {
-      this.dbPath = path.join(__dirname, '../../resources/directory-manager.db');
+      this.dbPath = path.join(__dirname, '../resources/directory-manager.db');
     } else {
       this.dbPath = path.join(process.resourcesPath, 'resources/directory-manager.db');
     }
@@ -168,6 +168,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'pincode', 'v2', 165627, 'chk_pincode_v2', 'directories_v2.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'pincode')
     `,
       )
@@ -184,6 +185,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'country', 'v1', 250, 'chk_country_v1', 'directories_v2.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'country')
     `,
       )
@@ -200,6 +202,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'currency', 'v1', 154, 'chk_currency_v1', 'directories_v3.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'currency')
     `,
       )
@@ -216,6 +219,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'state', 'v1', 36, 'chk_state_v1', 'directories_v3.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'state')
     `,
       )
@@ -232,6 +236,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'uqc', 'v1', 53, 'chk_uqc_v1', 'directories_v4.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'uqc')
     `,
       )
@@ -248,6 +253,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'hsn', 'v1', 21927, 'chk_hsn_v1', 'directories_v5.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'hsn')
     `,
       )
@@ -264,6 +270,7 @@ export class DirectoryManagerDatabaseService {
         `
       INSERT INTO directory_registry (directory_name, current_version, record_count, checksum, active_database)
       SELECT 'sac', 'v1', 681, 'chk_sac_v1', 'directories_v5.db'
+      FROM (SELECT 1)
       WHERE NOT EXISTS (SELECT 1 FROM directory_registry WHERE directory_name = 'sac')
     `,
       )
@@ -319,6 +326,26 @@ export class DirectoryManagerDatabaseService {
       .insert(directorySettings)
       .values({ key: 'last_known_good_database', value: fileName })
       .onConflictDoUpdate({ target: directorySettings.key, set: { value: fileName } });
+  }
+
+  public async bootDirectoryDatabase(): Promise<void> {
+    const activeFileName = await this.getActiveDirectoryDatabase();
+    if (!activeFileName) {
+      loggerService.error('[DirectoryManager] active_directory_database setting not found!');
+      return;
+    }
+
+    const isDev = !app.isPackaged;
+    const baseDir = isDev
+      ? path.join(__dirname, '../resources')
+      : path.join(process.resourcesPath || '', 'resources');
+
+    const dbPath = path.join(baseDir, activeFileName);
+    loggerService.info(`[DirectoryManager] Booting active directory DB: ${dbPath}`);
+
+    // Import dynamically or normally. Since we are in the same folder, we can just import directoryDatabaseService
+    const { directoryDatabaseService } = await import('./DirectoryDatabaseService');
+    directoryDatabaseService.connect(dbPath);
   }
 }
 

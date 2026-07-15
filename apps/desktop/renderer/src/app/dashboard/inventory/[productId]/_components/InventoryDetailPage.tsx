@@ -129,8 +129,8 @@ export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
             </div>
             <div className="text-2xl font-bold">
               {stockSummary
-                ? formatMoney(stockSummary.totalValue, companyContext!.currency)
-                : formatMoney(0, companyContext!.currency)}
+                ? formatMoney(stockSummary.totalValue, companyContext?.currency)
+                : formatMoney(0, companyContext?.currency)}
             </div>
           </AppCardContent>
         </AppCard>
@@ -145,8 +145,8 @@ export function InventoryDetailPage({ productId }: InventoryDetailPageProps) {
             </div>
             <div className="text-2xl font-bold">
               {stockSummary
-                ? formatMoney(stockSummary.wac, companyContext!.currency)
-                : formatMoney(0, companyContext!.currency)}
+                ? formatMoney(stockSummary.wac, companyContext?.currency)
+                : formatMoney(0, companyContext?.currency)}
             </div>
           </AppCardContent>
         </AppCard>

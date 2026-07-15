@@ -93,7 +93,7 @@ export function SalesList() {
       header: 'Grand Total',
       className: 'text-right',
       cell: (i) => (
-        <div className="font-medium">{formatMoney(i.grandTotal, context!.currency)}</div>
+        <div className="font-medium">{formatMoney(i.grandTotal, context?.currency)}</div>
       ),
     },
     {
@@ -153,7 +153,10 @@ export function SalesList() {
             },
             placeholder: 'Search by Invoice Number or Customer ID...',
             actions: (
-              <AppButton onClick={() => router.push('/dashboard/sales/new')}>
+              <AppButton
+                onClick={() => router.push('/dashboard/sales/new')}
+                data-testid="create-sales-btn"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 New Invoice
               </AppButton>

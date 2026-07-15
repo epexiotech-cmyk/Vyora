@@ -113,7 +113,10 @@ export function PurchaseList() {
 
         {/* Actions */}
         <div className="flex w-full items-center gap-2 md:w-auto">
-          <AppButton onClick={() => router.push('/dashboard/purchases/new')}>
+          <AppButton
+            data-testid="create-purchase-btn"
+            onClick={() => router.push('/dashboard/purchases/new')}
+          >
             <Plus className="mr-2 h-4 w-4" />
             New Purchase
           </AppButton>
@@ -173,7 +176,7 @@ export function PurchaseList() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
-                      {formatMoney(purchase.grandTotal, context!.currency)}
+                      {formatMoney(purchase.grandTotal, context?.currency)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge

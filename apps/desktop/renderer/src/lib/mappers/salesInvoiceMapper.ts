@@ -51,8 +51,8 @@ export function mapSalesInvoiceUiToDto(
       return {
         productId: line.productId || '',
         // Using placeholders for unitId/taxId until future phases implement proper unit/tax selectors
-        unitId: 'default_unit',
-        taxId: 'default_tax',
+        unitId: '11111111-1111-4111-8111-111111111111',
+        taxId: '22222222-2222-4222-8222-222222222222',
         description: line.productName,
         hsnCode: '',
         quantity: inputLine ? inputLine.quantity : Number(line.qty) || 0,
