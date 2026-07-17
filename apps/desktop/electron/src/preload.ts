@@ -120,6 +120,10 @@ contextBridge.exposeInMainWorld('vyora', {
     getProfile: (id: string) => ipcRenderer.invoke('company:get-profile', id),
     updateProfile: (id: string, payload: UpdateCompanyProfileRequest) =>
       ipcRenderer.invoke('company:update-profile', id, payload),
+    list: () => ipcRenderer.invoke('company:list'),
+    create: (payload: import('@vyora/types').CreateCompanyInput) =>
+      ipcRenderer.invoke('company:create', payload),
+    delete: (id: string) => ipcRenderer.invoke('company:delete', id),
   },
   financialYear: {
     getCurrent: () => ipcRenderer.invoke('financial-year:get-current'),
@@ -325,6 +329,9 @@ export type VyoraCompanyAPI = {
     id: string,
     payload: UpdateCompanyProfileRequest,
   ) => Promise<ApiResponse<CompanyProfileDto>>;
+  list: () => Promise<ApiResponse<import('@vyora/types').CompanyDto[]>>;
+  create: (payload: import('@vyora/types').CreateCompanyInput) => Promise<ApiResponse<string>>;
+  delete: (id: string) => Promise<ApiResponse<void>>;
 };
 
 export type VyoraFinancialYearAPI = {

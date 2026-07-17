@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { companies, Company, InsertCompany } from '@vyora/database';
 import { CompanyDto } from '@vyora/types';
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';
 
@@ -104,5 +104,21 @@ export class CompanyRepository extends BaseRepository {
     await executor.update(companies).set(updateData).where(eq(companies.id, id));
 
     return this.getById(id, tx);
+  }
+
+  public async list(tx?: DbTransaction): Promise<CompanyDto[]> {
+    const executor = tx || this.db;
+    const results = await executor
+      .select()
+      .from(companies)
+      .where(isNull(companies.deletedAt))
+      .all();
+    return results.map(mapToDto);
+  }
+
+  public async softDelete(id: string, tx?: DbTransaction): Promise<void> {
+    const executor = tx || this.db;
+    const now = new Date();
+    await executor.update(companies).set({ deletedAt: now }).where(eq(companies.id, id));
   }
 }

@@ -1,4 +1,10 @@
-import { CompanyProfileDto, UpdateCompanyProfileRequest, ApiResponse } from '@vyora/types';
+import {
+  CompanyProfileDto,
+  UpdateCompanyProfileRequest,
+  ApiResponse,
+  CreateCompanyInput,
+  CompanyDto,
+} from '@vyora/types';
 import { ipcMain } from 'electron';
 
 import { companyContextService } from '../../services/CompanyContextService';
@@ -62,9 +68,41 @@ export function registerCompanyHandlers() {
         const profile = await companyContextService.updateProfile(id, payload);
         return { success: true, data: profile };
       } catch (error) {
-        console.error('Error updating company profile:', error);
         return { success: false, error: (error as Error).message };
       }
     },
   );
+
+  ipcMain.handle('company:list', async (): Promise<ApiResponse<CompanyDto[]>> => {
+    try {
+      const companies = await companyContextService.listCompanies();
+      return { success: true, data: companies };
+    } catch (error) {
+      console.error('Error listing companies:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle(
+    'company:create',
+    async (_, payload: CreateCompanyInput): Promise<ApiResponse<string>> => {
+      try {
+        const companyId = await companyContextService.createCompany(payload);
+        return { success: true, data: companyId };
+      } catch (error) {
+        console.error('Error creating company:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle('company:delete', async (_, companyId: string): Promise<ApiResponse<void>> => {
+    try {
+      await companyContextService.deleteCompany(companyId);
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
 }

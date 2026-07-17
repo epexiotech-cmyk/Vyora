@@ -3,9 +3,12 @@ import {
   UpdateCompanyProfileRequest,
   CompanyContextDto,
   CurrencyDto,
+  CreateCompanyInput,
 } from '@vyora/types';
 
 import { SettingsRepository, CompanyRepository } from '../repositories';
+
+import { companyBootstrapService } from './CompanyBootstrapService';
 
 export class CompanyContextService {
   private settingsRepo = new SettingsRepository();
@@ -139,6 +142,30 @@ export class CompanyContextService {
     }
 
     return updated;
+  }
+
+  public async listCompanies(): Promise<import('@vyora/types').CompanyDto[]> {
+    return this.companyRepo.list();
+  }
+
+  public async createCompany(payload: CreateCompanyInput): Promise<string> {
+    return companyBootstrapService.createCompany(payload);
+  }
+
+  public async deleteCompany(companyId: string): Promise<void> {
+    const activeId = await this.settingsRepo.getAppSetting('active_company_id');
+    if (activeId === companyId) {
+      throw new Error('Cannot delete the currently active company.');
+    }
+
+    const allCompanies = await this.companyRepo.list();
+    if (allCompanies.length <= 1) {
+      throw new Error('Cannot delete the last remaining company.');
+    }
+
+    // TODO: In the future, check if company has existing accounting data before deleting
+    // For now, we allow soft delete
+    await this.companyRepo.softDelete(companyId);
   }
 }
 
