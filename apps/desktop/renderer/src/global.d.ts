@@ -127,6 +127,9 @@ export type VyoraCompanyAPI = {
 
 export type VyoraFinancialYearAPI = {
   getCurrent: () => Promise<ApiResponse<FinancialYearDto | null>>;
+  getActive: () => Promise<ApiResponse<string | null>>;
+  setActive: (id: string) => Promise<ApiResponse<void>>;
+  list: () => Promise<ApiResponse<FinancialYearDto[]>>;
 };
 
 export type VyoraPrintAPI = {

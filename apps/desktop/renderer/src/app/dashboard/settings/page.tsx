@@ -37,6 +37,19 @@ export default function SettingsPage() {
           </AppCard>
         </Link>
 
+        <Link href="/dashboard/settings/financial-years">
+          <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+            <AppCardHeader>
+              <AppCardTitle>Financial Years</AppCardTitle>
+            </AppCardHeader>
+            <AppCardContent>
+              <p className="text-muted-foreground text-sm">
+                Manage your financial periods and active years.
+              </p>
+            </AppCardContent>
+          </AppCard>
+        </Link>
+
         <AppCard>
           <AppCardHeader>
             <AppCardTitle>Tax & Compliance</AppCardTitle>

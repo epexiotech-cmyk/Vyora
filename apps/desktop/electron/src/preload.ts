@@ -127,6 +127,9 @@ contextBridge.exposeInMainWorld('vyora', {
   },
   financialYear: {
     getCurrent: () => ipcRenderer.invoke('financial-year:get-current'),
+    getActive: () => ipcRenderer.invoke('financial-year:get-active'),
+    setActive: (id: string) => ipcRenderer.invoke('financial-year:set-active', id),
+    list: () => ipcRenderer.invoke('financial-year:list'),
   },
   splash: {
     finished: () => ipcRenderer.send('splash-finished'),
