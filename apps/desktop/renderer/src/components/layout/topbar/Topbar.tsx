@@ -4,6 +4,8 @@ import { Search, User, RefreshCcw } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { CompanySwitcherDropdown } from './CompanySwitcherDropdown';
+
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppInput } from '@/components/ui/AppInput';
@@ -27,6 +29,10 @@ export function Topbar() {
       }
     };
     loadCompany();
+
+    const handleSwitchEvent = () => loadCompany();
+    window.addEventListener('company-switched', handleSwitchEvent);
+    return () => window.removeEventListener('company-switched', handleSwitchEvent);
   }, []);
 
   return (
@@ -57,9 +63,7 @@ export function Topbar() {
         </div>
 
         {/* Company Switcher Placeholder */}
-        <div className="bg-secondary border-border/50 hover:bg-secondary/80 hidden cursor-pointer rounded-sm border px-2 py-1 text-xs font-medium transition-colors sm:flex">
-          {companyName}
-        </div>
+        <CompanySwitcherDropdown currentCompanyName={companyName} />
 
         <ThemeToggle />
 
