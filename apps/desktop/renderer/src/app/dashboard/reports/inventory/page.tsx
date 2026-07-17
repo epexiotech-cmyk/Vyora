@@ -23,12 +23,6 @@ export default function InventoryReportsIndex() {
       href: '/dashboard/reports/inventory/movement-register',
       isComingSoon: false,
     },
-    {
-      title: 'Inventory Valuation',
-      description: 'Detailed financial valuation of current inventory.',
-      href: '#',
-      isComingSoon: true,
-    },
   ];
 
   return (
@@ -51,11 +45,6 @@ export default function InventoryReportsIndex() {
               </AppCardHeader>
               <AppCardContent>
                 <div className="text-muted-foreground text-sm">{report.description}</div>
-                {report.isComingSoon && (
-                  <div className="text-muted-foreground mt-4 text-xs font-semibold tracking-wider uppercase">
-                    Coming Soon
-                  </div>
-                )}
               </AppCardContent>
             </AppCard>
           </Link>

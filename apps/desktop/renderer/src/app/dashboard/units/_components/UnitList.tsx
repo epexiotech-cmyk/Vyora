@@ -3,8 +3,9 @@
 import { UnitDto } from '@vyora/types';
 import { Plus, Edit2 } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
-import { DataTable, ColumnDef, AppModal } from '@/components/shared';
+import { DataTable, ColumnDef } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
@@ -14,10 +15,6 @@ export function UnitList() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(1);
   const limit = 20;
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [editingUnit, setEditingUnit] = React.useState<UnitDto | null>(null);
 
   React.useEffect(() => {
     const fetchUnits = async () => {
@@ -37,9 +34,8 @@ export function UnitList() {
     fetchUnits();
   }, []);
 
-  const handleCreateOrEdit = (unit?: UnitDto) => {
-    setEditingUnit(unit || null);
-    setIsModalOpen(true);
+  const handleCreateOrEdit = (_unit?: UnitDto) => {
+    toast.info('Unit management coming soon');
   };
 
   const filteredData = React.useMemo(() => {
@@ -117,20 +113,6 @@ export function UnitList() {
           }}
         />
       </div>
-
-      <AppModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingUnit ? 'Edit Unit' : 'Add Unit'}
-        description="Placeholder workflow for creating or editing a unit."
-        onConfirm={() => setIsModalOpen(false)}
-        confirmLabel="Save Unit"
-      >
-        <div className="text-muted-foreground py-4 text-center text-sm">
-          <p>Unit form placeholder.</p>
-          <p>Implementation pending backend form wiring.</p>
-        </div>
-      </AppModal>
     </div>
   );
 }
