@@ -34,7 +34,7 @@ export function UnitList() {
     fetchUnits();
   }, []);
 
-  const handleCreateOrEdit = (_unit?: UnitDto) => {
+  const handleCreateOrEdit = () => {
     toast.info('Unit management coming soon');
   };
 
@@ -67,9 +67,9 @@ export function UnitList() {
       key: 'actions',
       header: 'Actions',
       className: 'text-right',
-      cell: (u) => (
+      cell: (_u) => (
         <div className="flex justify-end gap-1">
-          <AppButton variant="ghost" size="sm" onClick={() => handleCreateOrEdit(u)} title="Edit">
+          <AppButton variant="ghost" size="sm" onClick={() => handleCreateOrEdit()} title="Edit">
             <Edit2 className="h-4 w-4" />
             <span className="sr-only">Edit</span>
           </AppButton>

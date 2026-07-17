@@ -35,9 +35,14 @@ export function FinancialYearList() {
   };
 
   useEffect(() => {
-    fetchFinancialYears();
+    const init = async () => {
+      await fetchFinancialYears();
+    };
+    void init();
 
-    const handleSwitchEvent = () => fetchFinancialYears();
+    const handleSwitchEvent = () => {
+      void init();
+    };
     window.addEventListener('company-switched', handleSwitchEvent);
     return () => window.removeEventListener('company-switched', handleSwitchEvent);
   }, []);

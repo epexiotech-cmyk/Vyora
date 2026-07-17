@@ -25,9 +25,14 @@ export function CompanySwitcherDropdown({ currentCompanyName }: { currentCompany
   };
 
   useEffect(() => {
-    loadData();
+    const init = async () => {
+      await loadData();
+    };
+    void init();
 
-    const handleSwitchEvent = () => loadData();
+    const handleSwitchEvent = () => {
+      void init();
+    };
     window.addEventListener('company-switched', handleSwitchEvent);
     return () => window.removeEventListener('company-switched', handleSwitchEvent);
   }, []);

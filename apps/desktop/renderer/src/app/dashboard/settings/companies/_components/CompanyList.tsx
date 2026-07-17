@@ -31,7 +31,10 @@ export function CompanyList() {
   };
 
   useEffect(() => {
-    fetchCompanies();
+    const init = async () => {
+      await fetchCompanies();
+    };
+    void init();
   }, []);
 
   const handleDelete = async (id: string) => {
