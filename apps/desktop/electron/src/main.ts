@@ -1,4 +1,19 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import * as path from 'path';
+import { pathToFileURL } from 'url';
+
+import { app, BrowserWindow, ipcMain, protocol, net } from 'electron';
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'app',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: true,
+    },
+  },
+]);
 
 import { registerAllHandlers } from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
@@ -21,6 +36,18 @@ const isDev = process.env.NODE_ENV === 'development';
 
 async function bootstrap() {
   await app.whenReady();
+
+  protocol.handle('app', (request) => {
+    let urlPath = decodeURIComponent(request.url.slice('app://-'.length));
+    urlPath = urlPath.split('?')[0].split('#')[0];
+    if (urlPath === '' || urlPath === '/' || urlPath.endsWith('/')) {
+      urlPath = '/index.html';
+    } else if (!urlPath.includes('.') && !urlPath.startsWith('/_next')) {
+      urlPath += '.html';
+    }
+    const absolutePath = path.join(__dirname, '../renderer/out', urlPath);
+    return net.fetch(pathToFileURL(absolutePath).toString());
+  });
 
   // Show Splash Screen immediately
   splashWindow = new SplashWindow();

@@ -34,6 +34,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 // Expose a secure API to the renderer process
+console.log('Preload Loaded');
 contextBridge.exposeInMainWorld('vyora', {
   system: {
     ping: () => ipcRenderer.invoke('system:ping'),

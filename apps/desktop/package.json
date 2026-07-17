@@ -6,7 +6,7 @@
   "private": true,
   "main": "dist-electron/main.js",
   "scripts": {
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "rebuild": "electron-rebuild -f -w \"better-sqlite3,better-sqlite3-multiple-ciphers,keytar\"",
     "postinstall": "pnpm run rebuild",
     "dev": "concurrently -k \"pnpm run dev:renderer\" \"pnpm run dev:electron\"",
     "dev:renderer": "cd renderer && pnpm dev",
@@ -40,7 +40,9 @@
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.1.2",
     "better-sqlite3-multiple-ciphers": "^12.10.0",
+    "bindings": "^1.5.0",
     "drizzle-orm": "^0.45.2",
+    "file-uri-to-path": "1.0.0",
     "electron-log": "^5.4.4",
     "electron-store": "^8.2.0",
     "keytar": "^7.9.0"

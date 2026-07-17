@@ -9,6 +9,15 @@ files:
   - renderer/out/**/*
   - package.json
   - assets/**/*
+asarUnpack:
+  - "**/*.node"
+extraResources:
+  - from: "resources"
+    to: "resources"
+  - from: "../../packages/database/drizzle"
+    to: "assets/drizzle"
+  - from: "assets"
+    to: "assets"
 win:
   target: 
     - nsis

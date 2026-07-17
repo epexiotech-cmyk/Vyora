@@ -15,3 +15,7 @@ export default async function ItemInventoryPage({
   const { productId } = await params;
   return <InventoryDetailPage productId={productId} />;
 }
+
+export async function generateStaticParams() {
+  return [{ productId: '1' }];
+}

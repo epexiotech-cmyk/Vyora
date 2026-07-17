@@ -48,9 +48,9 @@ export class MainWindow {
       const rendererUrl = process.env.RENDERER_URL || 'http://localhost:3000';
       await this.window.loadURL(rendererUrl);
     } else {
-      // In production, load the static Next.js output
-      const appPath = path.join(__dirname, '../renderer/out/index.html');
-      await this.window.loadFile(appPath);
+      // In production, load via custom protocol to support Next.js static export paths
+      const appUrl = 'app://-/';
+      await this.window.loadURL(appUrl);
     }
 
     this.window.on('closed', () => {
