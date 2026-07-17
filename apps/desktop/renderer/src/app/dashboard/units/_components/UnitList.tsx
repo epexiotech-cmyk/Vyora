@@ -67,7 +67,7 @@ export function UnitList() {
       key: 'actions',
       header: 'Actions',
       className: 'text-right',
-      cell: (_u) => (
+      cell: () => (
         <div className="flex justify-end gap-1">
           <AppButton variant="ghost" size="sm" onClick={() => handleCreateOrEdit()} title="Edit">
             <Edit2 className="h-4 w-4" />
