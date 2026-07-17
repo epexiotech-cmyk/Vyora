@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { AppCard, AppCardHeader, AppCardTitle, AppCardContent } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
@@ -9,16 +11,31 @@ export default function SettingsPage() {
         description="Configure your company and application preferences."
       />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <AppCard>
-          <AppCardHeader>
-            <AppCardTitle>Company Profile</AppCardTitle>
-          </AppCardHeader>
-          <AppCardContent>
-            <p className="text-muted-foreground text-sm">
-              Manage your business details, address, and GSTIN.
-            </p>
-          </AppCardContent>
-        </AppCard>
+        <Link href="/dashboard/settings/company-profile">
+          <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+            <AppCardHeader>
+              <AppCardTitle>Company Profile</AppCardTitle>
+            </AppCardHeader>
+            <AppCardContent>
+              <p className="text-muted-foreground text-sm">
+                Manage your business details, address, and GSTIN.
+              </p>
+            </AppCardContent>
+          </AppCard>
+        </Link>
+
+        <Link href="/dashboard/settings/companies">
+          <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+            <AppCardHeader>
+              <AppCardTitle>Companies</AppCardTitle>
+            </AppCardHeader>
+            <AppCardContent>
+              <p className="text-muted-foreground text-sm">
+                Manage multiple companies and switch between them.
+              </p>
+            </AppCardContent>
+          </AppCard>
+        </Link>
 
         <AppCard>
           <AppCardHeader>

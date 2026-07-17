@@ -120,6 +120,9 @@ export type VyoraCompanyAPI = {
     id: string,
     payload: import('@vyora/types').UpdateCompanyProfileRequest,
   ) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto>>;
+  list: () => Promise<ApiResponse<import('@vyora/types').CompanyDto[]>>;
+  create: (payload: import('@vyora/types').CreateCompanyInput) => Promise<ApiResponse<string>>;
+  delete: (id: string) => Promise<ApiResponse<void>>;
 };
 
 export type VyoraFinancialYearAPI = {
