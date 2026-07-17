@@ -76,6 +76,7 @@ describe('DirectorySwapService', () => {
       const result = await directorySwapService.validateCandidateDatabase('good.db');
       if (!result) {
         const { loggerService } = await import('../logger/LoggerService');
+        // eslint-disable-next-line no-console
         console.log(vi.mocked(loggerService.error).mock.calls);
       }
       expect(result).toBe(true);

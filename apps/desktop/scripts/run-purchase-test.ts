@@ -6,6 +6,7 @@ fs.writeFileSync('test-output.txt', '');
 const log = (...args: unknown[]) => {
   const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ') + '\n';
   fs.appendFileSync('test-output.txt', msg);
+  // eslint-disable-next-line no-console
   console.log(...args); // keep console.log too
 };
 
@@ -217,6 +218,7 @@ async function runTest() {
     purchaseId = await purchaseService.create({
       financialYearId,
       supplierId,
+      isReverseCharge: false,
       purchaseDate: new Date(),
       subtotal: 100,
       taxAmount: 5,
