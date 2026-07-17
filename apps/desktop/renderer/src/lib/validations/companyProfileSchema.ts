@@ -81,6 +81,11 @@ export const companyProfileSchema = z.object({
       },
       { message: 'Invalid URL format' },
     ),
+  currency: z
+    .string()
+    .min(3, 'Currency is required')
+    .max(3, 'Currency code must be exactly 3 characters')
+    .optional(),
 });
 
 export type CompanyProfileFormValues = z.infer<typeof companyProfileSchema>;

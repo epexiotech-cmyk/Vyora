@@ -9,6 +9,7 @@ import { useForm, FormProvider, useWatch } from 'react-hook-form';
 
 import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
+import { FormSelect } from '@/components/forms/FormSelect';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -23,6 +24,7 @@ export function CompanyProfileShell() {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [companyId, setCompanyId] = React.useState<string | null>(null);
+  const [currencies, setCurrencies] = React.useState<{ value: string; label: string }[]>([]);
 
   const methods = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
@@ -44,6 +46,7 @@ export function CompanyProfileShell() {
       mobile: '',
       telephone: '',
       website: '',
+      currency: '',
     },
   });
 
@@ -107,7 +110,24 @@ export function CompanyProfileShell() {
         const activeRes = await window.vyora.company.getActive();
         if (activeRes.success && activeRes.data) {
           setCompanyId(activeRes.data);
+
+          // Load currencies
+          try {
+            const curRes = await window.vyora.directories.currency.getActive();
+            if (curRes.success && curRes.data) {
+              setCurrencies(
+                curRes.data.map((c) => ({
+                  value: c.currencyCode,
+                  label: `${c.currencyCode} (${c.currencyName})`,
+                })),
+              );
+            }
+          } catch (e) {
+            console.error('Failed to load currencies', e);
+          }
+
           const profileRes = await window.vyora.company.getProfile(activeRes.data);
+          const contextRes = await window.vyora.company.getContext();
 
           if (profileRes.success && profileRes.data) {
             const profile = profileRes.data;
@@ -129,6 +149,10 @@ export function CompanyProfileShell() {
               mobile: profile.mobile || '',
               telephone: profile.telephone || '',
               website: profile.website || '',
+              currency:
+                contextRes.success && contextRes.data?.currency?.currencyCode
+                  ? contextRes.data.currency.currencyCode
+                  : '',
             });
           }
         } else {
@@ -351,8 +375,8 @@ export function CompanyProfileShell() {
               </div>
             </AppCard>
 
-            {/* Billing Preferences (Read-only mapped placeholder as per Phase 5.1.3A request) */}
-            <AppCard className="p-6 opacity-80 shadow-sm grayscale">
+            {/* Billing Preferences */}
+            <AppCard className="p-6 shadow-sm">
               <div className="mb-6 flex items-center gap-2 border-b pb-3">
                 <IndianRupee className="text-muted-foreground h-5 w-5" />
                 <h3 className="text-foreground text-sm font-semibold tracking-wide">
@@ -360,23 +384,21 @@ export function CompanyProfileShell() {
                 </h3>
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <AppField name="currency" label="Base Currency">
+                  <FormSelect
+                    name="currency"
+                    options={[{ value: '', label: 'Select Currency' }, ...currencies]}
+                  />
+                </AppField>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">Base Currency</label>
+                  <label className="text-muted-foreground text-xs font-medium">
+                    Current Financial Year
+                  </label>
                   <div className="bg-muted border-input flex h-9 w-full items-center rounded-md border px-3 text-sm text-gray-500">
-                    INR (Indian Rupee)
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium">Current Financial Year</label>
-                  <div className="bg-muted border-input flex h-9 w-full items-center rounded-md border px-3 text-sm text-gray-500">
-                    2026-2027
+                    Managed in Financial Years Settings
                   </div>
                 </div>
               </div>
-              <p className="text-muted-foreground mt-4 text-xs italic">
-                Note: Currency and Financial Year settings are managed through the initial bootstrap
-                configuration and dedicated settings modules.
-              </p>
             </AppCard>
           </form>
         </FormProvider>
