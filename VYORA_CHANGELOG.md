@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [1.0.0-RC1] - 2026-07-15
 
+### Phase 9.1 — Startup Trace Audit & Robustness Improvements
+
+Highlights:
+
+- Restored the complete Unit Management UI (Add/Edit dialog, validation, save, and delete flows) which was incorrectly removed in a previous UI cleanup.
+- Fixed a backend database regression where duplicate Unit names were bypassing validation due to case-sensitive SQL equality checks. Duplicate detection is now securely case-insensitive across the stack.
+- Introduced `SystemUnitSeeder` to automatically bootstrap a static catalog of Standard Units (Weight, Volume, Length, Count, Packaging, Area, Industrial) idempotently during new company creation.
+- Improved `CompanyBootstrapService.isSetupCompleted()` to verify setup completion using true database state (both an administrator and a company must exist).
+- Deprecated legacy `setup_completed` flag; marked as technical debt while preserving backward compatibility.
+- Created robust QA Reset Documentation for true fresh-install verification (`docs/qa-reset-procedure.md`).
+- Verified onboarding flow cleanly restarts upon interruption (e.g., admin exists but company does not).
+
 ### Status
 
 - **Release Verification**: Certified and Frozen.

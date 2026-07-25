@@ -5,9 +5,9 @@ const hoistedMocks = vi.hoisted(() => ({
   taxFindAll: vi.fn(),
 }));
 
+import { documentNumberingService } from '../../src/services/DocumentNumberingService';
 import { gstCalculationService } from '../../src/services/GstCalculationService';
 import { inventoryService } from '../../src/services/InventoryService';
-import { numberingEngineService } from '../../src/services/NumberingEngineService';
 import { SalesInvoiceService, StockValidationError } from '../../src/services/SalesInvoiceService';
 
 // 1. Setup global mocks before importing the service
@@ -60,10 +60,10 @@ vi.mock('../../src/services/InventoryService', () => {
   };
 });
 
-vi.mock('../../src/services/NumberingEngineService', () => {
+vi.mock('../../src/services/DocumentNumberingService', () => {
   return {
-    numberingEngineService: {
-      generateNextNumber: vi.fn(),
+    documentNumberingService: {
+      generateNextNumberSync: vi.fn(),
     },
   };
 });
@@ -211,8 +211,8 @@ describe('SalesInvoiceService', () => {
       vi.mocked(inventoryService.checkStockAvailability).mockResolvedValue({
         available: true,
         currentStock: 10,
-      } as unknown as import('@vyora/types').StockValidationResultDto);
-      vi.mocked(numberingEngineService.generateNextNumber).mockResolvedValue('INV-100');
+      } as unknown as Awaited<ReturnType<typeof inventoryService.checkStockAvailability>>);
+      vi.mocked(documentNumberingService.generateNextNumberSync).mockReturnValue('INV-100');
 
       const result = await service.submitInvoice('inv1');
 
@@ -225,10 +225,10 @@ describe('SalesInvoiceService', () => {
       expect(inventoryService.checkStockAvailability).toHaveBeenCalledWith('comp1', 'p1', 5);
 
       // 3. Invoice Number generated
-      expect(numberingEngineService.generateNextNumber).toHaveBeenCalledWith(
+      expect(documentNumberingService.generateNextNumberSync).toHaveBeenCalledWith(
         'comp1',
-        'fy1',
         'SALES_INVOICE',
+        'fy1',
         expect.anything(),
       );
 
@@ -270,7 +270,7 @@ describe('SalesInvoiceService', () => {
       vi.mocked(inventoryService.checkStockAvailability).mockResolvedValue({
         available: false,
         currentStock: 10,
-      } as unknown as import('@vyora/types').StockValidationResultDto);
+      } as unknown as Awaited<ReturnType<typeof inventoryService.checkStockAvailability>>);
 
       await expect(service.submitInvoice('inv1')).rejects.toThrowError(StockValidationError);
       expect(mockSalesInvoiceRepo.update).not.toHaveBeenCalled();
@@ -336,13 +336,13 @@ describe('SalesInvoiceService', () => {
         currentStock: 5,
         warningOnly: true,
         warningMessage: 'Low stock',
-      } as unknown as import('@vyora/types').StockValidationResultDto);
+      } as unknown as Awaited<ReturnType<typeof inventoryService.checkStockAvailability>>);
 
       // Inside transaction, it actually fails (Line 192)
       vi.mocked(inventoryService.checkStockAvailability).mockResolvedValueOnce({
         available: false,
         currentStock: 0,
-      } as unknown as import('@vyora/types').StockValidationResultDto);
+      } as unknown as Awaited<ReturnType<typeof inventoryService.checkStockAvailability>>);
 
       await expect(service.submitInvoice('inv1')).rejects.toThrowError(StockValidationError);
     });
@@ -420,7 +420,7 @@ describe('SalesInvoiceService', () => {
       vi.mocked(inventoryService.checkStockAvailability).mockResolvedValue({
         available: true,
         currentStock: 100,
-      } as unknown as import('@vyora/types').StockValidationResultDto);
+      } as unknown as Awaited<ReturnType<typeof inventoryService.checkStockAvailability>>);
 
       await service.submitInvoice('inv1');
 
@@ -495,7 +495,7 @@ describe('SalesInvoiceService', () => {
     it('getInvoiceById fetches invoice', async () => {
       mockSalesInvoiceRepo.getById.mockResolvedValue({ id: 'inv1' });
       const result = await service.getInvoiceById('inv1');
-      expect(result.id).toBe('inv1');
+      expect(result?.id).toBe('inv1');
     });
 
     it('getInvoiceById throws if not found', async () => {

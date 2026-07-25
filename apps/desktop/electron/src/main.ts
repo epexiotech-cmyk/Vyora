@@ -99,6 +99,72 @@ async function bootstrap() {
         loggerService.error('RUNTEST FAILED', e);
       }
     }
+
+    if (process.env.DEV_UTILITY) {
+      try {
+        const utilName = process.env.DEV_UTILITY;
+        loggerService.info(`STARTING DEV UTILITY: ${utilName}`);
+
+        /* eslint-disable no-console */
+        if (utilName === 'check-inventory') {
+          const { inventoryAdminService } = await import('./services/admin/InventoryAdminService');
+          const mismatches = await inventoryAdminService.checkInventoryIntegritySync();
+          if (mismatches.length === 0) {
+            console.log('✅ Inventory is fully synchronized. No integrity issues found.');
+          } else {
+            console.log(
+              `❌ Found ${mismatches.length} mismatches between stock_movements and inventory_balances!`,
+            );
+            console.table(mismatches);
+          }
+        } else if (utilName === 'rebuild-inventory') {
+          const { inventoryAdminService } = await import('./services/admin/InventoryAdminService');
+          await inventoryAdminService.rebuildInventorySync();
+          console.log('Successfully rebuilt inventory balances!');
+        } else if (utilName === 'reset-transactions') {
+          const { transactionResetService } =
+            await import('./services/admin/TransactionResetService');
+          await transactionResetService.hardResetAllSync();
+          console.log('Successfully cleared all transactional data!');
+        } else if (utilName === 'query-new-product') {
+          const { dbService } = await import('./services/database/DatabaseService');
+          const { products, inventory_balances, stock_movements } = await import('@vyora/database');
+          const { desc, eq } = await import('drizzle-orm');
+
+          const db = dbService.getDb();
+          const product = await db
+            .select()
+            .from(products)
+            .orderBy(desc(products.createdAt))
+            .limit(1)
+            .then((res) => res[0]);
+
+          console.log('PRODUCT:', product);
+
+          if (product) {
+            const balances = await db
+              .select()
+              .from(inventory_balances)
+              .where(eq(inventory_balances.productId, product.id));
+            console.log('BALANCES:', balances);
+
+            const movements = await db
+              .select()
+              .from(stock_movements)
+              .where(eq(stock_movements.productId, product.id));
+            console.log('MOVEMENTS:', movements);
+          }
+        }
+        /* eslint-enable no-console */
+
+        app.exit(0);
+        return;
+      } catch (err) {
+        loggerService.error('DEV UTILITY FAILED', err);
+        app.exit(1);
+        return;
+      }
+    }
   } catch (err) {
     console.error('Failed to initialize database:', err);
   }

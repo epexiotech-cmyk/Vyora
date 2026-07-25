@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, app } from 'electron';
 
 export class MainWindow {
   public window: BrowserWindow | null = null;
@@ -24,6 +24,7 @@ export class MainWindow {
         contextIsolation: true,
         preload: path.join(__dirname, 'preload.js'),
         sandbox: true,
+        additionalArguments: [`--is-packaged=${app.isPackaged}`],
       },
       show: false, // Show when ready to prevent flickering
     });

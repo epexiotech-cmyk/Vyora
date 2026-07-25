@@ -37,6 +37,8 @@ import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 contextBridge.exposeInMainWorld('vyora', {
   system: {
     ping: () => ipcRenderer.invoke('system:ping'),
+    showAbout: () => ipcRenderer.invoke('system:show-about'),
+    isPackaged: process.argv.includes('--is-packaged=true'),
   },
   db: {
     customers: {
@@ -102,6 +104,15 @@ contextBridge.exposeInMainWorld('vyora', {
         ipcRenderer.invoke('sales:invoice:list', options),
     },
   },
+  settings: {
+    documentNumbering: {
+      get: (documentType: string) =>
+        ipcRenderer.invoke('settings:document-numbering:get', documentType),
+      save: (config: import('@vyora/types').DocumentNumberingConfigDto) =>
+        ipcRenderer.invoke('settings:document-numbering:save', config),
+      getAll: () => ipcRenderer.invoke('settings:document-numbering:getAll'),
+    },
+  },
   bootstrap: {
     status: () => ipcRenderer.invoke('bootstrap:status'),
     createCompany: (data: {
@@ -111,6 +122,21 @@ contextBridge.exposeInMainWorld('vyora', {
       financialYearStart: Date;
       currency: string;
     }) => ipcRenderer.invoke('bootstrap:create-company', data),
+  },
+  auth: {
+    createAdmin: (payload: Record<string, unknown>) =>
+      ipcRenderer.invoke('auth:create-admin', payload),
+    login: (payload: Record<string, unknown>) => ipcRenderer.invoke('auth:login', payload),
+    logout: () => ipcRenderer.invoke('auth:logout'),
+    lock: () => ipcRenderer.invoke('auth:lock'),
+    unlock: (payload: Record<string, unknown>) => ipcRenderer.invoke('auth:unlock', payload),
+    isLocked: () => ipcRenderer.invoke('auth:is-locked'),
+    verifySession: () => ipcRenderer.invoke('auth:verify-session'),
+    getCurrentUser: () => ipcRenderer.invoke('auth:get-current-user'),
+    changePassword: (payload: import('@vyora/types').ChangePasswordRequestDto) =>
+      ipcRenderer.invoke('auth:change-password', payload),
+    changePin: (payload: import('@vyora/types').ChangePinRequestDto) =>
+      ipcRenderer.invoke('auth:change-pin', payload),
   },
   company: {
     getActive: () => ipcRenderer.invoke('company:get-active'),
@@ -129,6 +155,8 @@ contextBridge.exposeInMainWorld('vyora', {
     getActive: () => ipcRenderer.invoke('financial-year:get-active'),
     setActive: (id: string) => ipcRenderer.invoke('financial-year:set-active', id),
     list: () => ipcRenderer.invoke('financial-year:list'),
+    create: (input: import('@vyora/types').CreateFinancialYearInput) =>
+      ipcRenderer.invoke('financial-year:create', input),
   },
   splash: {
     finished: () => ipcRenderer.send('splash-finished'),
@@ -255,10 +283,26 @@ contextBridge.exposeInMainWorld('vyora', {
     getProfitLoss: (asOfDate?: Date) => ipcRenderer.invoke('reports:getProfitLoss', asOfDate),
     getBalanceSheet: (asOfDate?: Date) => ipcRenderer.invoke('reports:getBalanceSheet', asOfDate),
   },
+  dev: {
+    getDiagnostics: () => ipcRenderer.invoke('dev:diagnostics'),
+    factoryReset: {
+      dryRun: () => ipcRenderer.invoke('dev:factoryReset:dryRun'),
+      execute: () => ipcRenderer.invoke('dev:factoryReset:execute'),
+    },
+    inventory: {
+      check: () => ipcRenderer.invoke('dev:inventory:check'),
+      rebuild: () => ipcRenderer.invoke('dev:inventory:rebuild'),
+    },
+    documentNumbering: {
+      reset: () => ipcRenderer.invoke('dev:documentNumbering:reset'),
+    },
+  },
 });
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
+  showAbout: () => Promise<void>;
+  isPackaged: boolean;
 };
 
 export type VyoraSplashAPI = {
@@ -311,6 +355,18 @@ export type VyoraDatabaseAPI = {
   };
 };
 
+export type VyoraSettingsAPI = {
+  documentNumbering: {
+    get: (
+      documentType: string,
+    ) => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto | null>>;
+    save: (
+      config: import('@vyora/types').DocumentNumberingConfigDto,
+    ) => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto[]>>;
+  };
+};
+
 export type VyoraBootstrapAPI = {
   status: () => Promise<ApiResponse<boolean>>;
   createCompany: (data: {
@@ -320,6 +376,17 @@ export type VyoraBootstrapAPI = {
     financialYearStart: Date;
     currency: string;
   }) => Promise<ApiResponse<string>>;
+};
+
+export type VyoraAuthAPI = {
+  createAdmin: (payload: Record<string, unknown>) => Promise<ApiResponse<void>>;
+  login: (payload: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
+  logout: () => Promise<ApiResponse<void>>;
+  lock: () => Promise<ApiResponse<void>>;
+  unlock: (payload: Record<string, unknown>) => Promise<ApiResponse<void>>;
+  isLocked: () => Promise<ApiResponse<boolean>>;
+  verifySession: () => Promise<ApiResponse<unknown>>;
+  getCurrentUser: () => Promise<ApiResponse<unknown>>;
 };
 
 export type VyoraCompanyAPI = {
@@ -338,6 +405,12 @@ export type VyoraCompanyAPI = {
 
 export type VyoraFinancialYearAPI = {
   getCurrent: () => Promise<ApiResponse<FinancialYearDto | null>>;
+  getActive: () => Promise<ApiResponse<FinancialYearDto | null>>;
+  setActive: (id: string) => Promise<ApiResponse<void>>;
+  list: () => Promise<ApiResponse<FinancialYearDto[]>>;
+  create: (
+    input: import('@vyora/types').CreateFinancialYearInput,
+  ) => Promise<ApiResponse<FinancialYearDto>>;
 };
 
 export type VyoraPrintAPI = {
@@ -490,12 +563,28 @@ export type VyoraReportsAPI = {
   }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockAgeingDto>>;
 };
 
+export type VyoraDevAPI = {
+  getDiagnostics: () => Promise<ApiResponse<unknown>>;
+  factoryReset: {
+    dryRun: () => Promise<ApiResponse<Record<string, number>>>;
+    execute: () => Promise<ApiResponse<unknown>>;
+  };
+  inventory: {
+    check: () => Promise<ApiResponse<unknown>>;
+    rebuild: () => Promise<ApiResponse<void>>;
+  };
+  documentNumbering: {
+    reset: () => Promise<ApiResponse<void>>;
+  };
+};
+
 declare global {
   interface Window {
     vyora: {
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
       bootstrap: VyoraBootstrapAPI;
+      auth: VyoraAuthAPI;
       company: VyoraCompanyAPI;
       financialYear: VyoraFinancialYearAPI;
       splash: VyoraSplashAPI;
@@ -506,6 +595,7 @@ declare global {
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
       reports: VyoraReportsAPI;
+      dev: VyoraDevAPI;
     };
   }
 }

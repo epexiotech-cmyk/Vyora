@@ -25,7 +25,7 @@ import {
   inventory_balances,
   vouchers,
   voucher_entries,
-  document_sequences,
+  document_numbering_sequences,
 } from '@vyora/database';
 import { eq, and } from 'drizzle-orm';
 
@@ -433,13 +433,13 @@ export async function runTest() {
     ),
   );
 
-  const allSeqs = db.select().from(document_sequences).all();
+  const allSeqs = db.select().from(document_numbering_sequences).all();
   log(
     'Sequences:',
     JSON.stringify(
       allSeqs.map((s) => ({
         type: s.documentType,
-        val: s.currentValue,
+        val: s.currentSequence,
         cId: s.companyId,
         fyId: s.financialYearId,
       })),

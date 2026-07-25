@@ -1,3 +1,5 @@
+import { safeStorage } from 'electron';
+
 class EncryptionService {
   private static instance: EncryptionService;
 
@@ -11,27 +13,19 @@ class EncryptionService {
   }
 
   public async init(): Promise<void> {
-    // TODO: Initialize encryption logic
+    if (!safeStorage.isEncryptionAvailable()) {
+      throw new Error('System encryption is not available');
+    }
   }
 
-  // TODO: Implement encryption logic
   public encrypt(data: string | Buffer): string {
-    return data.toString();
+    const buffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
+    return safeStorage.encryptString(buffer.toString('utf-8')).toString('base64');
   }
 
-  // TODO: Implement decryption logic
   public decrypt(data: string): string {
-    return data;
-  }
-
-  // TODO: Implement hashing logic
-  public hash(data: string): string {
-    return data;
-  }
-
-  // TODO: Implement hash verification
-  public verifyHash(_data: string, _hash: string): boolean {
-    return true;
+    const buffer = Buffer.from(data, 'base64');
+    return safeStorage.decryptString(buffer);
   }
 }
 

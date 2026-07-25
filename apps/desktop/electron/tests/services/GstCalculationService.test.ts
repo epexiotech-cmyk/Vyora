@@ -9,10 +9,24 @@ import {
 
 describe('GstCalculationService', () => {
   const availableTaxes: TaxDto[] = [
-    { id: 'tax_5', name: 'GST 5%', rate: 5, description: '', isActive: true },
-    { id: 'tax_12', name: 'GST 12%', rate: 12, description: '', isActive: true },
-    { id: 'tax_18', name: 'GST 18%', rate: 18, description: '', isActive: true },
-    { id: 'tax_0', name: 'GST 0%', rate: 0, description: '', isActive: true },
+    { id: 'tax_5', name: 'GST 5%', rate: 5, taxType: 'GST', isActive: true, createdAt: new Date() },
+    {
+      id: 'tax_12',
+      name: 'GST 12%',
+      rate: 12,
+      taxType: 'GST',
+      isActive: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 'tax_18',
+      name: 'GST 18%',
+      rate: 18,
+      taxType: 'GST',
+      isActive: true,
+      createdAt: new Date(),
+    },
+    { id: 'tax_0', name: 'GST 0%', rate: 0, taxType: 'GST', isActive: true, createdAt: new Date() },
   ];
 
   const buildInput = (

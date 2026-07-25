@@ -1,0 +1,31 @@
+[2026-07-21 11:01:56.119] [info]  [DatabaseService] Initializing database at D:\Epexio Project\Vyora\apps\desktop\database\vyora.vyr
+[2026-07-21 11:01:56.136] [error] Failed to open SQLCipher database: Error: The module '\\?\D:\Epexio Project\Vyora\node_modules\.pnpm\better-sqlite3-multiple-ciphers@12.10.0\node_modules\better-sqlite3-multiple-ciphers\build\Release\better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 121. This version of Node.js requires
+NODE_MODULE_VERSION 137. Please try re-compiling or re-installing
+the module (for instance, using `npm rebuild` or `npm install`).
+    at Object..node (node:internal/modules/cjs/loader:1970:18)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1556:12)
+    at Module.import_module.default.require (D:\Epexio Project\Vyora\tools\dev-utils\electron-mock.ts:22:26)
+    at require (node:internal/modules/helpers:152:16)
+    at bindings (D:\Epexio Project\Vyora\node_modules\.pnpm\bindings@1.5.0\node_modules\bindings\bindings.js:112:48)
+    at new Database (D:\Epexio Project\Vyora\node_modules\.pnpm\better-sqlite3-multiple-ciphers@12.10.0\node_modules\better-sqlite3-multiple-ciphers\lib\database.js:48:64)
+    at SQLCipherAdapter.connect (D:\Epexio Project\Vyora\apps\desktop\electron\src\main\database\adapters\SQLCipherAdapter.ts:22:29)
+[2026-07-21 11:01:56.138] [error] [DatabaseService] Initialization failed: Error: The module '\\?\D:\Epexio Project\Vyora\node_modules\.pnpm\better-sqlite3-multiple-ciphers@12.10.0\node_modules\better-sqlite3-multiple-ciphers\build\Release\better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 121. This version of Node.js requires
+NODE_MODULE_VERSION 137. Please try re-compiling or re-installing
+the module (for instance, using `npm rebuild` or `npm install`).
+    at Object..node (node:internal/modules/cjs/loader:1970:18)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1556:12)
+    at Module.import_module.default.require (D:\Epexio Project\Vyora\tools\dev-utils\electron-mock.ts:22:26)
+    at require (node:internal/modules/helpers:152:16)
+    at bindings (D:\Epexio Project\Vyora\node_modules\.pnpm\bindings@1.5.0\node_modules\bindings\bindings.js:112:48)
+    at new Database (D:\Epexio Project\Vyora\node_modules\.pnpm\better-sqlite3-multiple-ciphers@12.10.0\node_modules\better-sqlite3-multiple-ciphers\lib\database.js:48:64)
+    at SQLCipherAdapter.connect (D:\Epexio Project\Vyora\apps\desktop\electron\src\main\database\adapters\SQLCipherAdapter.ts:22:29)

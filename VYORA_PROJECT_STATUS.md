@@ -17,11 +17,11 @@
 
 ## 1. Current Status Snapshot
 
-- **Major Phase**: Phase 8.8
-- **Current Stage**: RC1 Pilot Deployment
-- **Current Focus**: Field Testing, Metrics, Stability
-- **Current Sprint**: Sprint 22
-- **Latest Verified Commit**: RC1 Final Stabilization & Delivery
+- **Major Phase**: Phase 9
+- **Current Stage**: Phase 9.1 Startup Trace Audit
+- **Current Focus**: Robustness Improvements
+- **Current Sprint**: Sprint 23
+- **Latest Verified Commit**: Phase 9.1 Final Stabilization & Delivery
 - **Current Branch**: `dev`
 - **Current Release Target**: RC1
 - **Current Risks**: None.
@@ -84,7 +84,7 @@
 | - Customer            | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | - Supplier            | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | - Item                | ✅      | ✅  | ✅       | 🟡  | 🟡      |
-| - Unit                | ✅      | ✅  | ✅       | 🟡  | 🟡      |
+| - Unit                | ✅      | ✅  | ✅       | ✅  | 🟡      |
 | - Tax                 | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | - Warehouse           | ✅      | ✅  | ✅       | 🟡  | 🟡      |
 | **Purchase**          | ✅      | ✅  | 🟡       | 🟡  | 🟡      |
@@ -319,6 +319,8 @@
 
 ## Recent Completions
 
+- Unit Management Stabilization (Complete UI, Backend validation, Company Bootstrap Automation)
+- Phase 9.1 — Startup Trace Audit & Robustness Improvements.
 - Phase 8.8.1 — Release Verification, automated E2E certification, and artifact builds.
 - RC1 frozen!
 - Suite A — Sales Workflow Certification: ✅ 100% CERTIFIED

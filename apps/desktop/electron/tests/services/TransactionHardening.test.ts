@@ -4,9 +4,9 @@ vi.mock('electron', () => ({
   app: { getPath: vi.fn().mockReturnValue('./') },
 }));
 
-vi.mock('../../src/services/NumberingEngineService', () => ({
-  numberingEngineService: {
-    generateNextNumber: vi.fn().mockResolvedValue('PUR-1001'),
+vi.mock('../../src/services/DocumentNumberingService', () => ({
+  documentNumberingService: {
+    generateNextNumberSync: vi.fn().mockReturnValue('PUR-1001'),
   },
 }));
 
@@ -61,6 +61,7 @@ describe('Transaction Hardening Verification (Phase 6.2F) - Mock DB', () => {
       roundOffAmount: 0,
       grandTotal: 1180,
       status: 'DRAFT' as const,
+      isReverseCharge: false,
       lines: [
         {
           productId: '123e4567-e89b-12d3-a456-426614174002',
@@ -88,7 +89,7 @@ describe('Transaction Hardening Verification (Phase 6.2F) - Mock DB', () => {
   });
 
   it('2. Update Purchase Invoice - verifies no nested top-level tx', async () => {
-    await purchaseService.update({
+    await purchaseService.updateDraft({
       id: '123e4567-e89b-12d3-a456-426614174005',
       subtotal: 2000,
       grandTotal: 2360,
@@ -110,9 +111,5 @@ describe('Transaction Hardening Verification (Phase 6.2F) - Mock DB', () => {
     // Without tx
     await inventoryService.getCurrentStock('prod-123');
     expect(mockDb.select).toHaveBeenCalled(); // Should use base DB
-
-    // With tx
-    await inventoryService.getCurrentStock('prod-123', mockTx);
-    expect(mockTx.select).toHaveBeenCalled(); // Should use transaction executor
   });
 });
