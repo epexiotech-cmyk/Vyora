@@ -47,13 +47,15 @@ export interface CompanyProfileDto {
   deletedAt?: Date | null;
 }
 
-export interface CreateCompanyProfileRequest {
-  legalName: string;
-  isGstRegistered: boolean;
-  gstin?: string | null;
-  financialYearStart: Date;
-  currency: string;
-}
+export const CreateCompanyProfileRequestSchema = z.object({
+  legalName: z.string().min(1, 'Legal name is required'),
+  isGstRegistered: z.boolean(),
+  gstin: z.string().nullable().optional(),
+  financialYearStart: z.date(),
+  currency: z.string(),
+});
+
+export type CreateCompanyProfileRequest = z.infer<typeof CreateCompanyProfileRequestSchema>;
 
 export interface UpdateCompanyProfileRequest {
   legalName?: string;
@@ -79,5 +81,6 @@ export interface UpdateCompanyProfileRequest {
 
 // Backward compatibility for existing bootstrap code
 export type CompanyDto = CompanyProfileDto;
+export const CreateCompanyInputSchema = CreateCompanyProfileRequestSchema;
 export type CreateCompanyInput = CreateCompanyProfileRequest;
 export type UpdateCompanyInput = UpdateCompanyProfileRequest;

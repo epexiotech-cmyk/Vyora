@@ -34,7 +34,7 @@ export const createSalesInvoiceSchema = z.object({
   companyId: z.string().uuid(),
   financialYearId: z.string().uuid(),
   customerId: z.string().uuid(),
-  invoiceNumber: z.string().min(1),
+  invoiceNumber: z.string().min(1).optional().nullable(),
   invoiceDate: z.date(),
   placeOfSupplyStateId: z.string().uuid().optional().nullable(),
   isReverseCharge: z.boolean().default(false),
@@ -52,6 +52,7 @@ export const createSalesInvoiceSchema = z.object({
   billingName: z.string().optional().nullable(),
   billingAddress: z.string().optional().nullable(),
   billingCity: z.string().optional().nullable(),
+  billingDistrict: z.string().optional().nullable(),
   billingPincode: z.string().optional().nullable(),
   billingGstin: z.string().optional().nullable(),
   billingStateCode: z.string().optional().nullable(),
@@ -59,6 +60,7 @@ export const createSalesInvoiceSchema = z.object({
   shippingName: z.string().optional().nullable(),
   shippingAddress: z.string().optional().nullable(),
   shippingCity: z.string().optional().nullable(),
+  shippingDistrict: z.string().optional().nullable(),
   shippingPincode: z.string().optional().nullable(),
   shippingGstin: z.string().optional().nullable(),
   shippingStateCode: z.string().optional().nullable(),
@@ -129,6 +131,7 @@ export interface SalesInvoiceDto {
   billingName?: string | null;
   billingAddress?: string | null;
   billingCity?: string | null;
+  billingDistrict?: string | null;
   billingPincode?: string | null;
   billingGstin?: string | null;
   billingStateCode?: string | null;
@@ -136,6 +139,7 @@ export interface SalesInvoiceDto {
   shippingName?: string | null;
   shippingAddress?: string | null;
   shippingCity?: string | null;
+  shippingDistrict?: string | null;
   shippingPincode?: string | null;
   shippingGstin?: string | null;
   shippingStateCode?: string | null;

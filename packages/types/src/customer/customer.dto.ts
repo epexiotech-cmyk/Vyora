@@ -1,5 +1,17 @@
 // Phase 5.2.2 Foundation DTO
 
+export interface ShippingAddressDto {
+  careOf?: string | null;
+  mobile?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  area?: string | null;
+  city?: string | null;
+  district?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+}
+
 export interface CustomerProfileDto {
   id: string;
   customerCode: string;
@@ -7,11 +19,13 @@ export interface CustomerProfileDto {
   contactPerson?: string | null;
   mobile?: string | null;
   alternateMobile?: string | null;
+  landline?: string | null;
   email?: string | null;
   addressLine1?: string | null;
   addressLine2?: string | null;
   area?: string | null;
   city?: string | null;
+  district?: string | null;
   state?: string | null;
   gstStateId?: string | null;
   pincode?: string | null;
@@ -29,6 +43,7 @@ export interface CustomerProfileDto {
   openingType?: 'Dr' | 'Cr' | null;
   creditLimit: number;
   creditDays: number;
+  shippingAddresses?: ShippingAddressDto[] | null;
   notes?: string | null;
   isActive: boolean;
   syncVersion: number;
@@ -40,27 +55,43 @@ export interface CustomerProfileDto {
 import { isValidGstin } from '@vyora/utils';
 import { z } from 'zod';
 
+export const shippingAddressSchema = z.object({
+  careOf: z.string().max(100).optional().nullable(),
+  mobile: z.string().optional().nullable(),
+  addressLine1: z.string().max(255).optional().nullable(),
+  addressLine2: z.string().max(255).optional().nullable(),
+  area: z.string().max(100).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  district: z.string().max(100).optional().nullable(),
+  state: z.string().max(100).optional().nullable(),
+  pincode: z
+    .string()
+    .refine((val) => !val || /^[1-9][0-9]{5}$/.test(val), 'Invalid Pincode format')
+    .optional()
+    .nullable(),
+});
+
 export const createCustomerSchema = z.object({
   name: z
     .string()
     .min(1, 'Customer Name is required')
     .max(100, 'Customer Name cannot exceed 100 characters'),
   contactPerson: z.string().max(100).optional().nullable(),
-  mobile: z
+  mobile: z.string().optional().nullable(),
+  alternateMobile: z.string().optional().nullable(),
+  landline: z.string().max(20, 'Landline cannot exceed 20 characters').optional().nullable(),
+  email: z
     .string()
-    .refine((val) => !val || /^\d{10}$/.test(val), 'Mobile must be 10 digits')
+    .trim()
+    .email('Invalid email format (e.g. john@acme.com)')
+    .or(z.literal(''))
     .optional()
     .nullable(),
-  alternateMobile: z
-    .string()
-    .refine((val) => !val || /^\d{10}$/.test(val), 'Alternate Mobile must be 10 digits')
-    .optional()
-    .nullable(),
-  email: z.string().email('Invalid email address').or(z.literal('')).optional().nullable(),
   addressLine1: z.string().max(255).optional().nullable(),
   addressLine2: z.string().max(255).optional().nullable(),
   area: z.string().max(100).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
+  district: z.string().max(100).optional().nullable(),
   state: z.string().max(100).optional().nullable(),
   gstStateId: z.string().uuid('Invalid State ID').optional().nullable(),
   pincode: z
@@ -70,7 +101,11 @@ export const createCustomerSchema = z.object({
     .nullable(),
   gstin: z
     .string()
-    .refine((val: string | null | undefined) => !val || isValidGstin(val), 'Invalid GSTIN format')
+    .trim()
+    .refine(
+      (val: string | null | undefined) => !val || isValidGstin(val),
+      'Invalid GSTIN format (e.g. 24AAAAA0000A1Z5)',
+    )
     .optional()
     .nullable(),
   pan: z
@@ -87,6 +122,7 @@ export const createCustomerSchema = z.object({
   creditLimit: z.coerce.number().int().min(0).default(0),
   creditDays: z.coerce.number().int().min(0).default(0),
   notes: z.string().optional().nullable(),
+  shippingAddresses: z.array(shippingAddressSchema).optional().nullable(),
   isActive: z.boolean().default(true),
 });
 

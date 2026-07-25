@@ -8,9 +8,7 @@ export interface FinancialYearDto {
 }
 
 export interface CreateFinancialYearInput {
-  companyId: string;
-  label: string;
   startDate: Date;
   endDate: Date;
-  isActive?: boolean;
+  activateAfterCreate?: boolean;
 }

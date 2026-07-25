@@ -2,18 +2,24 @@ import { z } from 'zod';
 
 export type ItemType = 'INVENTORY_ITEM' | 'NON_INVENTORY_ITEM' | 'SERVICE';
 
+export type TaxabilityType = 'Taxable' | 'Nil Rated' | 'Exempt' | 'Non-GST';
+
 export interface ProductDto {
   id: string;
   name: string;
   sku?: string | null;
+  barcodeValue?: string | null;
+  barcodeType?: string | null;
   itemType: ItemType;
   description?: string | null;
   hsnCode?: string | null;
+  taxabilityType: TaxabilityType;
   unitId?: string | null;
   taxId?: string | null;
   salePrice: number;
   purchasePrice: number;
   stock: number;
+  openingValuationRate: number;
   reorderLevel: number;
   isActive: boolean;
   syncVersion: number;
@@ -25,14 +31,18 @@ export interface ProductDto {
 export interface CreateProductInput {
   companyId: string;
   name: string;
+  barcodeValue?: string | null;
+  barcodeType?: string | null;
   itemType: ItemType;
   description?: string | null;
   hsnCode?: string | null;
+  taxabilityType?: TaxabilityType;
   unitId: string;
   taxId: string;
   salePrice?: number;
   purchasePrice?: number;
   stock?: number;
+  openingValuationRate?: number;
   reorderLevel?: number;
   isActive?: boolean;
 }
@@ -40,14 +50,18 @@ export interface CreateProductInput {
 export interface UpdateProductInput {
   id: string;
   name?: string;
+  barcodeValue?: string | null;
+  barcodeType?: string | null;
   itemType?: ItemType;
   description?: string | null;
   hsnCode?: string | null;
+  taxabilityType?: TaxabilityType;
   unitId?: string | null;
   taxId?: string | null;
   salePrice?: number;
   purchasePrice?: number;
   stock?: number;
+  openingValuationRate?: number;
   reorderLevel?: number;
   isActive?: boolean;
 }
@@ -67,14 +81,24 @@ export interface ProductListDto {
 export const createProductSchema = z.object({
   companyId: z.string().min(1, 'Company ID is required'),
   name: z.string().min(1, 'Name is required'),
+  barcodeValue: z.string().nullable().optional(),
+  barcodeType: z.string().nullable().optional(),
   itemType: z.enum(['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE']),
   description: z.string().nullable().optional(),
-  hsnCode: z.string().nullable().optional(),
+  hsnCode: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((val) => !val || /^[0-9]{4,8}$/.test(val), {
+      message: 'HSN/SAC Code must be between 4 to 8 digits',
+    }),
+  taxabilityType: z.enum(['Taxable', 'Nil Rated', 'Exempt', 'Non-GST']).optional(),
   unitId: z.string().min(1, 'Unit ID is required'),
   taxId: z.string().min(1, 'Tax ID is required'),
   salePrice: z.coerce.number().min(0).optional(),
   purchasePrice: z.coerce.number().min(0).optional(),
   stock: z.coerce.number().optional(),
+  openingValuationRate: z.coerce.number().min(0).optional(),
   reorderLevel: z.coerce.number().min(0).optional(),
   isActive: z.boolean().optional(),
 });
@@ -82,14 +106,24 @@ export const createProductSchema = z.object({
 export const updateProductSchema = z.object({
   id: z.string().min(1, 'ID is required'),
   name: z.string().min(1, 'Name is required').optional(),
+  barcodeValue: z.string().nullable().optional(),
+  barcodeType: z.string().nullable().optional(),
   itemType: z.enum(['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE']).optional(),
   description: z.string().nullable().optional(),
-  hsnCode: z.string().nullable().optional(),
+  hsnCode: z
+    .string()
+    .nullable()
+    .optional()
+    .refine((val) => !val || /^[0-9]{4,8}$/.test(val), {
+      message: 'HSN/SAC Code must be between 4 to 8 digits',
+    }),
+  taxabilityType: z.enum(['Taxable', 'Nil Rated', 'Exempt', 'Non-GST']).optional(),
   unitId: z.string().min(1, 'Unit ID is required').optional(),
   taxId: z.string().min(1, 'Tax ID is required').optional(),
   salePrice: z.coerce.number().min(0).optional(),
   purchasePrice: z.coerce.number().min(0).optional(),
   stock: z.coerce.number().optional(),
+  openingValuationRate: z.coerce.number().min(0).optional(),
   reorderLevel: z.coerce.number().min(0).optional(),
   isActive: z.boolean().optional(),
 });

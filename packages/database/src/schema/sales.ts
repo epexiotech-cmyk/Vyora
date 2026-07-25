@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, real, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import { customers, products, units, taxes, tax_groups } from './master';
 import { companies, financial_years, states } from './system';
@@ -19,7 +19,34 @@ export const sales_invoices = sqliteTable(
     invoiceNumber: text('invoice_number').notNull(),
     invoiceDate: integer('invoice_date', { mode: 'timestamp' }).notNull(),
     placeOfSupplyStateId: text('place_of_supply_state_id').references(() => states.id),
+    placeOfSupplyCode: text('place_of_supply_code'),
     isReverseCharge: integer('is_reverse_charge', { mode: 'boolean' }).default(false).notNull(),
+
+    // Company Snapshots
+    companyNameSnapshot: text('company_name_snapshot'),
+    companyAddressSnapshot: text('company_address_snapshot'),
+    companyGstinSnapshot: text('company_gstin_snapshot'),
+    companyStateNameSnapshot: text('company_state_name_snapshot'),
+    companyStateCodeSnapshot: text('company_state_code_snapshot'),
+    companyPanSnapshot: text('company_pan_snapshot'),
+
+    // Billing Snapshots
+    billingName: text('billing_name'),
+    billingAddress: text('billing_address'),
+    billingCity: text('billing_city'),
+    billingDistrict: text('billing_district'),
+    billingPincode: text('billing_pincode'),
+    billingGstin: text('billing_gstin'),
+    billingStateCode: text('billing_state_code'),
+
+    // Shipping Snapshots
+    shippingName: text('shipping_name'),
+    shippingAddress: text('shipping_address'),
+    shippingCity: text('shipping_city'),
+    shippingDistrict: text('shipping_district'),
+    shippingPincode: text('shipping_pincode'),
+    shippingGstin: text('shipping_gstin'),
+    shippingStateCode: text('shipping_state_code'),
     subtotal: integer('subtotal').default(0).notNull(),
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),
@@ -29,11 +56,20 @@ export const sales_invoices = sqliteTable(
     status: text('status').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   },
-  (table) => [
-    index('sales_invoices_company_fy_idx').on(table.companyId, table.financialYearId),
-    index('sales_invoices_date_idx').on(table.invoiceDate),
-    index('sales_invoices_customer_idx').on(table.customerId),
-  ],
+  (table) => {
+    return {
+      salesInvoicesCompanyFyIdx: index('sales_invoices_company_fy_idx').on(
+        table.companyId,
+        table.financialYearId,
+      ),
+      salesInvoicesDateIdx: index('sales_invoices_date_idx').on(table.invoiceDate),
+      salesInvoicesCustomerIdx: index('sales_invoices_customer_idx').on(table.customerId),
+      salesInvoicesCompanyInvNumIdx: uniqueIndex('sales_invoices_company_inv_num_idx').on(
+        table.companyId,
+        table.invoiceNumber,
+      ),
+    };
+  },
 );
 
 export const sales_invoice_items = sqliteTable(

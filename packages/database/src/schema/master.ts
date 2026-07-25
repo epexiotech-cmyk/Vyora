@@ -87,6 +87,7 @@ export const customers = sqliteTable(
     contactPerson: text('contact_person'),
     mobile: text('mobile'),
     alternateMobile: text('alternate_mobile'),
+    landline: text('landline'),
     email: text('email'),
 
     // Address
@@ -94,9 +95,11 @@ export const customers = sqliteTable(
     addressLine2: text('address_line_2'),
     area: text('area'),
     city: text('city'),
+    district: text('district'),
     state: text('state'), // backward compatibility
     gstStateId: text('gst_state_id').references(() => states.id),
     pincode: text('pincode'),
+    shippingAddresses: text('shipping_addresses', { mode: 'json' }),
 
     // Compliance
     gstin: text('gstin'),
@@ -142,6 +145,7 @@ export const suppliers = sqliteTable(
     contactPerson: text('contact_person'),
     mobile: text('mobile'),
     alternateMobile: text('alternate_mobile'),
+    landline: text('landline'),
     email: text('email'),
 
     // Address
@@ -149,6 +153,7 @@ export const suppliers = sqliteTable(
     addressLine2: text('address_line_2'),
     area: text('area'),
     city: text('city'),
+    district: text('district'),
     state: text('state'), // backward compatibility
     gstStateId: text('gst_state_id').references(() => states.id),
     pincode: text('pincode'),
@@ -192,11 +197,18 @@ export const products = sqliteTable(
       .notNull(),
     name: text('name').notNull(),
     sku: text('sku').notNull(),
+    barcodeValue: text('barcode_value'),
+    barcodeType: text('barcode_type'),
     itemType: text('item_type', {
       enum: ['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'],
     }).notNull(),
     description: text('description'),
     hsnCode: text('hsn_code'),
+    taxabilityType: text('taxability_type', {
+      enum: ['Taxable', 'Nil Rated', 'Exempt', 'Non-GST'],
+    })
+      .default('Taxable')
+      .notNull(),
     unitId: text('unit_id')
       .references(() => units.id)
       .notNull(),
@@ -206,6 +218,7 @@ export const products = sqliteTable(
     salePrice: integer('sale_price').default(0).notNull(),
     purchasePrice: integer('purchase_price').default(0).notNull(),
     stock: real('stock').default(0).notNull(),
+    openingValuationRate: integer('opening_valuation_rate').default(0).notNull(),
     reorderLevel: real('reorder_level').default(0).notNull(),
     isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
     syncVersion: integer('sync_version').default(1).notNull(),
@@ -216,7 +229,7 @@ export const products = sqliteTable(
   (table) => [
     index('idx_products_company_id').on(table.companyId),
     uniqueIndex('idx_products_sku').on(table.companyId, table.sku),
-    index('idx_products_name').on(table.companyId, table.name),
+    uniqueIndex('idx_products_name_unique').on(table.companyId, table.name),
     index('idx_products_hsn_code').on(table.companyId, table.hsnCode),
     index('idx_products_is_active').on(table.companyId, table.isActive),
     index('idx_products_deleted_at').on(table.companyId, table.deletedAt),

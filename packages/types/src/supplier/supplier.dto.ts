@@ -11,22 +11,22 @@ export const createSupplierSchema = z.object({
     .max(100, 'Contact Person cannot exceed 100 characters')
     .optional()
     .nullable(),
-  mobile: z
+  mobile: z.string().optional().nullable(),
+  alternateMobile: z.string().optional().nullable(),
+  landline: z.string().max(20, 'Landline cannot exceed 20 characters').optional().nullable(),
+  email: z
     .string()
-    .refine((val) => !val || /^\d{10}$/.test(val), 'Mobile must be 10 digits')
+    .trim()
+    .email('Invalid email format (e.g. john@acme.com)')
+    .or(z.literal(''))
     .optional()
     .nullable(),
-  alternateMobile: z
-    .string()
-    .refine((val) => !val || /^\d{10}$/.test(val), 'Alternate Mobile must be 10 digits')
-    .optional()
-    .nullable(),
-  email: z.string().email('Invalid email address').or(z.literal('')).optional().nullable(),
 
   addressLine1: z.string().max(255).optional().nullable(),
   addressLine2: z.string().max(255).optional().nullable(),
   area: z.string().max(100).optional().nullable(),
   city: z.string().max(100).optional().nullable(),
+  district: z.string().max(100).optional().nullable(),
   state: z.string().max(100).optional().nullable(),
   gstStateId: z.string().uuid('Invalid State ID').optional().nullable(),
   pincode: z
@@ -37,7 +37,11 @@ export const createSupplierSchema = z.object({
 
   gstin: z
     .string()
-    .refine((val: string | null | undefined) => !val || isValidGstin(val), 'Invalid GSTIN format')
+    .trim()
+    .refine(
+      (val: string | null | undefined) => !val || isValidGstin(val),
+      'Invalid GSTIN format (e.g. 24AAAAA0000A1Z5)',
+    )
     .optional()
     .nullable(),
   pan: z

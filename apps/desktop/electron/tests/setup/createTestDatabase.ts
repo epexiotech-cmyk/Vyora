@@ -1,6 +1,5 @@
 import path from 'path';
 
-// @ts-expect-error - missing declaration file
 import * as dbSchema from '@vyora/database';
 import Database from 'better-sqlite3';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
@@ -29,7 +28,7 @@ export const seedBaseEntities = async (db: dbSchema.VyoraDatabase) => {
 
   await db.insert(dbSchema.companies).values({
     id: companyId,
-    name: 'Test Company',
+    legalName: 'Test Company',
     gstin: '24AAAAA0000A1Z5',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -48,7 +47,9 @@ export const seedBaseEntities = async (db: dbSchema.VyoraDatabase) => {
     id: customerId,
     companyId,
     name: 'Test Customer',
+    customerCode: 'CUST-001',
     createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   await db.insert(dbSchema.units).values({
@@ -57,13 +58,16 @@ export const seedBaseEntities = async (db: dbSchema.VyoraDatabase) => {
     name: 'Pieces',
     shortName: 'PCS',
     createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   await db.insert(dbSchema.taxes).values({
     id: taxId,
     companyId,
     name: 'GST 18%',
+    taxType: 'GST',
     rate: 18,
+    isActive: true,
     createdAt: new Date(),
   });
 
@@ -71,9 +75,12 @@ export const seedBaseEntities = async (db: dbSchema.VyoraDatabase) => {
     id: productId,
     companyId,
     name: 'Test Product',
+    sku: 'PROD-001',
+    itemType: 'INVENTORY_ITEM',
     unitId,
     taxId,
     createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   return { companyId, fyId, customerId, productId, unitId, taxId };
