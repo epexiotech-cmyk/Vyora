@@ -69,8 +69,6 @@ async function runTest() {
       .values({
         id: randomUUID(),
         companyId: activeCompany!.id,
-        purchasePrefix: 'PUR',
-        salesPrefix: 'INV',
         isGstRegistered: false,
         createdAt: new Date(),
         updatedAt: new Date(),
