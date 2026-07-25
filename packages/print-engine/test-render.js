@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { renderDocument } from './src/index';
 async function main() {
   const mockDto = {

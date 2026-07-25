@@ -35,7 +35,7 @@ export const gstInvoiceTemplate = `
                 <div class="strong">Billed To:</div>
                 <div>{{customer.name}}</div>
                 <div>{{customer.address}}</div>
-                {{#if customer.city}}<div>{{customer.city}}{{#if customer.pincode}} - {{customer.pincode}}{{/if}}</div>{{/if}}
+                {{#if customer.city}}<div>{{customer.city}}{{#if customer.district}}, {{customer.district}}{{/if}}{{#if customer.pincode}} - {{customer.pincode}}{{/if}}</div>{{/if}}
                 <div><span class="strong">GSTIN/UIN:</span> {{#if customer.gstin}}{{customer.gstin}}{{else}}Unregistered{{/if}}</div>
                 <div><span class="strong">State Code:</span> {{customer.state}}</div>
             </div>
@@ -43,7 +43,7 @@ export const gstInvoiceTemplate = `
                 <div class="strong">Shipped To:</div>
                 <div>{{customer.name}}</div>
                 <div>{{customer.address}}</div>
-                {{#if customer.city}}<div>{{customer.city}}{{#if customer.pincode}} - {{customer.pincode}}{{/if}}</div>{{/if}}
+                {{#if customer.city}}<div>{{customer.city}}{{#if customer.district}}, {{customer.district}}{{/if}}{{#if customer.pincode}} - {{customer.pincode}}{{/if}}</div>{{/if}}
                 <div><span class="strong">GSTIN/UIN:</span> {{#if customer.gstin}}{{customer.gstin}}{{else}}Unregistered{{/if}}</div>
                 <div><span class="strong">State Code:</span> {{customer.state}}</div>
             </div>

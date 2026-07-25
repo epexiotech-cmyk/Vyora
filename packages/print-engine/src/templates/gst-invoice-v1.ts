@@ -178,7 +178,7 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
                       <div class="strong">Billed To:</div>
                       <div>${data.billingName || ''}</div>
                       <div>${data.billingAddress || ''}</div>
-                      <div>${data.billingCity || ''} - ${data.billingPincode || ''}</div>
+                      <div>${data.billingCity || ''}${data.billingDistrict ? `, ${data.billingDistrict}` : ''} - ${data.billingPincode || ''}</div>
                       <div><span class="strong">GSTIN/UIN:</span> ${data.billingGstin || ''}</div>
                       <div><span class="strong">State Code:</span> ${data.billingStateCode || ''}</div>
                   </div>
@@ -186,7 +186,7 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
                       <div class="strong">Shipped To:</div>
                       <div>${data.shippingName || data.billingName || ''}</div>
                       <div>${data.shippingAddress || data.billingAddress || ''}</div>
-                      <div>${data.shippingCity || data.billingCity || ''} - ${data.shippingPincode || data.billingPincode || ''}</div>
+                      <div>${data.shippingCity || data.billingCity || ''}${data.shippingDistrict ? `, ${data.shippingDistrict}` : data.billingDistrict ? `, ${data.billingDistrict}` : ''} - ${data.shippingPincode || data.billingPincode || ''}</div>
                       <div><span class="strong">GSTIN/UIN:</span> ${data.shippingGstin || data.billingGstin || ''}</div>
                       <div><span class="strong">State Code:</span> ${data.shippingStateCode || data.billingStateCode || ''}</div>
                   </div>

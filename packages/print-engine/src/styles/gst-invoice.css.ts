@@ -9,7 +9,7 @@ export const gstInvoiceCss = `
   }
   
   body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Times New Roman', Times, serif;
     font-size: 11px;
     line-height: 1.4;
     color: #333;
