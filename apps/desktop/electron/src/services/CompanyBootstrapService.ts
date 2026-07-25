@@ -2,15 +2,16 @@ import { CreateCompanyInput, currencyValidationSchema } from '@vyora/types';
 
 import { currencyService } from '../modules/directories/currency/CurrencyService';
 import { CompanyRepository, SettingsRepository } from '../repositories';
-import { FinancialYearRepository } from '../repositories/FinancialYearRepository';
 
 import { dbService } from './database/DatabaseService';
 import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
+import { systemTaxSeeder } from './database/SystemTaxSeeder';
+import { systemUnitSeeder } from './database/SystemUnitSeeder';
+import { financialYearService } from './FinancialYearService';
 
 export class CompanyBootstrapService {
   private companyRepo = new CompanyRepository();
   private settingsRepo = new SettingsRepository();
-  private fyRepo = new FinancialYearRepository();
 
   public async hasCompany(): Promise<boolean> {
     const firstCompany = await this.companyRepo.getFirst();
@@ -18,8 +19,25 @@ export class CompanyBootstrapService {
   }
 
   public async isSetupCompleted(): Promise<boolean> {
-    const status = await this.settingsRepo.getAppSetting('setup_completed');
-    return status === 'true';
+    const { authService } = await import('./AuthService');
+    const adminCount = await authService.getAdminCount();
+    const hasCompany = await this.hasCompany();
+
+    // Log for trace
+    const { loggerService } = await import('./logger/LoggerService');
+    loggerService.info(
+      `[TRACE] CompanyBootstrapService.isSetupCompleted() - adminCount: ${adminCount}, companyCount: ${hasCompany ? 1 : 0}`,
+    );
+
+    if (adminCount > 0 && hasCompany) {
+      loggerService.info(
+        `[TRACE] CompanyBootstrapService.isSetupCompleted() - Returning TRUE (admin and company exist)`,
+      );
+      return true;
+    }
+
+    loggerService.info(`[TRACE] CompanyBootstrapService.isSetupCompleted() - Returning FALSE`);
+    return false;
   }
 
   public async createCompany(input: CreateCompanyInput): Promise<string> {
@@ -54,37 +72,36 @@ export class CompanyBootstrapService {
           financialYearStart: input.financialYearStart,
           currency: input.currency,
           isGstRegistered: input.isGstRegistered,
-          salesPrefix: 'INV',
-          purchasePrefix: 'PUR',
           defaultInvoiceNotes: 'Thank you for your business!',
         },
         tx,
       );
 
-      // Create the active financial year for the new company
       const startYear = input.financialYearStart.getFullYear();
       const endYear = startYear + 1;
-      const fyLabel = `FY ${startYear}-${endYear.toString().slice(2)}`;
 
       const fyStart = new Date(`${startYear}-04-01T00:00:00.000Z`);
       const fyEnd = new Date(`${endYear}-03-31T23:59:59.999Z`);
 
-      this.fyRepo.createSync(
+      financialYearService.createFinancialYearSync(
+        company.id,
         {
-          companyId: company.id,
-          label: fyLabel,
           startDate: fyStart,
           endDate: fyEnd,
-          isActive: true,
+          activateAfterCreate: true,
         },
         tx,
       );
 
       // Set global flags
+      // TODO: 'setup_completed' is legacy technical debt.
+      // It is no longer used for setup validation but kept temporarily for backward compatibility.
       this.settingsRepo.setAppSettingSync('setup_completed', 'true', tx);
       this.settingsRepo.setAppSettingSync('active_company_id', company.id, tx);
 
       systemLedgerSeeder.seedSystemLedgers(company.id, tx);
+      systemUnitSeeder.seedSystemUnits(company.id, tx);
+      systemTaxSeeder.seedSystemTaxes(company.id, tx);
 
       return company.id;
     });

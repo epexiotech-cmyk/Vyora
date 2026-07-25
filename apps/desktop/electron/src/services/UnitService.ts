@@ -93,12 +93,28 @@ class UnitService {
       }
     }
 
+    if (validData.isActive === false) {
+      const { ProductRepository } = await import('../repositories/ProductRepository');
+      const productRepo = new ProductRepository();
+      const hasProducts = await productRepo.hasProductsWithUnit(id, companyId);
+      if (hasProducts) {
+        throw new Error('Cannot deactivate unit: It is currently used by one or more products.');
+      }
+    }
+
     return this.unitRepo.update(id, companyId, validData);
   }
 
   public async deactivate(id: string): Promise<void> {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company selected');
+
+    const { ProductRepository } = await import('../repositories/ProductRepository');
+    const productRepo = new ProductRepository();
+    const hasProducts = await productRepo.hasProductsWithUnit(id, companyId);
+    if (hasProducts) {
+      throw new Error('Cannot deactivate unit: It is currently used by one or more products.');
+    }
 
     await this.unitRepo.deactivate(id, companyId);
   }

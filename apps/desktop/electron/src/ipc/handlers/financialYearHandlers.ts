@@ -25,10 +25,36 @@ export function registerFinancialYearHandlers() {
   );
 
   ipcMain.handle(
-    'financial-year:get-active',
-    async (_, companyId: string): Promise<ApiResponse<FinancialYearDto | null>> => {
+    'financial-year:create',
+    async (
+      _,
+      input: import('@vyora/types').CreateFinancialYearInput,
+    ): Promise<ApiResponse<FinancialYearDto>> => {
       try {
-        const fy = await financialYearService.getActiveFinancialYear(companyId);
+        const activeCompanyId = companyContextService.getActiveCompany();
+        if (!activeCompanyId) {
+          return { success: false, error: 'No active company found.' };
+        }
+
+        const created = await financialYearService.createFinancialYear(activeCompanyId, input);
+        return { success: true, data: created };
+      } catch (e: unknown) {
+        const error = e as Error;
+        return { success: false, error: error.message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'financial-year:get-active',
+    async (): Promise<ApiResponse<FinancialYearDto | null>> => {
+      try {
+        const activeCompanyId = companyContextService.getActiveCompany();
+        if (!activeCompanyId) {
+          return { success: false, error: 'No active company found.' };
+        }
+
+        const fy = await financialYearService.getActiveFinancialYear(activeCompanyId);
         return { success: true, data: fy };
       } catch (e: unknown) {
         const error = e as Error;
@@ -39,9 +65,14 @@ export function registerFinancialYearHandlers() {
 
   ipcMain.handle(
     'financial-year:set-active',
-    async (_, companyId: string, financialYearId: string): Promise<ApiResponse<void>> => {
+    async (_, financialYearId: string): Promise<ApiResponse<void>> => {
       try {
-        await financialYearContextService.setActiveFinancialYear(companyId, financialYearId);
+        const activeCompanyId = companyContextService.getActiveCompany();
+        if (!activeCompanyId) {
+          return { success: false, error: 'No active company found.' };
+        }
+
+        await financialYearContextService.setActiveFinancialYear(activeCompanyId, financialYearId);
         return { success: true };
       } catch (e: unknown) {
         const error = e as Error;
@@ -50,16 +81,18 @@ export function registerFinancialYearHandlers() {
     },
   );
 
-  ipcMain.handle(
-    'financial-year:list',
-    async (_, companyId: string): Promise<ApiResponse<FinancialYearDto[]>> => {
-      try {
-        const list = await financialYearService.listFinancialYears(companyId);
-        return { success: true, data: list };
-      } catch (e: unknown) {
-        const error = e as Error;
-        return { success: false, error: error.message };
+  ipcMain.handle('financial-year:list', async (): Promise<ApiResponse<FinancialYearDto[]>> => {
+    try {
+      const activeCompanyId = companyContextService.getActiveCompany();
+      if (!activeCompanyId) {
+        return { success: false, error: 'No active company found.' };
       }
-    },
-  );
+
+      const list = await financialYearService.listFinancialYears(activeCompanyId);
+      return { success: true, data: list };
+    } catch (e: unknown) {
+      const error = e as Error;
+      return { success: false, error: error.message };
+    }
+  });
 }

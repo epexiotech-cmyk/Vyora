@@ -15,9 +15,9 @@ import { eq } from 'drizzle-orm';
 import { PurchaseRepository } from '../repositories/PurchaseRepository';
 
 import { companyContextService } from './CompanyContextService';
+import { documentNumberingService } from './DocumentNumberingService';
 import { inventoryEngine } from './InventoryEngine';
 import { journalService } from './JournalService';
-import { numberingEngineService } from './NumberingEngineService';
 
 export class PurchaseService {
   private purchaseRepo: PurchaseRepository;
@@ -35,11 +35,11 @@ export class PurchaseService {
 
     return this.purchaseRepo.transaction((tx) => {
       // Generate Number
-      const purchaseNumber = numberingEngineService.generateNextNumberSync(
+      const purchaseNumber = documentNumberingService.generateNextNumberSync(
         companyId,
+        'PURCHASE_INVOICE' as import('@vyora/types').DocumentType,
         parsedPayload.financialYearId,
-        'PURCHASE_INVOICE',
-        tx,
+        tx as import('../repositories/BaseRepository').TransactionExecutor,
       );
 
       // Fetch Supplier Snapshot

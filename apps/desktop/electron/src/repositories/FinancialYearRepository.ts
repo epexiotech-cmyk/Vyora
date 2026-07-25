@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto';
 
 import { financial_years, FinancialYear, InsertFinancialYear } from '@vyora/database';
-import { CreateFinancialYearInput, FinancialYearDto } from '@vyora/types';
-import { eq, and } from 'drizzle-orm';
+import { FinancialYearDto } from '@vyora/types';
+import { eq, and, gt, lt } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';
 
@@ -19,7 +19,7 @@ function mapToDto(entity: FinancialYear): FinancialYearDto {
 
 export class FinancialYearRepository extends BaseRepository {
   public async create(
-    data: CreateFinancialYearInput,
+    data: Omit<InsertFinancialYear, 'id'>,
     tx?: DbTransaction,
   ): Promise<FinancialYearDto> {
     const executor = tx || this.db;
@@ -31,7 +31,7 @@ export class FinancialYearRepository extends BaseRepository {
       label: data.label,
       startDate: data.startDate,
       endDate: data.endDate,
-      isActive: data.isActive || false,
+      isActive: data.isActive,
     };
 
     await executor.insert(financial_years).values(newFy);
@@ -43,7 +43,7 @@ export class FinancialYearRepository extends BaseRepository {
     return mapToDto(created!);
   }
 
-  public createSync(data: CreateFinancialYearInput, tx: DbTransaction): FinancialYearDto {
+  public createSync(data: Omit<InsertFinancialYear, 'id'>, tx: DbTransaction): FinancialYearDto {
     const id = randomUUID();
     const newFy: InsertFinancialYear = {
       id,
@@ -51,7 +51,7 @@ export class FinancialYearRepository extends BaseRepository {
       label: data.label,
       startDate: data.startDate,
       endDate: data.endDate,
-      isActive: data.isActive || false,
+      isActive: data.isActive,
     };
 
     tx.insert(financial_years).values(newFy).run();
@@ -69,6 +69,11 @@ export class FinancialYearRepository extends BaseRepository {
     return result ? mapToDto(result) : undefined;
   }
 
+  public getByIdSync(id: string, tx: DbTransaction): FinancialYearDto | undefined {
+    const result = tx.select().from(financial_years).where(eq(financial_years.id, id)).get();
+    return result ? mapToDto(result) : undefined;
+  }
+
   public async getActive(
     companyId: string,
     tx?: DbTransaction,
@@ -80,6 +85,49 @@ export class FinancialYearRepository extends BaseRepository {
       .where(and(eq(financial_years.companyId, companyId), eq(financial_years.isActive, true)))
       .get();
     return result ? mapToDto(result) : undefined;
+  }
+
+  public async findOverlapping(
+    companyId: string,
+    startDate: Date,
+    endDate: Date,
+    tx?: DbTransaction,
+  ): Promise<FinancialYearDto[]> {
+    const executor = tx || this.db;
+
+    // An overlap occurs if (newStart < existingEnd) AND (newEnd > existingStart)
+    const results = await executor
+      .select()
+      .from(financial_years)
+      .where(
+        and(
+          eq(financial_years.companyId, companyId),
+          lt(financial_years.startDate, endDate),
+          gt(financial_years.endDate, startDate),
+        ),
+      )
+      .all();
+    return results.map(mapToDto);
+  }
+
+  public findOverlappingSync(
+    companyId: string,
+    startDate: Date,
+    endDate: Date,
+    tx: DbTransaction,
+  ): FinancialYearDto[] {
+    const results = tx
+      .select()
+      .from(financial_years)
+      .where(
+        and(
+          eq(financial_years.companyId, companyId),
+          lt(financial_years.startDate, endDate),
+          gt(financial_years.endDate, startDate),
+        ),
+      )
+      .all();
+    return results.map(mapToDto);
   }
 
   public async listByCompany(companyId: string, tx?: DbTransaction): Promise<FinancialYearDto[]> {
@@ -97,28 +145,26 @@ export class FinancialYearRepository extends BaseRepository {
     financialYearId: string,
     tx?: DbTransaction,
   ): Promise<void> {
-    const executeLogic = async (executor: DbTransaction | typeof this.db) => {
-      // Deactivate all for company
-      await executor
-        .update(financial_years)
-        .set({ isActive: false })
-        .where(eq(financial_years.companyId, companyId));
-
-      // Activate specific one
-      await executor
-        .update(financial_years)
-        .set({ isActive: true })
-        .where(
-          and(eq(financial_years.id, financialYearId), eq(financial_years.companyId, companyId)),
-        );
-    };
-
     if (tx) {
-      await executeLogic(tx);
+      this.setActiveSync(companyId, financialYearId, tx);
     } else {
-      await this.db.transaction(async (innerTx) => {
-        await executeLogic(innerTx as DbTransaction);
+      this.db.transaction((innerTx) => {
+        this.setActiveSync(companyId, financialYearId, innerTx as DbTransaction);
       });
     }
+  }
+
+  public setActiveSync(companyId: string, financialYearId: string, tx: DbTransaction): void {
+    // Deactivate all for company
+    tx.update(financial_years)
+      .set({ isActive: false })
+      .where(eq(financial_years.companyId, companyId))
+      .run();
+
+    // Activate specific one
+    tx.update(financial_years)
+      .set({ isActive: true })
+      .where(and(eq(financial_years.id, financialYearId), eq(financial_years.companyId, companyId)))
+      .run();
   }
 }

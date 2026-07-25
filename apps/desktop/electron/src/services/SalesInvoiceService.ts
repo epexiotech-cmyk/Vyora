@@ -3,18 +3,21 @@ import {
   UpdateSalesInvoiceInput,
   SalesInvoiceDto,
   ListSalesInvoicesOptions,
+  DocumentType,
 } from '@vyora/types';
 
 import { SalesInvoiceRepository, StockMovementRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
+import { documentNumberingService } from './DocumentNumberingService';
 import { inventoryEngine } from './InventoryEngine';
 import { journalService } from './JournalService';
 
 export class StockValidationError extends Error {
   public validations: unknown[] = [];
   constructor(validations: unknown[]) {
-    super('Stock validation failed');
+    const details = Array.isArray(validations) ? validations.join(', ') : 'Unknown reason';
+    super(`Stock validation failed: ${details}`);
     this.name = 'StockValidationError';
     this.validations = validations;
   }
@@ -122,6 +125,15 @@ export class SalesInvoiceService {
       );
 
       this.salesInvoiceRepo.updateStatusSync(invoiceId, 'SUBMITTED', tx);
+
+      // Generate document number
+      const nextNumber = documentNumberingService.generateNextNumberSync(
+        invoice.companyId,
+        DocumentType.SALES_INVOICE,
+        invoice.financialYearId,
+        tx,
+      );
+      this.salesInvoiceRepo.finalizeInvoiceNumberSync(invoiceId, nextNumber, tx);
 
       return { warnings: [] };
     });

@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 import { taxes } from '@vyora/database';
 import { CreateTaxInput, TaxDto, TaxType, UpdateTaxInput } from '@vyora/types';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 type DbTax = typeof taxes.$inferSelect;
 
@@ -22,7 +22,17 @@ export class TaxRepository extends BaseRepository {
 
   public async findAllByCompany(companyId: string): Promise<TaxDto[]> {
     const results = await this.db.select().from(taxes).where(eq(taxes.companyId, companyId)).all();
-    return results.map(this.mapToDto);
+    return results.map((row) => this.mapToDto(row));
+  }
+
+  public async getById(id: string, companyId: string): Promise<TaxDto | null> {
+    const result = await this.db
+      .select()
+      .from(taxes)
+      .where(and(eq(taxes.id, id), eq(taxes.companyId, companyId)))
+      .get();
+    if (!result) return null;
+    return this.mapToDto(result);
   }
 
   public async create(data: CreateTaxInput): Promise<TaxDto> {

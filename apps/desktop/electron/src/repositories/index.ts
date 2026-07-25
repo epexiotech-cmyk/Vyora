@@ -7,3 +7,8 @@ export * from './ProductRepository';
 export * from './CompanyRepository';
 export * from './SettingsRepository';
 export * from './InventoryBalanceRepository';
+export * from './UserRepository';
+export * from './AuthRepository';
+export * from './UnitRepository';
+export * from './TaxRepository';
+export * from './DocumentNumberingRepository';

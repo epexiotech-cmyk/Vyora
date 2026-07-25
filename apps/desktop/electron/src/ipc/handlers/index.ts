@@ -20,14 +20,22 @@ export * from './hsnHandlers';
 export * from './reportsHandlers';
 export * from './sacHandlers';
 export * from './accountingHandlers';
+export * from './authHandlers';
+export * from './systemHandlers';
+export * from './documentNumberingHandlers';
+
+import { app } from 'electron';
 
 import { registerAccountingHandlers } from './accountingHandlers';
+import { registerAuthHandlers } from './authHandlers';
 import { registerBootstrapHandlers } from './bootstrapHandlers';
 import { registerCalculationHandlers } from './calculationHandlers';
 import { registerCompanyHandlers } from './companyHandlers';
 import { registerCountryHandlers } from './countryHandlers';
 import { registerCurrencyHandlers } from './currencyHandlers';
 import { registerCustomerHandlers } from './customerHandlers';
+import { registerDevHandlers } from './devHandlers';
+import { registerDocumentNumberingHandlers } from './documentNumberingHandlers';
 import { registerFinancialYearHandlers } from './financialYearHandlers';
 import { registerHsnHandlers } from './hsnHandlers';
 import { registerInventoryHandlers } from './inventoryHandlers';
@@ -41,11 +49,14 @@ import { registerSacHandlers } from './sacHandlers';
 import { registerSalesInvoiceHandlers } from './salesHandlers';
 import { registerStateHandlers } from './stateHandlers';
 import { registerSupplierHandlers } from './supplierHandlers';
+import { registerSystemHandlers } from './systemHandlers';
 import { registerTaxHandlers } from './taxHandlers';
 import { registerUnitHandlers } from './unitHandlers';
 import { registerUqcHandlers } from './uqcHandlers';
 
 export function registerAllHandlers() {
+  registerAuthHandlers();
+  registerSystemHandlers();
   registerBootstrapHandlers();
   registerCalculationHandlers();
   registerCompanyHandlers();
@@ -69,5 +80,9 @@ export function registerAllHandlers() {
   registerSacHandlers();
   registerAccountingHandlers();
   registerReportsHandlers();
+  registerDocumentNumberingHandlers();
+
+  if (!app.isPackaged) {
+    registerDevHandlers();
+  }
 }
-export * from './reportsHandlers';

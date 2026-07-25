@@ -11,6 +11,7 @@ import {
   LedgerStatementDto,
   AccountingDashboardDto,
 } from '@vyora/types';
+import { DocumentType } from '@vyora/types';
 import { eq, and } from 'drizzle-orm';
 
 import { DbTransaction, TransactionExecutor } from '../repositories/BaseRepository';
@@ -18,8 +19,8 @@ import { journalRepository } from '../repositories/JournalRepository';
 
 import { companyContextService } from './CompanyContextService';
 import { dbService } from './database/DatabaseService';
+import { documentNumberingService } from './DocumentNumberingService';
 import { financialYearContextService } from './FinancialYearContextService';
-import { numberingEngineService } from './NumberingEngineService';
 import { systemLedgerResolver } from './SystemLedgerResolverService';
 
 export class JournalService {
@@ -224,10 +225,10 @@ export class JournalService {
     }
 
     // Generate Voucher Number
-    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
       payload.companyId,
+      DocumentType.JOURNAL_VOUCHER,
       payload.financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -352,10 +353,10 @@ export class JournalService {
     }
 
     // Generate Voucher Number
-    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
       payload.companyId,
+      DocumentType.JOURNAL_VOUCHER,
       payload.financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -431,10 +432,10 @@ export class JournalService {
     const fy = financialYearContextService.getActiveFinancialYear();
     if (!fy) throw new Error('No active financial year context');
 
-    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
       companyId,
+      DocumentType.JOURNAL_VOUCHER,
       fy.id,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -515,10 +516,10 @@ export class JournalService {
     const fy = financialYearContextService.getActiveFinancialYear();
     if (!fy) throw new Error('No active financial year context');
 
-    const generatedVoucherNumber = await numberingEngineService.generateNextNumber(
+    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
       companyId,
+      DocumentType.JOURNAL_VOUCHER,
       fy.id,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -813,10 +814,10 @@ export class JournalService {
       });
     }
 
-    const generatedVoucherNumber = numberingEngineService.generateNextNumberSync(
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
       payload.companyId,
+      DocumentType.JOURNAL_VOUCHER,
       payload.financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -889,10 +890,10 @@ export class JournalService {
       }),
     );
 
-    const generatedVoucherNumber = numberingEngineService.generateNextNumberSync(
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
       companyId,
+      DocumentType.JOURNAL_VOUCHER,
       financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -1024,10 +1025,10 @@ export class JournalService {
       });
     }
 
-    const generatedVoucherNumber = numberingEngineService.generateNextNumberSync(
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
       payload.companyId,
+      DocumentType.JOURNAL_VOUCHER,
       payload.financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 
@@ -1088,10 +1089,10 @@ export class JournalService {
     const financialYearId = originalVoucher.financialYearId;
     if (!financialYearId) throw new Error('Original voucher has no financial year ID');
 
-    const generatedVoucherNumber = numberingEngineService.generateNextNumberSync(
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
       companyId,
+      DocumentType.JOURNAL_VOUCHER,
       financialYearId,
-      'JOURNAL_VOUCHER',
       tx,
     );
 

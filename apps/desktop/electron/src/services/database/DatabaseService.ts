@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { VyoraDatabase, seedDatabase } from '@vyora/database';
+import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { app } from 'electron';
 
@@ -11,6 +12,8 @@ import { DEFAULT_DATABASE_ENGINE } from '../../main/database/DatabaseEngine';
 import { databaseMigrationService } from '../../main/database/migration/DatabaseMigrationService';
 import { companyStorageService } from '../../main/security/CompanyStorageService';
 import { loggerService } from '../logger/LoggerService';
+
+import { systemTaxSeeder } from './SystemTaxSeeder';
 
 export class DatabaseService {
   private adapter: IDatabaseAdapter;
@@ -83,8 +86,30 @@ export class DatabaseService {
       // Run seed
       await seedDatabase(this.adapter.getDb());
 
+      // One-time idempotent backfill for taxes on existing companies
+      try {
+        systemTaxSeeder.backfillAllCompanies();
+        loggerService.info(`[DatabaseService] Tax backfill completed successfully.`);
+      } catch (err) {
+        loggerService.error(`[DatabaseService] Failed to backfill taxes:`, err);
+      }
+
       this.initialized = true;
       loggerService.info(`[DatabaseService] Initialization complete.`);
+
+      // Trace logs
+      try {
+        const usersCount = this.adapter.getDb().all(sql`SELECT COUNT(*) as count FROM users`);
+        const companiesCount = this.adapter
+          .getDb()
+          .all(sql`SELECT COUNT(*) as count FROM companies`);
+        const sessionsCount = this.adapter.getDb().all(sql`SELECT COUNT(*) as count FROM sessions`);
+        loggerService.info(
+          `[TRACE] Database Counts -> Users: ${JSON.stringify(usersCount)}, Companies: ${JSON.stringify(companiesCount)}, Sessions: ${JSON.stringify(sessionsCount)}`,
+        );
+      } catch (e) {
+        loggerService.error(`[TRACE] Failed to get counts: ${e}`);
+      }
     } catch (error) {
       loggerService.error('[DatabaseService] Initialization failed:', error);
       throw error;

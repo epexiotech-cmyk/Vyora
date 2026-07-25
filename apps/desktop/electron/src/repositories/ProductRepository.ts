@@ -8,6 +8,7 @@ import {
   SearchProductsOptions,
   ProductListDto,
   ItemType,
+  TaxabilityType,
 } from '@vyora/types';
 import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
 
@@ -21,11 +22,15 @@ function mapToDto(entity: Product): ProductDto {
     itemType: entity.itemType as ItemType,
     description: entity.description,
     hsnCode: entity.hsnCode,
+    barcodeValue: entity.barcodeValue,
+    barcodeType: entity.barcodeType,
+    taxabilityType: entity.taxabilityType as TaxabilityType,
     unitId: entity.unitId,
     taxId: entity.taxId,
     salePrice: entity.salePrice,
     purchasePrice: entity.purchasePrice,
     stock: entity.stock,
+    openingValuationRate: entity.openingValuationRate,
     reorderLevel: entity.reorderLevel,
     isActive: entity.isActive,
     syncVersion: entity.syncVersion,
@@ -126,6 +131,42 @@ export class ProductRepository extends BaseRepository {
     return mapToDto(result as Product);
   }
 
+  public async getByName(
+    name: string,
+    companyId: string,
+    tx?: DbTransaction,
+  ): Promise<ProductDto | null> {
+    const executor = tx || this.db;
+    const result = await executor
+      .select()
+      .from(products)
+      .where(
+        and(eq(products.name, name), eq(products.companyId, companyId), isNull(products.deletedAt)),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result as Product);
+  }
+
+  public getByNameSync(
+    name: string,
+    companyId: string,
+    tx: TransactionExecutor,
+  ): ProductDto | null {
+    const executor = tx || this.db;
+    const result = executor
+      .select()
+      .from(products)
+      .where(
+        and(eq(products.name, name), eq(products.companyId, companyId), isNull(products.deletedAt)),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result as Product);
+  }
+
   public async create(
     companyId: string,
     data: CreateProductInput & { sku: string },
@@ -139,6 +180,9 @@ export class ProductRepository extends BaseRepository {
       ...data,
       id,
       companyId,
+      barcodeValue: data.barcodeValue,
+      barcodeType: data.barcodeType,
+      taxabilityType: data.taxabilityType ?? 'Taxable',
       isActive: data.isActive ?? true,
       syncVersion: 1,
       createdAt: now,
@@ -147,6 +191,7 @@ export class ProductRepository extends BaseRepository {
       salePrice: data.salePrice ?? 0,
       purchasePrice: data.purchasePrice ?? 0,
       stock: data.stock ?? 0,
+      openingValuationRate: data.openingValuationRate ?? 0,
       reorderLevel: data.reorderLevel ?? 0,
     };
 
@@ -168,6 +213,9 @@ export class ProductRepository extends BaseRepository {
       ...data,
       id,
       companyId,
+      barcodeValue: data.barcodeValue,
+      barcodeType: data.barcodeType,
+      taxabilityType: data.taxabilityType ?? 'Taxable',
       isActive: data.isActive ?? true,
       syncVersion: 1,
       createdAt: now,
@@ -176,6 +224,7 @@ export class ProductRepository extends BaseRepository {
       salePrice: data.salePrice ?? 0,
       purchasePrice: data.purchasePrice ?? 0,
       stock: data.stock ?? 0,
+      openingValuationRate: data.openingValuationRate ?? 0,
       reorderLevel: data.reorderLevel ?? 0,
     };
 
@@ -209,10 +258,6 @@ export class ProductRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    // Remove nulls for non-nullable fields to satisfy Drizzle types at runtime
-    if (updateData.unitId === null) delete updateData.unitId;
-    if (updateData.taxId === null) delete updateData.taxId;
-
     await executor
       .update(products)
       .set(updateData as Partial<InsertProduct>)
@@ -244,10 +289,6 @@ export class ProductRepository extends BaseRepository {
       updatedAt: now,
     };
 
-    // Remove nulls for non-nullable fields to satisfy Drizzle types at runtime
-    if (updateData.unitId === null) delete updateData.unitId;
-    if (updateData.taxId === null) delete updateData.taxId;
-
     executor
       .update(products)
       .set(updateData as Partial<InsertProduct>)
@@ -274,5 +315,47 @@ export class ProductRepository extends BaseRepository {
         updatedAt: now,
       })
       .where(eq(products.id, id));
+  }
+
+  public async hasProductsWithUnit(
+    unitId: string,
+    companyId: string,
+    tx?: DbTransaction,
+  ): Promise<boolean> {
+    const executor = tx || this.db;
+    const result = await executor
+      .select({ id: products.id })
+      .from(products)
+      .where(
+        and(
+          eq(products.unitId, unitId),
+          eq(products.companyId, companyId),
+          isNull(products.deletedAt),
+        ),
+      )
+      .limit(1)
+      .get();
+    return !!result;
+  }
+
+  public async hasProductsWithTax(
+    taxId: string,
+    companyId: string,
+    tx?: DbTransaction,
+  ): Promise<boolean> {
+    const executor = tx || this.db;
+    const result = await executor
+      .select({ id: products.id })
+      .from(products)
+      .where(
+        and(
+          eq(products.taxId, taxId),
+          eq(products.companyId, companyId),
+          isNull(products.deletedAt),
+        ),
+      )
+      .limit(1)
+      .get();
+    return !!result;
   }
 }

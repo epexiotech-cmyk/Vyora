@@ -23,6 +23,14 @@ function mapToLineDto(entity: DbSalesInvoiceItem): SalesInvoiceLineDto {
     productId: entity.productId,
     unitId: entity.unitId,
     taxId: entity.taxId,
+    taxGroupId: entity.taxGroupId,
+    taxGroupCodeSnapshot: entity.taxGroupCodeSnapshot,
+    taxGroupNameSnapshot: entity.taxGroupNameSnapshot,
+    taxRateSnapshot: entity.taxRateSnapshot,
+    cgstRateSnapshot: entity.cgstRateSnapshot,
+    sgstRateSnapshot: entity.sgstRateSnapshot,
+    igstRateSnapshot: entity.igstRateSnapshot,
+    cessRateSnapshot: entity.cessRateSnapshot,
     description: entity.description,
     hsnCode: entity.hsnCode,
     quantity: entity.quantity,
@@ -30,6 +38,10 @@ function mapToLineDto(entity: DbSalesInvoiceItem): SalesInvoiceLineDto {
     discountAmount: entity.discountAmount,
     taxableAmount: entity.taxableAmount,
     taxAmount: entity.taxAmount,
+    cgstAmount: entity.cgstAmount,
+    sgstAmount: entity.sgstAmount,
+    igstAmount: entity.igstAmount,
+    cessAmount: entity.cessAmount,
     lineTotal: entity.lineTotal,
   };
 }
@@ -42,6 +54,34 @@ function mapToDto(entity: DbSalesInvoice, items?: DbSalesInvoiceItem[]): SalesIn
     customerId: entity.customerId,
     invoiceNumber: entity.invoiceNumber,
     invoiceDate: entity.invoiceDate,
+    placeOfSupplyStateId: entity.placeOfSupplyStateId,
+    isReverseCharge: entity.isReverseCharge,
+
+    companyNameSnapshot: entity.companyNameSnapshot,
+    companyAddressSnapshot: entity.companyAddressSnapshot,
+    companyGstinSnapshot: entity.companyGstinSnapshot,
+    companyStateNameSnapshot: entity.companyStateNameSnapshot,
+    companyStateCodeSnapshot: entity.companyStateCodeSnapshot,
+    companyPanSnapshot: entity.companyPanSnapshot,
+
+    placeOfSupplyCode: entity.placeOfSupplyCode,
+
+    billingName: entity.billingName,
+    billingAddress: entity.billingAddress,
+    billingCity: entity.billingCity,
+    billingDistrict: entity.billingDistrict,
+    billingPincode: entity.billingPincode,
+    billingGstin: entity.billingGstin,
+    billingStateCode: entity.billingStateCode,
+
+    shippingName: entity.shippingName,
+    shippingAddress: entity.shippingAddress,
+    shippingCity: entity.shippingCity,
+    shippingDistrict: entity.shippingDistrict,
+    shippingPincode: entity.shippingPincode,
+    shippingGstin: entity.shippingGstin,
+    shippingStateCode: entity.shippingStateCode,
+
     subtotal: entity.subtotal,
     discountAmount: entity.discountAmount,
     taxAmount: entity.taxAmount,
@@ -68,6 +108,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       await executor.insert(sales_invoices).values({
         ...invoiceData,
         id: invoiceId,
+        invoiceNumber: invoiceData.invoiceNumber || `DRAFT-${invoiceId}`,
         status: invoiceData.status || 'DRAFT',
         createdAt: now,
       });
@@ -179,7 +220,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       if (Object.keys(invoiceData).length > 0) {
         await executor
           .update(sales_invoices)
-          .set(invoiceData)
+          .set(invoiceData as Partial<typeof sales_invoices.$inferInsert>)
           .where(eq(sales_invoices.id, invoiceId));
       }
 
@@ -233,6 +274,7 @@ export class SalesInvoiceRepository extends BaseRepository {
       .values({
         ...invoiceData,
         id: invoiceId,
+        invoiceNumber: invoiceData.invoiceNumber || `DRAFT-${invoiceId}`,
         status: invoiceData.status || 'DRAFT',
         createdAt: now,
       })
@@ -274,7 +316,10 @@ export class SalesInvoiceRepository extends BaseRepository {
 
     // Update header
     if (Object.keys(invoiceData).length > 0) {
-      tx.update(sales_invoices).set(invoiceData).where(eq(sales_invoices.id, invoiceId)).run();
+      tx.update(sales_invoices)
+        .set(invoiceData as Partial<typeof sales_invoices.$inferInsert>)
+        .where(eq(sales_invoices.id, invoiceId))
+        .run();
     }
 
     // Update lines (replace all)
@@ -294,5 +339,13 @@ export class SalesInvoiceRepository extends BaseRepository {
 
   public updateStatusSync(invoiceId: string, status: InvoiceStatus, tx: TransactionExecutor): void {
     tx.update(sales_invoices).set({ status }).where(eq(sales_invoices.id, invoiceId)).run();
+  }
+
+  public finalizeInvoiceNumberSync(
+    invoiceId: string,
+    invoiceNumber: string,
+    tx: TransactionExecutor,
+  ): void {
+    tx.update(sales_invoices).set({ invoiceNumber }).where(eq(sales_invoices.id, invoiceId)).run();
   }
 }

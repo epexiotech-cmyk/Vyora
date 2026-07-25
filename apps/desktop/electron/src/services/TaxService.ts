@@ -25,6 +25,17 @@ export class TaxService {
   }
 
   public async updateTax(data: UpdateTaxInput): Promise<TaxDto> {
+    if (data.isActive === false) {
+      const activeCompanyId = companyContextService.getActiveCompany();
+      if (!activeCompanyId) throw new Error('No active company selected');
+
+      const { ProductRepository } = await import('../repositories/ProductRepository');
+      const productRepo = new ProductRepository();
+      const hasProducts = await productRepo.hasProductsWithTax(data.id, activeCompanyId);
+      if (hasProducts) {
+        throw new Error('Cannot deactivate tax: It is currently used by one or more products.');
+      }
+    }
     return this.taxRepo.update(data);
   }
 }

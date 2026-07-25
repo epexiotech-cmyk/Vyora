@@ -1,16 +1,19 @@
 import { randomUUID } from 'crypto';
 
-import { customers, document_sequences, Customer, InsertCustomer } from '@vyora/database';
+import { customers, Customer, InsertCustomer } from '@vyora/database';
 import {
   CustomerProfileDto,
   CreateCustomerInput,
   UpdateCustomerInput,
   SearchCustomersOptions,
   CustomerListDto,
+  DocumentType,
 } from '@vyora/types';
 import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
 
-import { BaseRepository, DbTransaction } from './BaseRepository';
+import { documentNumberingService } from '../services/DocumentNumberingService';
+
+import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
 function mapToDto(entity: Customer): CustomerProfileDto {
   return {
@@ -20,13 +23,16 @@ function mapToDto(entity: Customer): CustomerProfileDto {
     contactPerson: entity.contactPerson,
     mobile: entity.mobile,
     alternateMobile: entity.alternateMobile,
+    landline: entity.landline,
     email: entity.email,
     addressLine1: entity.addressLine1,
     addressLine2: entity.addressLine2,
     area: entity.area,
     city: entity.city,
     state: entity.state,
+    district: entity.district,
     pincode: entity.pincode,
+    shippingAddresses: entity.shippingAddresses as CustomerProfileDto['shippingAddresses'],
     gstin: entity.gstin,
     pan: entity.pan,
     registrationType: entity.registrationType as CustomerProfileDto['registrationType'],
@@ -134,75 +140,13 @@ export class CustomerRepository extends BaseRepository {
     return mapToDto(result);
   }
 
-  public async getNextCustomerCode(companyId: string, tx: DbTransaction): Promise<string> {
-    const executor = tx;
-
-    // Find existing sequence record for CUSTOMER
-    const existingSeq = await executor
-      .select()
-      .from(document_sequences)
-      .where(
-        and(
-          eq(document_sequences.companyId, companyId),
-          eq(document_sequences.documentType, 'CUSTOMER'),
-        ),
-      )
-      .get();
-
-    let nextValue = 1;
-    if (existingSeq) {
-      nextValue = existingSeq.currentValue + 1;
-      await executor
-        .update(document_sequences)
-        .set({ currentValue: nextValue, updatedAt: new Date() })
-        .where(eq(document_sequences.id, existingSeq.id));
-    } else {
-      await executor.insert(document_sequences).values({
-        id: randomUUID(),
-        companyId,
-        financialYearId: null, // Global scope across all years
-        documentType: 'CUSTOMER',
-        currentValue: nextValue,
-        updatedAt: new Date(),
-      });
-    }
-
-    return `CUST-${String(nextValue).padStart(4, '0')}`;
-  }
-
-  public getNextCustomerCodeSync(companyId: string, tx: DbTransaction): string {
-    const existingSeq = tx
-      .select()
-      .from(document_sequences)
-      .where(
-        and(
-          eq(document_sequences.companyId, companyId),
-          eq(document_sequences.documentType, 'CUSTOMER'),
-        ),
-      )
-      .get();
-
-    let nextValue = 1;
-    if (existingSeq) {
-      nextValue = existingSeq.currentValue + 1;
-      tx.update(document_sequences)
-        .set({ currentValue: nextValue, updatedAt: new Date() })
-        .where(eq(document_sequences.id, existingSeq.id))
-        .run();
-    } else {
-      tx.insert(document_sequences)
-        .values({
-          id: randomUUID(),
-          companyId,
-          financialYearId: null,
-          documentType: 'CUSTOMER',
-          currentValue: nextValue,
-          updatedAt: new Date(),
-        })
-        .run();
-    }
-
-    return `CUST-${String(nextValue).padStart(4, '0')}`;
+  public getNextCustomerCodeSync(companyId: string, tx: TransactionExecutor): string {
+    return documentNumberingService.generateNextNumberSync(
+      companyId,
+      DocumentType.CUSTOMER,
+      '',
+      tx,
+    );
   }
 
   public async create(

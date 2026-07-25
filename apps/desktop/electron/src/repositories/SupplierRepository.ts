@@ -8,9 +8,10 @@ import {
   SearchSuppliersOptions,
   SupplierListDto,
 } from '@vyora/types';
+import { DocumentType } from '@vyora/types';
 import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
 
-import { numberingEngineService } from '../services/NumberingEngineService';
+import { documentNumberingService } from '../services/DocumentNumberingService';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -22,12 +23,14 @@ function mapToDto(entity: Supplier): SupplierProfileDto {
     contactPerson: entity.contactPerson,
     mobile: entity.mobile,
     alternateMobile: entity.alternateMobile,
+    landline: entity.landline,
     email: entity.email,
     addressLine1: entity.addressLine1,
     addressLine2: entity.addressLine2,
     area: entity.area,
     city: entity.city,
     state: entity.state,
+    district: entity.district,
     pincode: entity.pincode,
     gstin: entity.gstin,
     pan: entity.pan,
@@ -141,7 +144,12 @@ export class SupplierRepository extends BaseRepository {
   }
 
   public getNextSupplierCodeSync(companyId: string, tx: TransactionExecutor): string {
-    return numberingEngineService.generateNextNumberSync(companyId, '', 'SUPPLIER', tx);
+    return documentNumberingService.generateNextNumberSync(
+      companyId,
+      DocumentType.SUPPLIER,
+      '',
+      tx,
+    );
   }
 
   public async create(

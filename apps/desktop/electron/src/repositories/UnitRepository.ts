@@ -8,7 +8,7 @@ import {
   SearchUnitsOptions,
   UnitListDto,
 } from '@vyora/types';
-import { eq, and, or, like, isNull, desc } from 'drizzle-orm';
+import { eq, and, or, like, isNull, desc, sql } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction } from './BaseRepository';
 
@@ -115,7 +115,10 @@ export class UnitRepository extends BaseRepository {
         and(
           eq(units.companyId, companyId),
           isNull(units.deletedAt),
-          or(eq(units.name, name), eq(units.shortName, shortName)),
+          or(
+            eq(sql`lower(${units.name})`, name.toLowerCase()),
+            eq(sql`lower(${units.shortName})`, shortName.toLowerCase()),
+          ),
         ),
       )
       .get();
