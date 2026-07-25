@@ -8,10 +8,12 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/handlebars": "^4.1.0",
+    "@vyora/config": "workspace:*",
     "eslint": "^8.57.0",
     "typescript": "latest",
-    "@types/handlebars": "^4.1.0",
-    "@vyora/config": "workspace:*"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "@vyora/types": "workspace:*",

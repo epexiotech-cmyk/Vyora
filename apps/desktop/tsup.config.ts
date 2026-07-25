@@ -6,6 +6,6 @@ export default defineConfig({
   format: ['cjs'],
   target: 'node20',
   clean: true,
-  external: ['electron', 'better-sqlite3'],
+  external: ['electron', 'better-sqlite3', 'better-sqlite3-multiple-ciphers', 'keytar', 'argon2'],
   noExternal: [/^@vyora\//], // Bundle all workspace packages
 });
