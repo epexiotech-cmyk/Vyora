@@ -2,14 +2,26 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateSupplierInput, createSupplierSchema } from '@vyora/types';
-import { extractPanFromGstin, extractStateCodeFromGstin } from '@vyora/utils';
+import { extractPanFromGstin, getStateFromGstin, isValidGstin } from '@vyora/utils';
 import { paiseToMoney, moneyToPaise } from '@vyora/utils';
-import { Save, User, MapPin, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
+import {
+  Save,
+  User,
+  MapPin,
+  LayoutDashboard,
+  IndianRupee,
+  FileText,
+  CheckCircle2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useForm, FormProvider, useWatch, SubmitHandler, Resolver } from 'react-hook-form';
 
+import { AppEmailInput } from '@/components/forms/AppEmailInput';
 import { AppField } from '@/components/forms/AppField';
+import { AppFormPhoneInput } from '@/components/forms/AppFormPhoneInput';
+import { AppGstinInput } from '@/components/forms/AppGstinInput';
+import { AppPanInput } from '@/components/forms/AppPanInput';
 import { FormInput } from '@/components/forms/FormInput';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
@@ -24,6 +36,10 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [successData, setSuccessData] = React.useState<{
+    supplierCode: string;
+    name: string;
+  } | null>(null);
 
   const defaultData = initialData
     ? {
@@ -55,6 +71,7 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
       };
 
   const methods = useForm<CreateSupplierInput>({
+    mode: 'onSubmit',
     resolver: zodResolver(createSupplierSchema) as unknown as Resolver<CreateSupplierInput>,
     defaultValues: defaultData as unknown as CreateSupplierInput,
   });
@@ -63,6 +80,8 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
   const gstinValue = useWatch({ control: methods.control, name: 'gstin' });
   const pincodeValue = useWatch({ control: methods.control, name: 'pincode' });
   const openingBalanceValue = useWatch({ control: methods.control, name: 'openingBalance' });
+  const registrationType = useWatch({ control: methods.control, name: 'registrationType' });
+  const hasValidGstin = isValidGstin(gstinValue);
 
   // Handle Opening Type disabled state
   React.useEffect(() => {
@@ -72,10 +91,22 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
       }
     } else {
       if (!methods.getValues('openingType')) {
-        methods.setValue('openingType', 'Cr', { shouldValidate: true, shouldDirty: true });
+        methods.setValue('openingType', 'Dr', { shouldValidate: true, shouldDirty: true });
       }
     }
   }, [openingBalanceValue, methods]);
+
+  React.useEffect(() => {
+    if (hasValidGstin) {
+      if (registrationType === 'Unregistered' || !registrationType) {
+        methods.setValue('registrationType', 'Regular', { shouldValidate: true });
+      }
+    } else {
+      if (!gstinValue && registrationType !== 'Unregistered') {
+        methods.setValue('registrationType', 'Unregistered', { shouldValidate: true });
+      }
+    }
+  }, [hasValidGstin, gstinValue, registrationType, methods]);
 
   // Auto-extract PAN & State from GSTIN
   React.useEffect(() => {
@@ -85,9 +116,12 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
         methods.setValue('pan', pan, { shouldValidate: true, shouldDirty: true });
       }
 
-      const stateCode = extractStateCodeFromGstin(gstinValue);
-      if (stateCode && !methods.getValues('state')) {
-        methods.setValue('state', stateCode, { shouldValidate: true, shouldDirty: true });
+      const stateData = getStateFromGstin(gstinValue);
+      if (stateData && !methods.getValues('state')) {
+        methods.setValue('state', `${stateData.stateCode}-${stateData.stateName}`, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     }
   }, [gstinValue, methods]);
@@ -104,6 +138,12 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
 
               if (!methods.getValues('city') && office.district) {
                 methods.setValue('city', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+              if (!methods.getValues('district') && office.district) {
+                methods.setValue('district', office.district, {
                   shouldValidate: true,
                   shouldDirty: true,
                 });
@@ -150,8 +190,8 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
         }
       } else {
         const res = await window.vyora.db.suppliers.create(payload);
-        if (res.success) {
-          router.push('/dashboard/suppliers');
+        if (res.success && res.data) {
+          setSuccessData({ supplierCode: res.data.supplierCode, name: res.data.name });
           router.refresh();
         } else {
           setErrorMsg(res.error || 'Failed to create supplier.');
@@ -228,21 +268,18 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
                   <FormInput name="contactPerson" type="text" placeholder="John Doe" />
                 </AppField>
                 <AppField name="mobile" label="Mobile">
-                  <FormInput
-                    data-testid="supplier-phone-input"
-                    name="mobile"
-                    type="tel"
-                    placeholder="9999999999"
-                  />
+                  <AppFormPhoneInput name="mobile" />
                 </AppField>
                 <AppField name="alternateMobile" label="Alternate Mobile">
-                  <FormInput name="alternateMobile" type="tel" placeholder="8888888888" />
+                  <AppFormPhoneInput name="alternateMobile" />
+                </AppField>
+                <AppField name="landline" label="Landline">
+                  <AppFormPhoneInput name="landline" placeholder="e.g. +91 11 2345 6789" />
                 </AppField>
                 <AppField name="email" label="Email">
-                  <FormInput
+                  <AppEmailInput
                     data-testid="supplier-email-input"
                     name="email"
-                    type="email"
                     placeholder="john@acme.com"
                   />
                 </AppField>
@@ -266,15 +303,18 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
                 <AppField name="addressLine2" label="Address Line 2">
                   <FormInput name="addressLine2" type="text" placeholder="Street / Locality" />
                 </AppField>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                   <AppField name="area" label="Area">
                     <FormInput name="area" type="text" />
+                  </AppField>
+                  <AppField name="city" label="City">
+                    <FormInput name="city" type="text" />
                   </AppField>
                   <AppField name="pincode" label="PIN Code">
                     <FormInput name="pincode" type="text" placeholder="6 Digits" maxLength={6} />
                   </AppField>
-                  <AppField name="city" label="City">
-                    <FormInput name="city" type="text" />
+                  <AppField name="district" label="District">
+                    <FormInput name="district" type="text" />
                   </AppField>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -301,28 +341,18 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <AppField name="gstin" label="GSTIN">
-                  <FormInput
-                    name="gstin"
-                    type="text"
-                    placeholder="22AAAAA0000A1Z5"
-                    className="uppercase"
-                  />
+                  <AppGstinInput name="gstin" placeholder="22AAAAA0000A1Z5" />
                   <p className="text-muted-foreground mt-1 text-xs">Auto-fills PAN and State.</p>
                 </AppField>
                 <AppField name="pan" label="PAN">
-                  <FormInput
-                    name="pan"
-                    type="text"
-                    placeholder="AAAAA0000A"
-                    className="uppercase"
-                  />
+                  <AppPanInput name="pan" placeholder="AAAAA0000A" />
                 </AppField>
                 <AppField name="registrationType" label="Registration Type">
                   <select
                     {...methods.register('registrationType')}
                     className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="Unregistered">Unregistered</option>
+                    {!hasValidGstin && <option value="Unregistered">Unregistered</option>}
                     <option value="Regular">Regular</option>
                     <option value="Composition">Composition</option>
                     <option value="Overseas">Overseas</option>
@@ -421,6 +451,47 @@ export function SupplierForm({ initialData, isEditMode = false }: SupplierFormPr
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {successData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="animate-in zoom-in-95 bg-background text-card-foreground w-full max-w-md rounded-lg p-6 shadow-lg">
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-success/15 text-success mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold tracking-tight">Supplier Created!</h2>
+              <p className="text-muted-foreground mb-6">
+                <span className="text-foreground font-semibold">{successData.name}</span> has been
+                successfully registered in the system.
+              </p>
+              <div className="bg-muted mb-6 w-full rounded-md p-4">
+                <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                  Supplier Code
+                </p>
+                <p className="font-mono text-2xl font-bold tracking-widest">
+                  {successData.supplierCode}
+                </p>
+              </div>
+              <div className="flex w-full gap-3">
+                <AppButton
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setSuccessData(null);
+                    methods.reset();
+                  }}
+                >
+                  Create Another
+                </AppButton>
+                <AppButton className="flex-1" onClick={() => router.push('/dashboard/suppliers')}>
+                  View Suppliers
+                </AppButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

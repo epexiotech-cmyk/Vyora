@@ -14,14 +14,25 @@ export interface CompanyContextState {
 const CompanyContext = createContext<CompanyContextState | undefined>(undefined);
 
 export function CompanyContextProvider({ children }: { children: React.ReactNode }) {
+  const isBrowserMissingVyora = typeof window !== 'undefined' && !window.vyora?.company?.getContext;
+
   const [contextState, setContextState] = useState<CompanyContextDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(!isBrowserMissingVyora);
+  const [error, setError] = useState<Error | null>(
+    isBrowserMissingVyora
+      ? new Error('Vyora API not available (are you running in a browser instead of Electron?)')
+      : null,
+  );
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      if (!window.vyora?.company?.getContext) {
+        throw new Error(
+          'Vyora API not available (are you running in a browser instead of Electron?)',
+        );
+      }
       const response = await window.vyora.company.getContext();
       if (response.success && response.data) {
         setContextState(response.data);
@@ -41,6 +52,9 @@ export function CompanyContextProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     let mounted = true;
+
+    if (isBrowserMissingVyora) return;
+
     window.vyora.company
       .getContext()
       .then((response) => {
@@ -66,7 +80,7 @@ export function CompanyContextProvider({ children }: { children: React.ReactNode
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isBrowserMissingVyora]);
 
   const value: CompanyContextState = React.useMemo(
     () => ({
@@ -87,4 +101,20 @@ export function useCompanyContext() {
     throw new Error('useCompanyContext must be used within a CompanyContextProvider');
   }
   return context;
+}
+
+export function useCurrency() {
+  const { context } = useCompanyContext();
+  if (!context?.currency) {
+    // Fallback or error. For now, provide a basic fallback if context isn't loaded yet.
+    return {
+      currencyCode: 'INR',
+      currencyName: 'Indian Rupee',
+      symbol: '₹',
+      locale: 'en-IN',
+      decimalPlaces: 2,
+      symbolPosition: 'PREFIX',
+    };
+  }
+  return context.currency;
 }

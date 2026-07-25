@@ -13,7 +13,7 @@ export interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectEl
 }
 
 export const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
-  ({ className, name, options, ...props }, _ref) => {
+  ({ className, name, options, ...props }) => {
     const {
       register,
       formState: { errors },

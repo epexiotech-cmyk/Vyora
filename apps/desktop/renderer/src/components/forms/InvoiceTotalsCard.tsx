@@ -9,9 +9,14 @@ import { cn } from '@/lib/utils';
 interface InvoiceTotalsCardProps {
   className?: string;
   calculationState?: { totals: InvoiceCalculationResult; isCalculating: boolean };
+  placeOfSupplyCode?: string;
 }
 
-export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotalsCardProps) {
+export function InvoiceTotalsCard({
+  className,
+  calculationState,
+  placeOfSupplyCode,
+}: InvoiceTotalsCardProps) {
   const { context } = useCompanyContext();
   const { totals, isCalculating } = calculationState || {
     totals: {
@@ -24,6 +29,12 @@ export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotals
     },
     isCalculating: false,
   };
+
+  const isGstRegistered = !!context?.company?.gstin;
+  const isInterState =
+    placeOfSupplyCode && context?.company?.stateCode
+      ? placeOfSupplyCode !== context.company.stateCode
+      : false;
 
   return (
     <AppCard className={cn('p-5', className)}>
@@ -49,10 +60,30 @@ export function InvoiceTotalsCard({ className, calculationState }: InvoiceTotals
           </div>
         )}
 
-        <div className="text-muted-foreground flex items-center justify-between">
-          <span>Tax Total</span>
-          <span>{formatMoney(totals.totalTax, context?.currency)}</span>
-        </div>
+        {isGstRegistered ? (
+          isInterState ? (
+            <div className="text-muted-foreground flex items-center justify-between">
+              <span>IGST Total</span>
+              <span>{formatMoney(totals.totalTax, context?.currency)}</span>
+            </div>
+          ) : (
+            <>
+              <div className="text-muted-foreground flex items-center justify-between">
+                <span>CGST Total</span>
+                <span>{formatMoney(totals.totalTax / 2, context?.currency)}</span>
+              </div>
+              <div className="text-muted-foreground flex items-center justify-between">
+                <span>SGST Total</span>
+                <span>{formatMoney(totals.totalTax / 2, context?.currency)}</span>
+              </div>
+            </>
+          )
+        ) : (
+          <div className="text-muted-foreground flex items-center justify-between">
+            <span>Tax Total</span>
+            <span>{formatMoney(totals.totalTax, context?.currency)}</span>
+          </div>
+        )}
 
         {totals.roundOffAmount !== 0 && (
           <div className="text-muted-foreground flex items-center justify-between">

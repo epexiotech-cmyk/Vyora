@@ -25,11 +25,27 @@ import type {
   PincodeDTO,
   PincodeSearchResponse,
   SmartPincodeLookupResponse,
+  VyoraAuthAPI,
+  ProductStockStatusDto,
 } from '@vyora/types';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
+  showAbout: () => Promise<{ success: boolean; error?: string }>;
+  isPackaged: boolean;
+};
+
+export type VyoraSettingsAPI = {
+  documentNumbering: {
+    get: (
+      documentType: string,
+    ) => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto | null>>;
+    save: (
+      config: import('@vyora/types').DocumentNumberingConfigDto,
+    ) => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').DocumentNumberingConfigDto[]>>;
+  };
 };
 
 export type VyoraDatabaseAPI = {
@@ -127,9 +143,12 @@ export type VyoraCompanyAPI = {
 
 export type VyoraFinancialYearAPI = {
   getCurrent: () => Promise<ApiResponse<FinancialYearDto | null>>;
-  getActive: () => Promise<ApiResponse<string | null>>;
+  getActive: () => Promise<ApiResponse<FinancialYearDto | null>>;
   setActive: (id: string) => Promise<ApiResponse<void>>;
   list: () => Promise<ApiResponse<FinancialYearDto[]>>;
+  create: (
+    input: import('@vyora/types').CreateFinancialYearInput,
+  ) => Promise<ApiResponse<FinancialYearDto>>;
 };
 
 export type VyoraPrintAPI = {
@@ -293,8 +312,10 @@ export type VyoraReportsAPI = {
 declare global {
   interface Window {
     vyora: {
+      auth: VyoraAuthAPI;
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
+      settings: VyoraSettingsAPI;
       bootstrap: VyoraBootstrapAPI;
       company: VyoraCompanyAPI;
       financialYear: VyoraFinancialYearAPI;
@@ -306,6 +327,22 @@ declare global {
       journal: VyoraJournalAPI;
       inventory: VyoraInventoryAPI;
       reports: VyoraReportsAPI;
+      dev: VyoraDevAPI;
     };
   }
 }
+
+export type VyoraDevAPI = {
+  getDiagnostics: () => Promise<ApiResponse<unknown>>;
+  factoryReset: {
+    dryRun: () => Promise<ApiResponse<Record<string, number>>>;
+    execute: () => Promise<ApiResponse<unknown>>;
+  };
+  inventory: {
+    check: () => Promise<ApiResponse<unknown>>;
+    rebuild: () => Promise<ApiResponse<void>>;
+  };
+  documentNumbering: {
+    reset: () => Promise<ApiResponse<void>>;
+  };
+};

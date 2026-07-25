@@ -12,7 +12,7 @@ export interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputEl
 }
 
 export const FormCheckbox = React.forwardRef<HTMLInputElement, FormCheckboxProps>(
-  ({ className, name, ...props }, _ref) => {
+  ({ className, name, ...props }) => {
     const {
       register,
       formState: { errors },

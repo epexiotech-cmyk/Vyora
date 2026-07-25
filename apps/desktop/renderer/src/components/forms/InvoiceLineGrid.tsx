@@ -225,12 +225,32 @@ export function InvoiceLineGrid({
     }
   }, [fields.length, append]);
 
-  const handleProductSelected = (product: ProductDto | null, index: number) => {
+  const handleProductSelected = async (product: ProductDto | null, index: number) => {
     if (product) {
       // Auto-populate row fields based on selected product
       setValue(`lines.${index}.productName`, product.name);
-      setValue(`lines.${index}.rate`, product.salePrice || 0);
+      const divisor = Math.pow(10, context?.currency?.decimalPlaces ?? 2);
+      setValue(`lines.${index}.rate`, product.salePrice ? product.salePrice / divisor : 0);
       setValue(`lines.${index}.qty`, 1);
+      setValue(`lines.${index}.unitId`, product.unitId || null);
+      setValue(`lines.${index}.taxId`, product.taxId || null);
+      setValue(`lines.${index}.hsnCode`, product.hsnCode || null);
+
+      if (product.taxId) {
+        try {
+          const taxRes = await window.vyora.db.taxes.getAll();
+          if (taxRes.success && taxRes.data) {
+            const tax = taxRes.data.find((t) => t.id === product.taxId);
+            if (tax) {
+              setValue(`lines.${index}.taxPercent`, tax.rate);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch tax for product', err);
+        }
+      } else {
+        setValue(`lines.${index}.taxPercent`, 0);
+      }
 
       // Auto-add new empty row if this was the last row
       if (index === fields.length - 1) {
@@ -270,7 +290,7 @@ export function InvoiceLineGrid({
           Disc %
         </div>
         <div className="border-border/50 flex h-10 w-20 shrink-0 items-center justify-end border-r px-4">
-          Tax %
+          {context?.company?.gstin ? 'GST %' : 'Tax %'}
         </div>
         <div className="border-border/50 flex h-10 w-32 shrink-0 items-center justify-end border-r px-4">
           Amount

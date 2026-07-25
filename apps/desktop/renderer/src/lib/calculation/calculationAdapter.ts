@@ -83,7 +83,7 @@ export function useAsyncInvoiceCalculation(type: 'sales' | 'purchase', control?:
   // Deeply simplify lines to a string for debouncing to prevent excessive renders/calls
   const stringifiedLines = JSON.stringify(
     (watchedLines || []).map((l) => ({
-      q: Number(l.quantity) || 0,
+      q: Number(l.quantity) || Number(l.qty) || 0,
       r: Number(l.rate) || 0,
       da: Number(l.discountAmount) || 0,
       dp: Number(l.discountPercent) || 0,

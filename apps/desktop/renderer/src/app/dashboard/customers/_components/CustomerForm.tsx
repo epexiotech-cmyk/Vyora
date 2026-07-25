@@ -2,14 +2,35 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateCustomerInput } from '@vyora/types';
-import { extractPanFromGstin, extractStateCodeFromGstin } from '@vyora/utils';
+import { extractPanFromGstin, getStateFromGstin, isValidGstin } from '@vyora/utils';
 import { paiseToMoney, moneyToPaise } from '@vyora/utils';
-import { Save, User, MapPin, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
+import {
+  Save,
+  User,
+  MapPin,
+  LayoutDashboard,
+  IndianRupee,
+  FileText,
+  CheckCircle2,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { useForm, FormProvider, useWatch, SubmitHandler, Resolver } from 'react-hook-form';
+import {
+  useForm,
+  FormProvider,
+  useWatch,
+  SubmitHandler,
+  Resolver,
+  useFieldArray,
+} from 'react-hook-form';
 
+import { AppEmailInput } from '@/components/forms/AppEmailInput';
 import { AppField } from '@/components/forms/AppField';
+import { AppFormPhoneInput } from '@/components/forms/AppFormPhoneInput';
+import { AppGstinInput } from '@/components/forms/AppGstinInput';
+import { AppPanInput } from '@/components/forms/AppPanInput';
 import { FormInput } from '@/components/forms/FormInput';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
@@ -25,6 +46,11 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
   const router = useRouter();
   const [isSaving, setIsSaving] = React.useState(false);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [successData, setSuccessData] = React.useState<{
+    customerCode: string;
+    name: string;
+  } | null>(null);
+  const [customerType, setCustomerType] = React.useState<'INDIVIDUAL' | 'ENTITY'>('ENTITY');
 
   const defaultData = initialData
     ? {
@@ -53,17 +79,30 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
         creditDays: 0,
         notes: '',
         isActive: true,
+        shippingAddresses: [],
       };
 
   const methods = useForm<CustomerFormValues>({
+    mode: 'onSubmit',
     resolver: zodResolver(customerSchema) as unknown as Resolver<CustomerFormValues>,
     defaultValues: defaultData as unknown as CustomerFormValues,
+  });
+
+  const {
+    fields: shippingFields,
+    append: appendShipping,
+    remove: removeShipping,
+  } = useFieldArray({
+    control: methods.control,
+    name: 'shippingAddresses',
   });
 
   // Watch for smart extractions
   const gstinValue = useWatch({ control: methods.control, name: 'gstin' });
   const pincodeValue = useWatch({ control: methods.control, name: 'pincode' });
   const openingBalanceValue = useWatch({ control: methods.control, name: 'openingBalance' });
+  const registrationType = useWatch({ control: methods.control, name: 'registrationType' });
+  const hasValidGstin = isValidGstin(gstinValue);
 
   // Handle Opening Type disabled state
   React.useEffect(() => {
@@ -78,6 +117,18 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
     }
   }, [openingBalanceValue, methods]);
 
+  React.useEffect(() => {
+    if (hasValidGstin) {
+      if (registrationType === 'Unregistered' || !registrationType) {
+        methods.setValue('registrationType', 'Regular', { shouldValidate: true });
+      }
+    } else {
+      if (!gstinValue && registrationType !== 'Unregistered') {
+        methods.setValue('registrationType', 'Unregistered', { shouldValidate: true });
+      }
+    }
+  }, [hasValidGstin, gstinValue, registrationType, methods]);
+
   // Auto-extract PAN & State from GSTIN
   React.useEffect(() => {
     if (gstinValue && gstinValue.length === 15) {
@@ -86,11 +137,12 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
         methods.setValue('pan', pan, { shouldValidate: true, shouldDirty: true });
       }
 
-      const stateCode = extractStateCodeFromGstin(gstinValue);
-      if (stateCode && !methods.getValues('state')) {
-        // Here we just map to the generic state field. Usually it'd need a dictionary mapping code to string.
-        // We will leave it as stateCode until requested otherwise.
-        methods.setValue('state', stateCode, { shouldValidate: true, shouldDirty: true });
+      const stateData = getStateFromGstin(gstinValue);
+      if (stateData && !methods.getValues('state')) {
+        methods.setValue('state', `${stateData.stateCode}-${stateData.stateName}`, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     }
   }, [gstinValue, methods]);
@@ -107,6 +159,12 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
 
               if (!methods.getValues('city') && office.district) {
                 methods.setValue('city', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+              if (!methods.getValues('district') && office.district) {
+                methods.setValue('district', office.district, {
                   shouldValidate: true,
                   shouldDirty: true,
                 });
@@ -141,6 +199,7 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
         ...cleanedData,
         openingBalance: moneyToPaise(cleanedData.openingBalance as unknown as number),
         creditLimit: moneyToPaise(cleanedData.creditLimit as unknown as number),
+        contactPerson: customerType === 'INDIVIDUAL' ? cleanedData.name : cleanedData.contactPerson,
       } as unknown as CreateCustomerInput;
 
       if (isEditMode && initialData?.id) {
@@ -153,8 +212,8 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
         }
       } else {
         const res = await window.vyora.db.customers.create(payload);
-        if (res.success) {
-          router.push('/dashboard/customers');
+        if (res.success && res.data) {
+          setSuccessData({ customerCode: res.data.customerCode, name: res.data.name });
           router.refresh();
         } else {
           setErrorMsg(res.error || 'Failed to create customer.');
@@ -218,33 +277,59 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
                   Basic Information
                 </h3>
               </div>
+              <div className="mb-4 flex items-center gap-6 border-b px-2 pb-4">
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    className="accent-primary h-4 w-4"
+                    name="customerType"
+                    value="ENTITY"
+                    checked={customerType === 'ENTITY'}
+                    onChange={() => setCustomerType('ENTITY')}
+                  />
+                  <span className="text-sm font-medium">Entity</span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    className="accent-primary h-4 w-4"
+                    name="customerType"
+                    value="INDIVIDUAL"
+                    checked={customerType === 'INDIVIDUAL'}
+                    onChange={() => setCustomerType('INDIVIDUAL')}
+                  />
+                  <span className="text-sm font-medium">Individual</span>
+                </label>
+              </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <AppField name="name" label="Customer Name *">
+                <AppField
+                  name="name"
+                  label={customerType === 'INDIVIDUAL' ? 'Customer Name *' : 'Entity Name *'}
+                >
                   <FormInput
                     name="name"
                     type="text"
-                    placeholder="e.g. Acme Corp"
+                    placeholder={customerType === 'INDIVIDUAL' ? 'e.g. John Doe' : 'e.g. Acme Corp'}
                     data-testid="customer-name-input"
                   />
                 </AppField>
-                <AppField name="contactPerson" label="Contact Person">
-                  <FormInput name="contactPerson" type="text" placeholder="John Doe" />
-                </AppField>
+                {customerType === 'ENTITY' && (
+                  <AppField name="contactPerson" label="Contact Person">
+                    <FormInput name="contactPerson" type="text" placeholder="John Doe" />
+                  </AppField>
+                )}
                 <AppField name="mobile" label="Mobile">
-                  <FormInput
-                    name="mobile"
-                    type="tel"
-                    placeholder="+91 9999999999"
-                    data-testid="customer-phone-input"
-                  />
+                  <AppFormPhoneInput name="mobile" />
                 </AppField>
                 <AppField name="alternateMobile" label="Alternate Mobile">
-                  <FormInput name="alternateMobile" type="tel" placeholder="+91 8888888888" />
+                  <AppFormPhoneInput name="alternateMobile" />
+                </AppField>
+                <AppField name="landline" label="Landline">
+                  <AppFormPhoneInput name="landline" placeholder="e.g. +91 11 2345 6789" />
                 </AppField>
                 <AppField name="email" label="Email">
-                  <FormInput
+                  <AppEmailInput
                     name="email"
-                    type="email"
                     placeholder="john@acme.com"
                     data-testid="customer-email-input"
                   />
@@ -252,11 +337,68 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
               </div>
             </AppCard>
 
-            {/* Address */}
+            {/* GST & Compliance */}
             <AppCard className="p-6 shadow-sm">
               <div className="mb-6 flex items-center gap-2 border-b pb-3">
-                <MapPin className="text-muted-foreground h-5 w-5" />
-                <h3 className="text-foreground text-sm font-semibold tracking-wide">Address</h3>
+                <LayoutDashboard className="text-muted-foreground h-5 w-5" />
+                <h3 className="text-foreground text-sm font-semibold tracking-wide">
+                  GST & Compliance
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <AppField name="gstin" label="GSTIN">
+                  <AppGstinInput name="gstin" placeholder="22AAAAA0000A1Z5" />
+                  <p className="text-muted-foreground mt-1 text-xs">Auto-fills PAN and State.</p>
+                </AppField>
+                <AppField name="pan" label="PAN">
+                  <AppPanInput name="pan" placeholder="AAAAA0000A" />
+                </AppField>
+                <AppField name="registrationType" label="Registration Type">
+                  <select
+                    {...methods.register('registrationType')}
+                    className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {!hasValidGstin && <option value="Unregistered">Unregistered</option>}
+                    <option value="Regular">Regular</option>
+                    <option value="Composition">Composition</option>
+                    <option value="Consumer">Consumer</option>
+                    <option value="Overseas">Overseas</option>
+                    <option value="SEZ">SEZ</option>
+                  </select>
+                </AppField>
+              </div>
+            </AppCard>
+
+            {/* Address */}
+            <AppCard className="p-6 shadow-sm">
+              <div className="mb-6 flex items-center justify-between border-b pb-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="text-muted-foreground h-5 w-5" />
+                  <h3 className="text-foreground text-sm font-semibold tracking-wide">
+                    Billing Address
+                  </h3>
+                </div>
+                <AppButton
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    appendShipping({
+                      careOf: '',
+                      mobile: '',
+                      addressLine1: '',
+                      addressLine2: '',
+                      area: '',
+                      city: '',
+                      district: '',
+                      state: '',
+                      pincode: '',
+                    })
+                  }
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Shipping Address
+                </AppButton>
               </div>
               <div className="grid grid-cols-1 gap-6">
                 <AppField name="addressLine1" label="Address Line 1">
@@ -269,15 +411,18 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
                 <AppField name="addressLine2" label="Address Line 2">
                   <FormInput name="addressLine2" type="text" placeholder="Street / Locality" />
                 </AppField>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                   <AppField name="area" label="Area">
                     <FormInput name="area" type="text" />
+                  </AppField>
+                  <AppField name="city" label="City">
+                    <FormInput name="city" type="text" />
                   </AppField>
                   <AppField name="pincode" label="PIN Code">
                     <FormInput name="pincode" type="text" placeholder="6 Digits" maxLength={6} />
                   </AppField>
-                  <AppField name="city" label="City">
-                    <FormInput name="city" type="text" />
+                  <AppField name="district" label="District">
+                    <FormInput name="district" type="text" />
                   </AppField>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -292,48 +437,84 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
                   </AppField>
                 </div>
               </div>
-            </AppCard>
 
-            {/* GST & Compliance */}
-            <AppCard className="p-6 shadow-sm">
-              <div className="mb-6 flex items-center gap-2 border-b pb-3">
-                <LayoutDashboard className="text-muted-foreground h-5 w-5" />
-                <h3 className="text-foreground text-sm font-semibold tracking-wide">
-                  GST & Compliance
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <AppField name="gstin" label="GSTIN">
-                  <FormInput
-                    name="gstin"
-                    type="text"
-                    placeholder="22AAAAA0000A1Z5"
-                    className="uppercase"
-                  />
-                  <p className="text-muted-foreground mt-1 text-xs">Auto-fills PAN and State.</p>
-                </AppField>
-                <AppField name="pan" label="PAN">
-                  <FormInput
-                    name="pan"
-                    type="text"
-                    placeholder="AAAAA0000A"
-                    className="uppercase"
-                  />
-                </AppField>
-                <AppField name="registrationType" label="Registration Type">
-                  <select
-                    {...methods.register('registrationType')}
-                    className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="Unregistered">Unregistered</option>
-                    <option value="Regular">Regular</option>
-                    <option value="Composition">Composition</option>
-                    <option value="Consumer">Consumer</option>
-                    <option value="Overseas">Overseas</option>
-                    <option value="SEZ">SEZ</option>
-                  </select>
-                </AppField>
-              </div>
+              {/* Dynamic Shipping Addresses */}
+              {shippingFields.map((field, index) => (
+                <div key={field.id} className="relative mt-8 border-t pt-6">
+                  <div className="mb-6 flex items-center justify-between">
+                    <h4 className="text-primary text-sm font-semibold">
+                      Shipping Address {index + 1}
+                    </h4>
+                    <AppButton
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => removeShipping(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </AppButton>
+                  </div>
+                  <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <AppField name={`shippingAddresses.${index}.careOf`} label="In Care of (C/o)">
+                      <FormInput
+                        name={`shippingAddresses.${index}.careOf`}
+                        type="text"
+                        placeholder="e.g. John Doe"
+                      />
+                    </AppField>
+                    <AppField name={`shippingAddresses.${index}.mobile`} label="Mobile">
+                      <AppFormPhoneInput name={`shippingAddresses.${index}.mobile`} />
+                    </AppField>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6">
+                    <AppField
+                      name={`shippingAddresses.${index}.addressLine1`}
+                      label="Address Line 1"
+                    >
+                      <FormInput
+                        name={`shippingAddresses.${index}.addressLine1`}
+                        type="text"
+                        placeholder="Flat / House No. / Building"
+                      />
+                    </AppField>
+                    <AppField
+                      name={`shippingAddresses.${index}.addressLine2`}
+                      label="Address Line 2"
+                    >
+                      <FormInput
+                        name={`shippingAddresses.${index}.addressLine2`}
+                        type="text"
+                        placeholder="Street / Locality"
+                      />
+                    </AppField>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                      <AppField name={`shippingAddresses.${index}.area`} label="Area">
+                        <FormInput name={`shippingAddresses.${index}.area`} type="text" />
+                      </AppField>
+                      <AppField name={`shippingAddresses.${index}.city`} label="City">
+                        <FormInput name={`shippingAddresses.${index}.city`} type="text" />
+                      </AppField>
+                      <AppField name={`shippingAddresses.${index}.pincode`} label="PIN Code">
+                        <FormInput
+                          name={`shippingAddresses.${index}.pincode`}
+                          type="text"
+                          placeholder="6 Digits"
+                          maxLength={6}
+                        />
+                      </AppField>
+                      <AppField name={`shippingAddresses.${index}.district`} label="District">
+                        <FormInput name={`shippingAddresses.${index}.district`} type="text" />
+                      </AppField>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                      <AppField name={`shippingAddresses.${index}.state`} label="State">
+                        <FormInput name={`shippingAddresses.${index}.state`} type="text" />
+                      </AppField>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </AppCard>
 
             {/* Accounting */}
@@ -425,6 +606,47 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {successData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="animate-in zoom-in-95 bg-background text-card-foreground w-full max-w-md rounded-lg p-6 shadow-lg">
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-success/15 text-success mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold tracking-tight">Customer Created!</h2>
+              <p className="text-muted-foreground mb-6">
+                <span className="text-foreground font-semibold">{successData.name}</span> has been
+                successfully registered in the system.
+              </p>
+              <div className="bg-muted mb-6 w-full rounded-md p-4">
+                <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-wider uppercase">
+                  Customer Code
+                </p>
+                <p className="font-mono text-2xl font-bold tracking-widest">
+                  {successData.customerCode}
+                </p>
+              </div>
+              <div className="flex w-full gap-3">
+                <AppButton
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setSuccessData(null);
+                    methods.reset();
+                  }}
+                >
+                  Create Another
+                </AppButton>
+                <AppButton className="flex-1" onClick={() => router.push('/dashboard/customers')}>
+                  View Customers
+                </AppButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

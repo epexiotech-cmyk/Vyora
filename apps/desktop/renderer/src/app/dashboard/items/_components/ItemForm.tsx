@@ -2,14 +2,15 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateProductInput, createProductSchema, TaxDto, UnitDto } from '@vyora/types';
-import { paiseToMoney, moneyToPaise } from '@vyora/utils';
 import { Save, Package, LayoutDashboard, IndianRupee, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { useForm, FormProvider, SubmitHandler, Resolver } from 'react-hook-form';
+import { useForm, FormProvider, SubmitHandler, Resolver, useWatch } from 'react-hook-form';
 
 import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
+import { MoneyInput } from '@/components/forms/MoneyInput';
+import { useCurrency } from '@/components/providers/CompanyContextProvider';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -27,6 +28,8 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
   const [units, setUnits] = React.useState<UnitDto[]>([]);
   const [taxes, setTaxes] = React.useState<TaxDto[]>([]);
   const [activeCompanyId, setActiveCompanyId] = React.useState<string>('');
+  const currency = useCurrency();
+  const multiplier = Math.pow(10, currency.decimalPlaces);
 
   React.useEffect(() => {
     const fetchDependencies = async () => {
@@ -57,8 +60,11 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
     defaultValues: initialData
       ? {
           ...initialData,
-          salePrice: paiseToMoney(initialData.salePrice),
-          purchasePrice: paiseToMoney(initialData.purchasePrice),
+          salePrice: (initialData.salePrice || 0) / multiplier,
+          purchasePrice: (initialData.purchasePrice || 0) / multiplier,
+          openingValuationRate: initialData.openingValuationRate
+            ? initialData.openingValuationRate / multiplier
+            : 0,
         }
       : {
           companyId: '',
@@ -66,15 +72,41 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
           itemType: 'INVENTORY_ITEM',
           description: '',
           hsnCode: '',
+          barcodeValue: '',
+          barcodeType: '',
+          taxabilityType: 'Taxable',
           unitId: '',
           taxId: '',
           salePrice: 0,
           purchasePrice: 0,
           stock: 0,
+          openingValuationRate: 0,
           reorderLevel: 0,
           isActive: true,
         },
   });
+
+  // Focus the first invalid field automatically
+  React.useEffect(() => {
+    const firstError = Object.keys(methods.formState.errors)[0];
+    if (firstError) {
+      methods.setFocus(firstError as keyof CreateProductInput);
+    }
+  }, [methods.formState.errors, methods]);
+
+  // Auto-calculate Opening Valuation Rate from Purchase Rate
+  const purchasePrice = useWatch({
+    control: methods.control,
+    name: 'purchasePrice',
+  });
+  const isValuationDirty = methods.formState.dirtyFields.openingValuationRate;
+
+  React.useEffect(() => {
+    // Only auto-sync on create, and only if the user hasn't explicitly edited the valuation rate
+    if (!initialData?.id && !isValuationDirty) {
+      methods.setValue('openingValuationRate', purchasePrice || 0);
+    }
+  }, [purchasePrice, initialData?.id, isValuationDirty, methods]);
 
   React.useEffect(() => {
     if (activeCompanyId && !methods.getValues('companyId')) {
@@ -94,8 +126,11 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
 
       const payload = {
         ...cleanedData,
-        salePrice: moneyToPaise(cleanedData.salePrice as unknown as number),
-        purchasePrice: moneyToPaise(cleanedData.purchasePrice as unknown as number),
+        salePrice: Math.round((cleanedData.salePrice as unknown as number) * multiplier),
+        purchasePrice: Math.round((cleanedData.purchasePrice as unknown as number) * multiplier),
+        openingValuationRate: Math.round(
+          (cleanedData.openingValuationRate as unknown as number) * multiplier,
+        ),
       };
 
       if (!payload.companyId && activeCompanyId) {
@@ -225,6 +260,20 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
                 <AppField name="hsnCode" label="HSN / SAC Code">
                   <FormInput name="hsnCode" type="text" placeholder="e.g. 8471" />
                 </AppField>
+                <AppField name="barcodeValue" label="Barcode">
+                  <FormInput name="barcodeValue" type="text" placeholder="e.g. 8901234567890" />
+                </AppField>
+                <AppField name="taxabilityType" label="Taxability Type *">
+                  <select
+                    {...methods.register('taxabilityType')}
+                    className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="Taxable">Taxable</option>
+                    <option value="Nil Rated">Nil Rated</option>
+                    <option value="Exempt">Exempt</option>
+                    <option value="Non-GST">Non-GST</option>
+                  </select>
+                </AppField>
                 <AppField name="unitId" label="Unit of Measurement *">
                   <select
                     {...methods.register('unitId')}
@@ -264,18 +313,33 @@ export function ItemForm({ initialData, isEditMode = false }: ItemFormProps) {
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <AppField name="salePrice" label="Sales Rate">
-                  <FormInput
-                    name="salePrice"
-                    type="number"
-                    step="0.01"
-                    data-testid="item-price-input"
-                  />
+                  <MoneyInput name="salePrice" data-testid="item-price-input" />
                 </AppField>
                 <AppField name="purchasePrice" label="Purchase Rate">
-                  <FormInput name="purchasePrice" type="number" step="0.01" />
+                  <MoneyInput name="purchasePrice" />
                 </AppField>
                 <AppField name="stock" label="Opening Stock">
-                  <FormInput name="stock" type="number" />
+                  <FormInput
+                    name="stock"
+                    type="number"
+                    disabled={!!initialData?.id}
+                    title={
+                      initialData?.id
+                        ? 'Opening stock cannot be edited after creation. Use Inventory Adjustments.'
+                        : ''
+                    }
+                  />
+                </AppField>
+                <AppField name="openingValuationRate" label="Opening Valuation Rate">
+                  <MoneyInput
+                    name="openingValuationRate"
+                    disabled={!!initialData?.id}
+                    title={
+                      initialData?.id
+                        ? 'Opening valuation rate cannot be edited after creation.'
+                        : ''
+                    }
+                  />
                 </AppField>
                 <AppField name="reorderLevel" label="Reorder Level">
                   <FormInput name="reorderLevel" type="number" />

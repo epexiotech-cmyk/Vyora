@@ -203,7 +203,9 @@ export function SalesCustomerSelector({
 
         {!isOpen && displayedCustomer ? (
           <div className="flex flex-1 items-center justify-between truncate">
-            <span className="text-foreground truncate font-medium">{displayedCustomer.name}</span>
+            <span className="text-foreground truncate font-medium">
+              {displayedCustomer.name} ({displayedCustomer.customerCode})
+            </span>
             <button
               type="button"
               onClick={handleClear}
@@ -275,8 +277,13 @@ export function SalesCustomerSelector({
                       </span>
                     )}
                     <div className="flex flex-col">
-                      <span>{customer.name}</span>
-                      <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span>{customer.name}</span>
+                        <span className="bg-secondary text-muted-foreground rounded-sm px-1.5 py-0.5 text-xs font-medium">
+                          {customer.customerCode}
+                        </span>
+                      </div>
+                      <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
                         {customer.mobile && <span>{customer.mobile}</span>}
                         {customer.mobile && customer.gstin && <span>•</span>}
                         {customer.gstin && <span>{customer.gstin}</span>}

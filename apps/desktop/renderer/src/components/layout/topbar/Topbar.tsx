@@ -1,13 +1,13 @@
 'use client';
 
-import { Search, User, RefreshCcw } from 'lucide-react';
+import { Search, RefreshCcw } from 'lucide-react';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
 import { CompanySwitcherDropdown } from './CompanySwitcherDropdown';
+import { UserMenuDropdown } from './UserMenuDropdown';
 
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { AppButton } from '@/components/ui/AppButton';
 import { AppInput } from '@/components/ui/AppInput';
 
 export function Topbar() {
@@ -66,11 +66,7 @@ export function Topbar() {
         <CompanySwitcherDropdown currentCompanyName={companyName} />
 
         <ThemeToggle />
-
-        {/* User Profile Placeholder */}
-        <AppButton variant="ghost" size="icon" className="bg-secondary/50 h-8 w-8 rounded-full">
-          <User className="text-muted-foreground h-4 w-4" />
-        </AppButton>
+        <UserMenuDropdown />
       </div>
     </header>
   );

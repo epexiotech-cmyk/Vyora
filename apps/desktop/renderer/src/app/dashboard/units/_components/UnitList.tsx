@@ -1,11 +1,13 @@
 'use client';
 
 import { UnitDto } from '@vyora/types';
-import { Plus, Edit2 } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { DataTable, ColumnDef } from '@/components/shared';
+import { UnitForm } from './UnitForm';
+
+import { DataTable, ColumnDef, AppModal } from '@/components/shared';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
@@ -16,26 +18,61 @@ export function UnitList() {
   const [page, setPage] = React.useState(1);
   const limit = 20;
 
-  React.useEffect(() => {
-    const fetchUnits = async () => {
-      setIsLoading(true);
-      try {
-        const res = await window.vyora.db.units.getAll();
-        if (res.success && res.data) {
-          setData(res.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch units:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [editingUnit, setEditingUnit] = React.useState<UnitDto | null>(null);
 
-    fetchUnits();
+  const fetchUnits = React.useCallback(async () => {
+    try {
+      const res = await window.vyora.db.units.getAll();
+      if (res.success && res.data) {
+        setData(res.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch units:', error);
+    }
   }, []);
 
-  const handleCreateOrEdit = () => {
-    toast.info('Unit management coming soon');
+  React.useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      await fetchUnits();
+      if (mounted) setIsLoading(false);
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [fetchUnits]);
+
+  const handleCreateOrEdit = (unit?: UnitDto) => {
+    setEditingUnit(unit || null);
+    setIsModalOpen(true);
+  };
+
+  const handleSuccess = async () => {
+    setIsModalOpen(false);
+    setIsLoading(true);
+    await fetchUnits();
+    setIsLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to deactivate this unit?')) {
+      try {
+        const res = await window.vyora.db.units.delete(id);
+        if (res.success) {
+          toast.success('Unit deactivated successfully');
+          setIsLoading(true);
+          await fetchUnits();
+          setIsLoading(false);
+        } else {
+          toast.error(res.error || 'Failed to deactivate unit');
+        }
+      } catch {
+        toast.error('An unexpected error occurred');
+      }
+    }
   };
 
   const filteredData = React.useMemo(() => {
@@ -67,11 +104,20 @@ export function UnitList() {
       key: 'actions',
       header: 'Actions',
       className: 'text-right',
-      cell: () => (
+      cell: (u) => (
         <div className="flex justify-end gap-1">
-          <AppButton variant="ghost" size="sm" onClick={() => handleCreateOrEdit()} title="Edit">
+          <AppButton variant="ghost" size="sm" onClick={() => handleCreateOrEdit(u)} title="Edit">
             <Edit2 className="h-4 w-4" />
             <span className="sr-only">Edit</span>
+          </AppButton>
+          <AppButton
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(u.id)}
+            title="Deactivate"
+          >
+            <Trash2 className="text-destructive h-4 w-4" />
+            <span className="sr-only">Deactivate</span>
           </AppButton>
         </div>
       ),
@@ -113,6 +159,22 @@ export function UnitList() {
           }}
         />
       </div>
+
+      <AppModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingUnit ? 'Edit Unit' : 'Add Unit'}
+        description={
+          editingUnit ? 'Update the unit details below.' : 'Create a new unit of measurement.'
+        }
+        hideActions={true}
+      >
+        <UnitForm
+          initialData={editingUnit}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleSuccess}
+        />
+      </AppModal>
     </div>
   );
 }

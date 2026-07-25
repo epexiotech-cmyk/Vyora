@@ -1,9 +1,11 @@
 'use client';
 
 import { FinancialYearDto } from '@vyora/types';
-import { CheckCircle, Circle } from 'lucide-react';
+import { Circle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+import { FinancialYearFormDialog } from './FinancialYearFormDialog';
 
 import { AppCard, AppCardContent } from '@/components/ui/AppCard';
 import { Button } from '@/components/ui/button';
@@ -12,6 +14,7 @@ export function FinancialYearList() {
   const [financialYears, setFinancialYears] = useState<FinancialYearDto[]>([]);
   const [activeFyId, setActiveFyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const fetchFinancialYears = async () => {
     try {
@@ -24,8 +27,10 @@ export function FinancialYearList() {
       }
 
       const activeRes = await window.vyora.financialYear.getActive();
-      if (activeRes.success && activeRes.data !== undefined) {
-        setActiveFyId(activeRes.data);
+      if (activeRes.success && activeRes.data) {
+        setActiveFyId(activeRes.data.id);
+      } else {
+        setActiveFyId(null);
       }
     } catch (e) {
       toast.error((e as Error).message || 'An error occurred while loading financial years');
@@ -65,9 +70,7 @@ export function FinancialYearList() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <Button onClick={() => toast.info('Create dialog coming soon')}>
-          Create Financial Year
-        </Button>
+        <Button onClick={() => setIsDialogOpen(true)}>Create Financial Year</Button>
       </div>
 
       {loading ? (
@@ -85,9 +88,12 @@ export function FinancialYearList() {
                 <AppCardContent className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     {isActive ? (
-                      <CheckCircle className="text-primary h-5 w-5" />
+                      <div
+                        className="h-4 w-4 shrink-0 rounded-full bg-green-500 shadow-sm"
+                        title="Active Financial Year"
+                      />
                     ) : (
-                      <Circle className="text-muted-foreground h-5 w-5" />
+                      <Circle className="text-muted-foreground h-4 w-4 shrink-0" />
                     )}
                     <div className="flex flex-col">
                       <h3 className="text-base font-semibold">{fy.label}</h3>
@@ -109,6 +115,14 @@ export function FinancialYearList() {
             );
           })}
         </div>
+      )}
+
+      {isDialogOpen && (
+        <FinancialYearFormDialog
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          onSuccess={() => fetchFinancialYears()}
+        />
       )}
     </div>
   );

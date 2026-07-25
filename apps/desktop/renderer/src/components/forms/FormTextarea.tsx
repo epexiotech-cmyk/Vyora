@@ -12,7 +12,7 @@ export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLText
 }
 
 export const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
-  ({ className, name, ...props }, _ref) => {
+  ({ className, name, ...props }) => {
     const {
       register,
       formState: { errors },

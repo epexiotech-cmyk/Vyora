@@ -3,7 +3,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UpdateCompanyProfileRequest } from '@vyora/types';
 import { extractPanFromGstin, extractStateCodeFromGstin } from '@vyora/utils';
-import { Save, Building2, LayoutDashboard, MapPin, Phone, IndianRupee } from 'lucide-react';
+import {
+  Save,
+  Building2,
+  LayoutDashboard,
+  MapPin,
+  Phone,
+  IndianRupee,
+  ArrowLeft,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 
@@ -25,6 +34,7 @@ export function CompanyProfileShell() {
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [companyId, setCompanyId] = React.useState<string | null>(null);
   const [currencies, setCurrencies] = React.useState<{ value: string; label: string }[]>([]);
+  const router = useRouter();
 
   const methods = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
@@ -218,7 +228,10 @@ export function CompanyProfileShell() {
             <span>{successMsg}</span>
           </div>
         )}
-        <div className="flex items-start justify-between">
+        <div className="mb-2 flex items-center gap-4">
+          <AppButton variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </AppButton>
           <SectionHeader
             title="Company GST Profile"
             description="Manage your business information, GST details, and contact information."
@@ -325,11 +338,11 @@ export function CompanyProfileShell() {
                   />
                 </AppField>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  <AppField name="pincode" label="PIN Code">
-                    <FormInput name="pincode" type="text" placeholder="6 Digits" maxLength={6} />
-                  </AppField>
                   <AppField name="city" label="City / Town / Village">
                     <FormInput name="city" type="text" />
+                  </AppField>
+                  <AppField name="pincode" label="PIN Code">
+                    <FormInput name="pincode" type="text" placeholder="6 Digits" maxLength={6} />
                   </AppField>
                   <AppField name="district" label="District">
                     <FormInput name="district" type="text" />

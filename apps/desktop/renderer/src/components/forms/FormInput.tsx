@@ -12,7 +12,7 @@ export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputEleme
 }
 
 export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
-  ({ className, type, name, ...props }, _ref) => {
+  ({ className, type, name, ...props }) => {
     const {
       register,
       formState: { errors },

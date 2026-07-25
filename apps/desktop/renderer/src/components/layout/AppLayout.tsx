@@ -28,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     return <div className="bg-background h-screen w-screen" />; // Prevent flash
   }
 
-  const isSetupRoute = pathname === '/setup';
+  const isSetupRoute = ['/setup', '/login', '/lock'].includes(pathname);
 
   return (
     <StartupGuard>

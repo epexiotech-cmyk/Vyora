@@ -15,7 +15,9 @@ import {
   Truck,
   PackageOpen,
   Scale,
+  LayoutDashboard,
 } from 'lucide-react';
+import Image from 'next/image';
 import * as React from 'react';
 
 import { SidebarGroup } from './SidebarGroup';
@@ -35,8 +37,8 @@ export function Sidebar() {
     >
       {/* Sidebar Header / Logo */}
       <div className="flex h-[var(--header-height)] shrink-0 items-center overflow-hidden px-4">
-        <div className="bg-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
-          <Box className="text-primary-foreground h-5 w-5" />
+        <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
+          <Image src="/vyora-logo.png" alt="Vyora Logo" fill className="object-contain" />
         </div>
         <motion.span
           className="text-foreground ml-3 text-lg font-bold tracking-tight whitespace-nowrap"
@@ -50,6 +52,10 @@ export function Sidebar() {
 
       {/* Navigation Links */}
       <div className="scrollbar-thumb-border flex-1 scrollbar-thin scrollbar-track-transparent overflow-x-hidden overflow-y-auto py-4">
+        <div className="px-2 pb-2">
+          <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
+        </div>
+
         <SidebarGroup label="Operations">
           <SidebarItem icon={ShoppingCart} label="Sales" href="/dashboard/sales" />
           <SidebarItem icon={Package} label="Purchases" href="/dashboard/purchases" />

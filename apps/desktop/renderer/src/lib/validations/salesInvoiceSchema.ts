@@ -8,6 +8,8 @@ export const salesInvoiceLineSchema = z.object({
   discountPercent: z.coerce.number().min(0, 'Min 0%').max(100, 'Max 100%').optional(),
   taxPercent: z.coerce.number().min(0, 'Min 0%').max(100, 'Max 100%').optional(),
   amount: z.coerce.number().optional(),
+  unitId: z.string().optional().nullable(),
+  taxId: z.string().optional().nullable(),
 });
 
 export const salesInvoiceSchema = z
@@ -21,6 +23,7 @@ export const salesInvoiceSchema = z
     billingCity: z.string().optional(),
     billingStateCode: z.string().optional(),
     billingStateName: z.string().optional(),
+    billingDistrict: z.string().optional(),
     billingPincode: z.string().optional(),
     shippingSameAsBilling: z.boolean().optional(),
     shippingName: z.string().optional(),
@@ -29,6 +32,7 @@ export const salesInvoiceSchema = z
     shippingCity: z.string().optional(),
     shippingStateCode: z.string().optional(),
     shippingStateName: z.string().optional(),
+    shippingDistrict: z.string().optional(),
     shippingPincode: z.string().optional(),
     placeOfSupplyCode: z.string().optional(),
     invoiceDate: z

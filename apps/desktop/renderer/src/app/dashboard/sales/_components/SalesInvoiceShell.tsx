@@ -1,5 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { SalesInvoicePrintAdapter } from '@vyora/print-engine';
 import { SalesInvoiceDto } from '@vyora/types';
 import { getStateFromGstin } from '@vyora/utils';
 import { Save, Settings, X, FilePlus, Copy, Printer, FileDown } from 'lucide-react';
@@ -12,6 +13,7 @@ import { FormInput } from '@/components/forms/FormInput';
 import { InvoiceLineGrid } from '@/components/forms/InvoiceLineGrid';
 import { InvoiceTotalsCard } from '@/components/forms/InvoiceTotalsCard';
 import { SalesCustomerSelector } from '@/components/forms/SalesCustomerSelector';
+import { usePrintPreview } from '@/components/print/usePrintPreview';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -35,16 +37,23 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
   const defaultValues = initialData
     ? {
         ...initialData,
-        shippingSameAsBilling: false, // You could determine this based on address match
+        customer: initialData.customerId,
+        shippingSameAsBilling: false,
         lines:
           initialData.items?.map((item) => ({
             productId: item.productId,
-            productName: item.description || '', // Assuming description has name
+            productName: item.description || '',
             qty: item.quantity,
-            rate: item.rate,
-            discountPercent: (item.discountAmount / (item.quantity * item.rate)) * 100 || 0,
-            taxPercent: 0, // Should map from actual tax percentage if available
-            amount: item.lineTotal,
+            rate: item.rate / 100, // Convert from cents
+            discountPercent:
+              item.quantity > 0 && item.rate > 0
+                ? (item.discountAmount / (item.quantity * item.rate)) * 100
+                : 0,
+            taxPercent: item.taxRateSnapshot || 0,
+            amount: item.lineTotal / 100, // Convert from cents
+            unitId: item.unitId,
+            taxId: item.taxId,
+            hsnCode: item.hsnCode,
           })) || [],
       }
     : {
@@ -74,15 +83,25 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
     name: 'shippingSameAsBilling',
   });
 
+  const printPayload = React.useMemo(() => {
+    if (!initialData) return null;
+    return SalesInvoicePrintAdapter.toPayload(initialData);
+  }, [initialData]);
+
+  const { print } = usePrintPreview('gst-invoice-v1', printPayload);
+
   // Watch billing fields for auto-copying
   const billingName = useWatch({ control: methods.control, name: 'billingName' });
   const billingGstin = useWatch({ control: methods.control, name: 'billingGstin' });
   const billingAddress = useWatch({ control: methods.control, name: 'billingAddress' });
   const billingCity = useWatch({ control: methods.control, name: 'billingCity' });
+  const billingDistrict = useWatch({ control: methods.control, name: 'billingDistrict' });
   const billingStateCode = useWatch({ control: methods.control, name: 'billingStateCode' });
   const billingStateName = useWatch({ control: methods.control, name: 'billingStateName' });
   const billingPincode = useWatch({ control: methods.control, name: 'billingPincode' });
   const shippingGstin = useWatch({ control: methods.control, name: 'shippingGstin' });
+  const shippingPincode = useWatch({ control: methods.control, name: 'shippingPincode' });
+  const placeOfSupplyCode = useWatch({ control: methods.control, name: 'placeOfSupplyCode' });
 
   // Auto-detect State from Billing GSTIN
   React.useEffect(() => {
@@ -107,12 +126,75 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
     }
   }, [shippingGstin, shippingSameAsBilling, methods]);
 
+  // Smart Pincode Lookup - Billing
+  React.useEffect(() => {
+    if (billingPincode && /^[1-9][0-9]{5}$/.test(billingPincode)) {
+      const lookup = async () => {
+        try {
+          if (window.vyora?.directories?.pincode) {
+            const res = await window.vyora.directories.pincode.smartLookup(billingPincode);
+            if (res && res.offices && res.offices.length > 0) {
+              const office = res.offices[0];
+              if (!methods.getValues('billingCity') && office.district) {
+                methods.setValue('billingCity', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+              if (!methods.getValues('billingDistrict') && office.district) {
+                methods.setValue('billingDistrict', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Smart pincode lookup failed in UI', err);
+        }
+      };
+      lookup();
+    }
+  }, [billingPincode, methods]);
+
+  // Smart Pincode Lookup - Shipping
+  React.useEffect(() => {
+    if (shippingPincode && /^[1-9][0-9]{5}$/.test(shippingPincode) && !shippingSameAsBilling) {
+      const lookup = async () => {
+        try {
+          if (window.vyora?.directories?.pincode) {
+            const res = await window.vyora.directories.pincode.smartLookup(shippingPincode);
+            if (res && res.offices && res.offices.length > 0) {
+              const office = res.offices[0];
+              if (!methods.getValues('shippingCity') && office.district) {
+                methods.setValue('shippingCity', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+              if (!methods.getValues('shippingDistrict') && office.district) {
+                methods.setValue('shippingDistrict', office.district, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Smart pincode lookup failed in UI', err);
+        }
+      };
+      lookup();
+    }
+  }, [shippingPincode, shippingSameAsBilling, methods]);
+
   React.useEffect(() => {
     if (shippingSameAsBilling) {
       methods.setValue('shippingName', billingName || '');
       methods.setValue('shippingGstin', billingGstin || '');
       methods.setValue('shippingAddress', billingAddress || '');
       methods.setValue('shippingCity', billingCity || '');
+      methods.setValue('shippingDistrict', billingDistrict || '');
       methods.setValue('shippingStateCode', billingStateCode || '');
       methods.setValue('shippingStateName', billingStateName || '');
       methods.setValue('shippingPincode', billingPincode || '');
@@ -123,6 +205,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
     billingGstin,
     billingAddress,
     billingCity,
+    billingDistrict,
     billingStateCode,
     billingStateName,
     billingPincode,
@@ -157,6 +240,14 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
         setIsSaving(false);
         return;
       }
+
+      const companyProfileRes = await window.vyora.company.getProfile(companyRes.data);
+      if (!companyProfileRes.success || !companyProfileRes.data) {
+        setErrorMsg('Failed to fetch company profile.');
+        setIsSaving(false);
+        return;
+      }
+
       if (!fyRes.success || !fyRes.data) {
         setErrorMsg('Failed to resolve active financial year.');
         setIsSaving(false);
@@ -179,7 +270,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
 
       const payload = mapSalesInvoiceUiToDto(
         data,
-        companyRes.data,
+        companyProfileRes.data,
         fyRes.data.id,
         calculationResult,
         engineInput,
@@ -330,7 +421,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
             <Copy className="mr-2 h-4 w-4" /> Duplicate
           </AppButton>
           <div className="bg-border mx-1 h-4 w-px" />
-          <AppButton variant="outline" size="sm">
+          <AppButton variant="outline" size="sm" disabled={!initialData} onClick={() => print()}>
             <Printer className="mr-2 h-4 w-4" /> Print
           </AppButton>
           <AppButton variant="outline" size="sm">
@@ -361,8 +452,10 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                         if (c) {
                           methods.setValue('billingName', c.name || '');
                           methods.setValue('billingGstin', c.gstin || '');
-                          methods.setValue('billingAddress', c.city ? `${c.city} Address` : ''); // Fallback
+                          methods.setValue('billingAddress', c.addressLine1 || '');
                           methods.setValue('billingCity', c.city || '');
+                          methods.setValue('billingDistrict', c.district || '');
+                          methods.setValue('billingPincode', c.pincode || '');
                           methods.setValue('billingStateName', c.state || '');
                         } else {
                           methods.setValue('billingName', '');
@@ -388,12 +481,15 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                       <AppField name="billingAddress" label="Address">
                         <FormInput name="billingAddress" type="text" disabled={isReadOnly} />
                       </AppField>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <AppField name="billingCity" label="City">
                           <FormInput name="billingCity" type="text" disabled={isReadOnly} />
                         </AppField>
                         <AppField name="billingPincode" label="PIN Code">
                           <FormInput name="billingPincode" type="text" disabled={isReadOnly} />
+                        </AppField>
+                        <AppField name="billingDistrict" label="District">
+                          <FormInput name="billingDistrict" type="text" disabled={isReadOnly} />
                         </AppField>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -438,12 +534,19 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                           <AppField name="shippingAddress" label="Address">
                             <FormInput name="shippingAddress" type="text" disabled={isReadOnly} />
                           </AppField>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <AppField name="shippingCity" label="City">
                               <FormInput name="shippingCity" type="text" disabled={isReadOnly} />
                             </AppField>
                             <AppField name="shippingPincode" label="PIN Code">
                               <FormInput name="shippingPincode" type="text" disabled={isReadOnly} />
+                            </AppField>
+                            <AppField name="shippingDistrict" label="District">
+                              <FormInput
+                                name="shippingDistrict"
+                                type="text"
+                                disabled={isReadOnly}
+                              />
                             </AppField>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
@@ -533,6 +636,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
                   totals: calculationState.totals,
                   isCalculating: calculationState.isCalculating,
                 }}
+                placeOfSupplyCode={placeOfSupplyCode}
               />
             </div>
           </form>

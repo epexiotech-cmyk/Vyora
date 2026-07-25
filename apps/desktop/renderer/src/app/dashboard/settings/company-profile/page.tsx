@@ -1,6 +1,8 @@
+import type { Metadata } from 'next';
+
 import { CompanyProfileShell } from './_components/CompanyProfileShell';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Company GST Profile | Vyora',
 };
 
