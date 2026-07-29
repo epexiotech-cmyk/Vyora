@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 
-import { app, BrowserWindow, ipcMain, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, net, nativeTheme } from 'electron';
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -26,6 +26,7 @@ import { directoryManagerDatabaseService } from './services/database/DirectoryMa
 import { fileSystemService } from './services/filesystem/FileSystemService';
 import { financialYearContextService } from './services/FinancialYearContextService';
 import { loggerService } from './services/logger/LoggerService';
+import { settingsService } from './services/settings/SettingsService';
 import { MainWindow } from './windows/MainWindow';
 import { SplashWindow } from './windows/SplashWindow';
 
@@ -56,6 +57,12 @@ async function bootstrap() {
   // Initialize Core Infrastructure
   loggerService.init();
   fileSystemService.init();
+
+  // Apply Theme
+  const appearance = settingsService.get('appearance');
+  if (appearance?.theme) {
+    nativeTheme.themeSource = appearance.theme;
+  }
 
   // Initialize Security Services
   const keyExists = (await keyManagementService.getKeyInfo()).exists;

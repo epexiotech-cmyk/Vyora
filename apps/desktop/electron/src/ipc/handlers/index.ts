@@ -1,3 +1,4 @@
+export * from './appSettingsHandlers';
 export * from './bootstrapHandlers';
 export * from './calculationHandlers';
 export * from './companyHandlers';
@@ -27,6 +28,7 @@ export * from './documentNumberingHandlers';
 import { app } from 'electron';
 
 import { registerAccountingHandlers } from './accountingHandlers';
+import { registerAppSettingsHandlers } from './appSettingsHandlers';
 import { registerAuthHandlers } from './authHandlers';
 import { registerBootstrapHandlers } from './bootstrapHandlers';
 import { registerCalculationHandlers } from './calculationHandlers';
@@ -81,6 +83,7 @@ export function registerAllHandlers() {
   registerAccountingHandlers();
   registerReportsHandlers();
   registerDocumentNumberingHandlers();
+  registerAppSettingsHandlers();
 
   if (!app.isPackaged) {
     registerDevHandlers();

@@ -1,4 +1,4 @@
-import { document_numbering_sequences } from '@vyora/database';
+import { document_numbering_sequences, document_numbering_configs } from '@vyora/database';
 import { sql } from 'drizzle-orm';
 
 import { DbTransaction } from '../../../../main/database/adapters/IDatabaseAdapter';
@@ -16,6 +16,11 @@ export class DocumentNumberingResetProvider implements IResetProvider {
       tx.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM document_numbering_sequences`)
         ?.count || 0;
     tx.delete(document_numbering_sequences).run();
+
+    counts.document_numbering_configs =
+      tx.get<{ count: number }>(sql`SELECT COUNT(*) as count FROM document_numbering_configs`)
+        ?.count || 0;
+    tx.delete(document_numbering_configs).run();
 
     return counts;
   }

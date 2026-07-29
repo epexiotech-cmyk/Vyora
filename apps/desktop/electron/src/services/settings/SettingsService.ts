@@ -1,14 +1,18 @@
 import Store from 'electron-store';
 
 export interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
+  appearance: {
+    theme: 'light' | 'dark' | 'system';
+  };
   sidebarCollapsed: boolean;
   backupPath?: string;
   autoBackup: boolean;
 }
 
 const defaults: AppSettings = {
-  theme: 'system',
+  appearance: {
+    theme: 'system',
+  },
   sidebarCollapsed: false,
   autoBackup: false,
 };

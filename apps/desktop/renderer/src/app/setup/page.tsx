@@ -5,6 +5,7 @@ import { validateGstinPartial } from '@vyora/utils';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
+import { ThemeSelector } from '@/components/settings/ThemeSelector';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { AppInput } from '@/components/ui/AppInput';
@@ -221,7 +222,10 @@ export default function SetupPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center p-4">
+    <div className="relative flex h-screen w-full items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeSelector />
+      </div>
       <AppCard className="w-full max-w-lg space-y-6 p-6">
         {step === 1 && (
           <div className="space-y-4">

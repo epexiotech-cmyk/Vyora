@@ -4,12 +4,11 @@ import {
   suppliers,
   units,
   taxes,
+  tax_groups,
   ledgers,
   ledger_groups,
 } from '@vyora/database';
-import { GST_RATES } from '@vyora/types';
-import { GST_UQC_MASTER } from '@vyora/utils';
-import { sql, eq, notInArray } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 import { DbTransaction } from '../../../../main/database/adapters/IDatabaseAdapter';
 import { IResetProvider } from '../IResetProvider';
@@ -35,41 +34,20 @@ export class MasterDataResetProvider implements IResetProvider {
     counts.suppliers = getCount('suppliers');
     tx.delete(suppliers).run();
 
-    counts.custom_ledgers =
-      tx
-        .select({ count: sql<number>`count(*)` })
-        .from(ledgers)
-        .where(eq(ledgers.isSystemAccount, false))
-        .get()?.count || 0;
-    tx.delete(ledgers).where(eq(ledgers.isSystemAccount, false)).run();
+    counts.ledgers = getCount('ledgers');
+    tx.delete(ledgers).run();
 
-    counts.custom_ledger_groups =
-      tx
-        .select({ count: sql<number>`count(*)` })
-        .from(ledger_groups)
-        .where(eq(ledger_groups.isSystemGroup, false))
-        .get()?.count || 0;
-    tx.delete(ledger_groups).where(eq(ledger_groups.isSystemGroup, false)).run();
+    counts.ledger_groups = getCount('ledger_groups');
+    tx.delete(ledger_groups).run();
 
-    // Do not delete system taxes
-    const systemTaxNames = GST_RATES.map((t) => t.name);
-    counts.custom_taxes =
-      tx
-        .select({ count: sql<number>`count(*)` })
-        .from(taxes)
-        .where(notInArray(taxes.name, systemTaxNames))
-        .get()?.count || 0;
-    tx.delete(taxes).where(notInArray(taxes.name, systemTaxNames)).run();
+    counts.taxes = getCount('taxes');
+    tx.delete(taxes).run();
 
-    // Do not delete system units
-    const systemUnitNames = GST_UQC_MASTER.flatMap((category) => category.units.map((u) => u.name));
-    counts.custom_units =
-      tx
-        .select({ count: sql<number>`count(*)` })
-        .from(units)
-        .where(notInArray(units.name, systemUnitNames))
-        .get()?.count || 0;
-    tx.delete(units).where(notInArray(units.name, systemUnitNames)).run();
+    counts.tax_groups = getCount('tax_groups');
+    tx.delete(tax_groups).run();
+
+    counts.units = getCount('units');
+    tx.delete(units).run();
 
     return counts;
   }

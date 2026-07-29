@@ -8,3 +8,4 @@ export * from './providers/MasterDataResetProvider';
 export * from './providers/PurchasesResetProvider';
 export * from './providers/SalesResetProvider';
 export * from './providers/SettlementResetProvider';
+export * from './providers/SettingsResetProvider';

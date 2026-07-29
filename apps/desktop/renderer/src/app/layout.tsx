@@ -7,6 +7,7 @@ import { CompanyContextProvider } from '@/components/providers/CompanyContextPro
 import { CommandPalette } from '@/components/system/CommandPalette';
 import { Toaster } from '@/components/system/notifications/Toaster';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ThemeSync } from '@/components/theme/ThemeSync';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -27,10 +28,11 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem={true}
           disableTransitionOnChange
         >
+          <ThemeSync />
           <CompanyContextProvider>
             <AppLayout>{children}</AppLayout>
             <Toaster />

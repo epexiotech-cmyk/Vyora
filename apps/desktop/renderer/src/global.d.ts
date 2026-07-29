@@ -37,6 +37,16 @@ export type VyoraSystemAPI = {
 };
 
 export type VyoraSettingsAPI = {
+  app: {
+    getAppearance: () => Promise<
+      ApiResponse<{
+        theme: 'light' | 'dark' | 'system';
+      }>
+    >;
+    setAppearance: (appearance: {
+      theme: 'light' | 'dark' | 'system';
+    }) => Promise<ApiResponse<void>>;
+  };
   documentNumbering: {
     get: (
       documentType: string,

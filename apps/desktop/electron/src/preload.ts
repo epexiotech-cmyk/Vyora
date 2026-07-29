@@ -105,6 +105,11 @@ contextBridge.exposeInMainWorld('vyora', {
     },
   },
   settings: {
+    app: {
+      getAppearance: () => ipcRenderer.invoke('settings:app:getAppearance'),
+      setAppearance: (appearance: { theme: 'light' | 'dark' | 'system' }) =>
+        ipcRenderer.invoke('settings:app:setAppearance', appearance),
+    },
     documentNumbering: {
       get: (documentType: string) =>
         ipcRenderer.invoke('settings:document-numbering:get', documentType),
@@ -356,6 +361,16 @@ export type VyoraDatabaseAPI = {
 };
 
 export type VyoraSettingsAPI = {
+  app: {
+    getAppearance: () => Promise<
+      ApiResponse<{
+        theme: 'light' | 'dark' | 'system';
+      }>
+    >;
+    setAppearance: (appearance: {
+      theme: 'light' | 'dark' | 'system';
+    }) => Promise<ApiResponse<void>>;
+  };
   documentNumbering: {
     get: (
       documentType: string,
