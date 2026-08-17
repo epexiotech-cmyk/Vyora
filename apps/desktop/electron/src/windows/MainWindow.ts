@@ -11,7 +11,7 @@ export class MainWindow {
   }
 
   public async create(onReady?: () => void) {
-    // Create Main Window
+    const preloadPath = path.join(__dirname, 'preload.js');
     this.window = new BrowserWindow({
       width: 1280,
       height: 800,
@@ -22,7 +22,7 @@ export class MainWindow {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
+        preload: preloadPath,
         sandbox: true,
         additionalArguments: [`--is-packaged=${app.isPackaged}`],
       },
@@ -46,7 +46,8 @@ export class MainWindow {
 
     if (this.isDev) {
       // In development, load from Next.js dev server
-      const rendererUrl = process.env.RENDERER_URL || 'http://localhost:3000';
+      const rendererPort = process.env.RENDERER_PORT || '3002';
+      const rendererUrl = process.env.RENDERER_URL || `http://localhost:${rendererPort}`;
       await this.window.loadURL(rendererUrl);
     } else {
       // In production, load via custom protocol to support Next.js static export paths

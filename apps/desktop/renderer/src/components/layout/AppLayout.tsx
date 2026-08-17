@@ -5,7 +5,6 @@ import * as React from 'react';
 
 import { Sidebar } from '@/components/layout/sidebar/Sidebar';
 import { Topbar } from '@/components/layout/topbar/Topbar';
-import { Workspace } from '@/components/layout/workspace/Workspace';
 import { ErrorBoundary } from '@/components/system/ErrorBoundary';
 import { StartupGuard } from '@/components/system/StartupGuard';
 
@@ -44,9 +43,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Main Content Section */}
           <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
             <Topbar />
-            <ErrorBoundary>
-              <Workspace>{children}</Workspace>
-            </ErrorBoundary>
+            <ErrorBoundary>{children}</ErrorBoundary>
           </div>
         </div>
       )}

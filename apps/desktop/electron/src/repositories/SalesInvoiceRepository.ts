@@ -33,6 +33,11 @@ function mapToLineDto(entity: DbSalesInvoiceItem): SalesInvoiceLineDto {
     cessRateSnapshot: entity.cessRateSnapshot,
     description: entity.description,
     hsnCode: entity.hsnCode,
+    itemTypeSnapshot: entity.itemTypeSnapshot as
+      | 'INVENTORY_ITEM'
+      | 'NON_INVENTORY_ITEM'
+      | 'SERVICE'
+      | null,
     quantity: entity.quantity,
     rate: entity.rate,
     discountAmount: entity.discountAmount,
@@ -81,6 +86,16 @@ function mapToDto(entity: DbSalesInvoice, items?: DbSalesInvoiceItem[]): SalesIn
     shippingPincode: entity.shippingPincode,
     shippingGstin: entity.shippingGstin,
     shippingStateCode: entity.shippingStateCode,
+
+    paymentAccountId: entity.paymentAccountId,
+    bankNameSnapshot: entity.bankNameSnapshot,
+    accountNumberSnapshot: entity.accountNumberSnapshot,
+    ifscCodeSnapshot: entity.ifscCodeSnapshot,
+    branchNameSnapshot: entity.branchNameSnapshot,
+
+    qrAccountId: entity.qrAccountId,
+    upiIdSnapshot: entity.upiIdSnapshot,
+    upiPayeeNameSnapshot: entity.upiPayeeNameSnapshot,
 
     subtotal: entity.subtotal,
     discountAmount: entity.discountAmount,

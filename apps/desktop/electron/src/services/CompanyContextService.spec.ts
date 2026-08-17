@@ -37,6 +37,23 @@ describe('CompanyContextService', () => {
     expect(result.id).toBe('comp-1');
     expect(currencyService.getByCode).not.toHaveBeenCalled();
     expect(SettingsRepository.prototype.updateCompanySettings).not.toHaveBeenCalled();
+    expect(CompanyRepository.prototype.updateProfile).toHaveBeenCalledWith('comp-1', {
+      legalName: 'New Name',
+    });
+  });
+
+  it('updateProfile - rejects invalid UPI format', async () => {
+    await expect(service.updateProfile('comp-1', { defaultUpiId: 'invalid-upi' })).rejects.toThrow(
+      'Invalid UPI ID format',
+    );
+  });
+
+  it('updateProfile - accepts valid UPI format', async () => {
+    const result = await service.updateProfile('comp-1', { defaultUpiId: 'user@bank' });
+    expect(result.id).toBe('comp-1');
+    expect(CompanyRepository.prototype.updateProfile).toHaveBeenCalledWith('comp-1', {
+      defaultUpiId: 'user@bank',
+    });
   });
 
   it('updateProfile - with valid currency', async () => {

@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { CompanyContextProvider } from '@/components/providers/CompanyContextProvider';
 import { CommandPalette } from '@/components/system/CommandPalette';
 import { Toaster } from '@/components/system/notifications/Toaster';
+import { RuntimeLogger } from '@/components/system/RuntimeLogger';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeSync } from '@/components/theme/ThemeSync';
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ThemeSync />
+          <RuntimeLogger />
           <CompanyContextProvider>
             <AppLayout>{children}</AppLayout>
             <Toaster />

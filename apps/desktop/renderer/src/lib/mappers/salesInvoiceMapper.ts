@@ -11,6 +11,7 @@ export interface UiLineItem {
   unitId?: string | null;
   taxId?: string | null;
   hsnCode?: string | null;
+  itemTypeSnapshot?: 'INVENTORY_ITEM' | 'NON_INVENTORY_ITEM' | 'SERVICE' | null;
 }
 
 export interface UiSalesInvoiceState {
@@ -86,6 +87,7 @@ export function mapSalesInvoiceUiToDto(
         taxId: line.taxId || '',
         description: line.productName,
         hsnCode: line.hsnCode || '',
+        itemTypeSnapshot: line.itemTypeSnapshot || null,
         quantity: inputLine ? inputLine.quantity : Number(line.qty) || 0,
         rate: inputLine ? inputLine.rate : 0,
         discountAmount: inputLine ? inputLine.discountAmount : 0,

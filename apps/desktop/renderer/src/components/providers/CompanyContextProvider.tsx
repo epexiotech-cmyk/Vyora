@@ -9,6 +9,7 @@ export interface CompanyContextState {
   loading: boolean;
   error: Error | null;
   refresh(): Promise<void>;
+  refreshContext(): Promise<void>;
 }
 
 const CompanyContext = createContext<CompanyContextState | undefined>(undefined);
@@ -88,6 +89,7 @@ export function CompanyContextProvider({ children }: { children: React.ReactNode
       loading,
       error,
       refresh,
+      refreshContext: refresh,
     }),
     [contextState, loading, error, refresh],
   );

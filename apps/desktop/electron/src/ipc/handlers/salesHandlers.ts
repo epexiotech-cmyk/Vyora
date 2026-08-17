@@ -28,9 +28,10 @@ export function registerSalesInvoiceHandlers() {
       _event,
       invoiceId: string,
       payload: UpdateSalesInvoiceInput,
+      pin?: string,
     ): Promise<ApiResponse<SalesInvoiceDto>> => {
       try {
-        const result = await salesInvoiceService.updateDraft(invoiceId, payload);
+        const result = await salesInvoiceService.updateDraft(invoiceId, payload, pin);
         return { success: true, data: result as unknown as SalesInvoiceDto };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };

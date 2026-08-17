@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/handlebars": "^4.1.0",
+    "@types/qrcode": "^1.5.5",
     "@vyora/config": "workspace:*",
     "eslint": "^8.57.0",
     "typescript": "latest",
@@ -18,7 +19,8 @@
   "dependencies": {
     "@vyora/types": "workspace:*",
     "@vyora/utils": "workspace:*",
-    "handlebars": "^4.7.8"
+    "handlebars": "^4.7.8",
+    "qrcode": "^1.5.4"
   },
   "types": "src/index.ts",
   "exports": {

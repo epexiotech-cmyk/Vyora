@@ -13,6 +13,7 @@ import { databaseMigrationService } from '../../main/database/migration/Database
 import { companyStorageService } from '../../main/security/CompanyStorageService';
 import { loggerService } from '../logger/LoggerService';
 
+import { migrationValidator } from './MigrationValidator';
 import { systemTaxSeeder } from './SystemTaxSeeder';
 
 export class DatabaseService {
@@ -75,6 +76,9 @@ export class DatabaseService {
       // Run migrations
       if (fs.existsSync(this.migrationsFolder)) {
         loggerService.info(`[DatabaseService] Running migrations from ${this.migrationsFolder}...`);
+
+        await migrationValidator.validatePreMigrations(this.adapter.getDb());
+
         migrate(this.adapter.getDb(), { migrationsFolder: this.migrationsFolder });
         loggerService.info(`[DatabaseService] Migrations applied successfully.`);
       } else {

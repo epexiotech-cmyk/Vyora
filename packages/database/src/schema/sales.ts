@@ -47,6 +47,18 @@ export const sales_invoices = sqliteTable(
     shippingPincode: text('shipping_pincode'),
     shippingGstin: text('shipping_gstin'),
     shippingStateCode: text('shipping_state_code'),
+
+    // Payment Snapshots (Soft References)
+    paymentAccountId: text('payment_account_id'),
+    bankNameSnapshot: text('bank_name_snapshot'),
+    accountNumberSnapshot: text('account_number_snapshot'),
+    ifscCodeSnapshot: text('ifsc_code_snapshot'),
+    branchNameSnapshot: text('branch_name_snapshot'),
+
+    // QR Snapshots (Soft References)
+    qrAccountId: text('qr_account_id'),
+    upiIdSnapshot: text('upi_id_snapshot'),
+    upiPayeeNameSnapshot: text('upi_payee_name_snapshot'),
     subtotal: integer('subtotal').default(0).notNull(),
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),
@@ -98,6 +110,9 @@ export const sales_invoice_items = sqliteTable(
     cessRateSnapshot: real('cess_rate_snapshot'),
     description: text('description'),
     hsnCode: text('hsn_code'),
+    itemTypeSnapshot: text('item_type_snapshot', {
+      enum: ['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'],
+    }),
     quantity: integer('quantity').default(0).notNull(),
     rate: integer('rate').default(0).notNull(),
     discountAmount: integer('discount_amount').default(0).notNull(),

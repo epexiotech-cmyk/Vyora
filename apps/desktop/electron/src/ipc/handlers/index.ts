@@ -24,24 +24,34 @@ export * from './accountingHandlers';
 export * from './authHandlers';
 export * from './systemHandlers';
 export * from './documentNumberingHandlers';
+export * from './paymentAccountHandlers';
+export * from './fundTransferHandlers';
+export * from './developerDatabaseHandlers';
+export * from './exportHandlers';
 
-import { app } from 'electron';
+import { DeveloperFeatures } from '../../main/DeveloperFeatures';
 
 import { registerAccountingHandlers } from './accountingHandlers';
 import { registerAppSettingsHandlers } from './appSettingsHandlers';
 import { registerAuthHandlers } from './authHandlers';
 import { registerBootstrapHandlers } from './bootstrapHandlers';
 import { registerCalculationHandlers } from './calculationHandlers';
+import { registerChartOfAccountsHandlers } from './chartOfAccountsHandlers';
 import { registerCompanyHandlers } from './companyHandlers';
 import { registerCountryHandlers } from './countryHandlers';
 import { registerCurrencyHandlers } from './currencyHandlers';
 import { registerCustomerHandlers } from './customerHandlers';
+import { registerDeveloperDatabaseHandlers } from './developerDatabaseHandlers';
+import { registerDeveloperFeaturesHandlers } from './developerFeaturesHandlers';
 import { registerDevHandlers } from './devHandlers';
 import { registerDocumentNumberingHandlers } from './documentNumberingHandlers';
+import { registerExportHandlers } from './exportHandlers';
 import { registerFinancialYearHandlers } from './financialYearHandlers';
+import { registerFundTransferHandlers } from './fundTransferHandlers';
 import { registerHsnHandlers } from './hsnHandlers';
 import { registerInventoryHandlers } from './inventoryHandlers';
 import { registerJournalHandlers } from './journalHandlers';
+import { registerPaymentAccountHandlers } from './paymentAccountHandlers';
 import { registerPincodeHandlers } from './pincodeHandlers';
 import { registerPrintHandlers } from './printHandlers';
 import { registerProductHandlers } from './productHandlers';
@@ -81,11 +91,20 @@ export function registerAllHandlers() {
   registerHsnHandlers();
   registerSacHandlers();
   registerAccountingHandlers();
+  registerChartOfAccountsHandlers();
   registerReportsHandlers();
   registerDocumentNumberingHandlers();
   registerAppSettingsHandlers();
 
-  if (!app.isPackaged) {
+  registerPaymentAccountHandlers();
+  registerFundTransferHandlers();
+  registerExportHandlers();
+
+  // Register unconditional developer features check
+  registerDeveloperFeaturesHandlers();
+
+  if (DeveloperFeatures.isEnabled()) {
     registerDevHandlers();
+    registerDeveloperDatabaseHandlers();
   }
 }

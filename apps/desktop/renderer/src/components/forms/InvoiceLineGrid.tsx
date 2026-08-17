@@ -29,6 +29,10 @@ const emptyLine = {
   discountPercent: 0,
   taxPercent: 0,
   amount: 0,
+  unitId: null,
+  taxId: null,
+  hsnCode: null,
+  itemTypeSnapshot: null,
 };
 
 function InvoiceLineRow({
@@ -65,6 +69,12 @@ function InvoiceLineRow({
 
   return (
     <div className="group border-border/50 hover:bg-muted/50 flex items-center border-b transition-colors">
+      <input type="hidden" {...register(`lines.${index}.productName`)} />
+      <input type="hidden" {...register(`lines.${index}.unitId`)} />
+      <input type="hidden" {...register(`lines.${index}.taxId`)} />
+      <input type="hidden" {...register(`lines.${index}.hsnCode`)} />
+      <input type="hidden" {...register(`lines.${index}.itemTypeSnapshot`)} />
+
       {/* 1. # */}
       <div className="text-muted-foreground border-border/50 flex h-12 w-12 shrink-0 items-center justify-center border-r text-xs">
         {index + 1}
@@ -108,7 +118,22 @@ function InvoiceLineRow({
             lineErrors.qty && 'text-destructive font-bold',
           )}
           disabled={isReadOnly}
-          {...register(`lines.${index}.qty`, { valueAsNumber: true })}
+          {...register(`lines.${index}.qty`, {
+            onChange: (e) => {
+              const target = e.target;
+              if (target.value.includes('.')) {
+                const parts = target.value.split('.');
+                if (parts[1].length > 3) {
+                  target.value = `${parts[0]}.${parts[1].slice(0, 3)}`;
+                }
+              }
+            },
+          })}
+          onKeyDown={(e) => {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           data-testid={`line-qty-input-${index}`}
         />
       </div>
@@ -130,7 +155,22 @@ function InvoiceLineRow({
             lineErrors.rate && 'text-destructive font-bold',
           )}
           disabled={isReadOnly}
-          {...register(`lines.${index}.rate`, { valueAsNumber: true })}
+          {...register(`lines.${index}.rate`, {
+            onChange: (e) => {
+              const target = e.target;
+              if (target.value.includes('.')) {
+                const parts = target.value.split('.');
+                if (parts[1].length > 2) {
+                  target.value = `${parts[0]}.${parts[1].slice(0, 2)}`;
+                }
+              }
+            },
+          })}
+          onKeyDown={(e) => {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
           data-testid={`line-rate-input-${index}`}
         />
       </div>
@@ -153,7 +193,22 @@ function InvoiceLineRow({
             lineErrors.discountPercent && 'text-destructive font-bold',
           )}
           disabled={isReadOnly}
-          {...register(`lines.${index}.discountPercent`, { valueAsNumber: true })}
+          {...register(`lines.${index}.discountPercent`, {
+            onChange: (e) => {
+              const target = e.target;
+              if (target.value.includes('.')) {
+                const parts = target.value.split('.');
+                if (parts[1].length > 2) {
+                  target.value = `${parts[0]}.${parts[1].slice(0, 2)}`;
+                }
+              }
+            },
+          })}
+          onKeyDown={(e) => {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
         />
       </div>
 
@@ -175,7 +230,22 @@ function InvoiceLineRow({
             lineErrors.taxPercent && 'text-destructive font-bold',
           )}
           disabled={isReadOnly}
-          {...register(`lines.${index}.taxPercent`, { valueAsNumber: true })}
+          {...register(`lines.${index}.taxPercent`, {
+            onChange: (e) => {
+              const target = e.target;
+              if (target.value.includes('.')) {
+                const parts = target.value.split('.');
+                if (parts[1].length > 2) {
+                  target.value = `${parts[0]}.${parts[1].slice(0, 2)}`;
+                }
+              }
+            },
+          })}
+          onKeyDown={(e) => {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
         />
       </div>
 
@@ -235,6 +305,7 @@ export function InvoiceLineGrid({
       setValue(`lines.${index}.unitId`, product.unitId || null);
       setValue(`lines.${index}.taxId`, product.taxId || null);
       setValue(`lines.${index}.hsnCode`, product.hsnCode || null);
+      setValue(`lines.${index}.itemTypeSnapshot`, product.itemType || null);
 
       if (product.taxId) {
         try {

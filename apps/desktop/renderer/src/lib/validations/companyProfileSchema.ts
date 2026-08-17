@@ -28,7 +28,9 @@ export const companyProfileSchema = z.object({
       { message: 'Invalid PAN format' },
     ),
   constitutionType: z.string().optional().nullable(),
+  constitutionTypeOther: z.string().optional().nullable(),
   businessType: z.string().optional().nullable(),
+  businessTypeOther: z.string().optional().nullable(),
   addressLine1: z.string().optional().nullable(),
   addressLine2: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
@@ -86,6 +88,20 @@ export const companyProfileSchema = z.object({
     .min(3, 'Currency is required')
     .max(3, 'Currency code must be exactly 3 characters')
     .optional(),
+  defaultUpiId: z
+    .string()
+    .optional()
+    .nullable()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        return /^[^@\s]+@[^@\s]+$/.test(val);
+      },
+      { message: 'Invalid UPI ID format' },
+    ),
+  upiPayeeName: z.string().optional().nullable(),
+  showQrOnInvoice: z.boolean().default(false).optional().nullable(),
+  showBankDetailsOnInvoice: z.boolean().default(false).optional().nullable(),
 });
 
 export type CompanyProfileFormValues = z.infer<typeof companyProfileSchema>;

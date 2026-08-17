@@ -6,6 +6,7 @@ import {
 } from '@vyora/types';
 import { ipcMain } from 'electron';
 
+import { accountBalanceSummaryService } from '../../services/AccountBalanceSummaryService';
 import { balanceSheetService } from '../../services/BalanceSheetService';
 import { bankBookService } from '../../services/BankBookService';
 import { cashBookService } from '../../services/CashBookService';
@@ -17,7 +18,9 @@ import { inventoryReportService } from '../../services/InventoryReportService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
 import { outstandingReportService } from '../../services/OutstandingReportService';
 import { profitLossService } from '../../services/ProfitLossService';
+import { transferRegisterService } from '../../services/TransferRegisterService';
 import { trialBalanceService } from '../../services/TrialBalanceService';
+import { upiBookService } from '../../services/UpiBookService';
 import { createIpcHandler } from '../wrapper';
 export function registerReportsHandlers() {
   ipcMain.handle(
@@ -189,6 +192,84 @@ export function registerReportsHandlers() {
         voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
         searchQuery: args.searchQuery,
       });
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getUpiBook',
+    async (
+      _event,
+      args: {
+        ledgerId: string;
+        startDate?: Date;
+        endDate?: Date;
+        voucherType?: string;
+        searchQuery?: string;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate UPI Book: Missing company or financial year context');
+      }
+
+      return await upiBookService.getUpiBook({
+        companyId,
+        financialYearId: financialYear.id,
+        ledgerId: args.ledgerId,
+        startDate: args.startDate,
+        endDate: args.endDate,
+        voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
+        searchQuery: args.searchQuery,
+      });
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getTransferRegister',
+    async (
+      _event,
+      args: {
+        startDate?: Date;
+        endDate?: Date;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error(
+          'Cannot generate Transfer Register: Missing company or financial year context',
+        );
+      }
+
+      return await transferRegisterService.getTransferRegister(
+        companyId,
+        financialYear.id,
+        args.startDate,
+        args.endDate,
+      );
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getAccountBalanceSummary',
+    async (_event, args: { asOfDate?: Date } = {}) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error(
+          'Cannot generate Account Balance Summary: Missing company or financial year context',
+        );
+      }
+
+      return await accountBalanceSummaryService.getAccountBalanceSummary(
+        companyId,
+        financialYear.id,
+        args.asOfDate,
+      );
     },
   );
 

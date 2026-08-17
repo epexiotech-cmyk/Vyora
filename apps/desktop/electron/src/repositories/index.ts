@@ -12,3 +12,4 @@ export * from './AuthRepository';
 export * from './UnitRepository';
 export * from './TaxRepository';
 export * from './DocumentNumberingRepository';
+export * from './PaymentAccountRepository';

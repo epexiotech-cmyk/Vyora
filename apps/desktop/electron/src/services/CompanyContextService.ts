@@ -4,6 +4,7 @@ import {
   CompanyContextDto,
   CurrencyDto,
   CreateCompanyInput,
+  CurrencyMeta,
 } from '@vyora/types';
 
 import { SettingsRepository, CompanyRepository } from '../repositories';
@@ -42,7 +43,16 @@ export class CompanyContextService {
   // Phase 5.1.2A - Backend Implementation
   public async getProfile(id: string): Promise<CompanyProfileDto | null> {
     const profile = await this.companyRepo.getById(id);
-    return profile || null;
+    if (profile && profile.logoPath) {
+      // Inline migration for any previously stored absolute paths
+      if (profile.logoPath.includes('/') || profile.logoPath.includes('\\')) {
+        const basename = profile.logoPath.replace(/^.*[\\/]/, '');
+        profile.logoPath = basename;
+        // Optionally update it in DB
+        await this.companyRepo.updateProfile(id, { logoPath: basename });
+      }
+    }
+    return (profile as unknown as CompanyProfileDto) || null;
   }
 
   public async getContext(): Promise<CompanyContextDto | null> {
@@ -56,26 +66,29 @@ export class CompanyContextService {
     const company = await this.getProfile(id);
     if (!company) return null;
 
+    let currencyMeta: CurrencyMeta | null = null;
+
     const settings = await this.settingsRepo.getCompanySettings(id);
-    if (!settings || !settings.currency) return null;
+    if (settings && settings.currency) {
+      const { currencyService } = await import('../modules/directories/currency/CurrencyService');
+      const currencyRes = await currencyService.getByCode(settings.currency);
 
-    const { currencyService } = await import('../modules/directories/currency/CurrencyService');
-    const currencyRes = await currencyService.getByCode(settings.currency);
-
-    if (!currencyRes.success || !currencyRes.data) return null;
-
-    const currencyDto = currencyRes.data as CurrencyDto;
+      if (currencyRes.success && currencyRes.data) {
+        const currencyDto = currencyRes.data as CurrencyDto;
+        currencyMeta = {
+          currencyCode: currencyDto.currencyCode,
+          currencyName: currencyDto.currencyName,
+          symbol: currencyDto.symbol,
+          locale: currencyDto.locale,
+          decimalPlaces: currencyDto.decimalPlaces,
+          symbolPosition: currencyDto.symbolPosition as 'PREFIX' | 'SUFFIX',
+        };
+      }
+    }
 
     this.cachedContext = {
       company,
-      currency: {
-        currencyCode: currencyDto.currencyCode,
-        currencyName: currencyDto.currencyName,
-        symbol: currencyDto.symbol,
-        locale: currencyDto.locale,
-        decimalPlaces: currencyDto.decimalPlaces,
-        symbolPosition: currencyDto.symbolPosition as 'PREFIX' | 'SUFFIX',
-      },
+      currency: currencyMeta as unknown as CurrencyMeta,
     };
 
     return this.cachedContext;
@@ -132,6 +145,12 @@ export class CompanyContextService {
       delete updateData.currency;
     }
 
+    if (updateData.defaultUpiId) {
+      if (!/^[^@\s]+@[^@\s]+$/.test(updateData.defaultUpiId)) {
+        throw new Error('Invalid UPI ID format');
+      }
+    }
+
     const updated = await this.companyRepo.updateProfile(id, updateData);
     if (!updated) {
       throw new Error(`Company profile with id ${id} not found.`);
@@ -142,6 +161,110 @@ export class CompanyContextService {
     }
 
     return updated;
+  }
+
+  public async getLogoPath(companyId: string): Promise<string | null> {
+    const profile = await this.getProfile(companyId);
+    return profile?.logoPath || null;
+  }
+
+  public async uploadLogo(
+    companyId: string,
+    filename: string,
+    buffer: Buffer | ArrayBuffer | ArrayBufferView,
+  ): Promise<CompanyProfileDto> {
+    if (!filename || !buffer) {
+      throw new Error('Invalid logo file data provided.');
+    }
+
+    let nodeBuffer: Buffer;
+
+    if (Buffer.isBuffer(buffer)) {
+      nodeBuffer = buffer;
+    } else if (buffer instanceof ArrayBuffer) {
+      nodeBuffer = Buffer.from(buffer);
+    } else if (ArrayBuffer.isView(buffer)) {
+      nodeBuffer = Buffer.from(buffer.buffer);
+    } else {
+      throw new Error('Invalid logo buffer received.');
+    }
+
+    if (nodeBuffer.length === 0) {
+      throw new Error('Invalid logo file data provided.');
+    }
+
+    if (nodeBuffer.length > 5 * 1024 * 1024) {
+      throw new Error('File size exceeds 5MB limit.');
+    }
+
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (!ext || !['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext)) {
+      throw new Error('Invalid logo file type. Only png, jpg, jpeg, webp, and svg are allowed.');
+    }
+
+    const { fileSystemService } = await import('./filesystem/FileSystemService');
+
+    const profile = await this.getProfile(companyId);
+    if (!profile) {
+      throw new Error(`Company profile with id ${companyId} not found.`);
+    }
+
+    const previousLogoPath = profile.logoPath;
+    const timestamp = Date.now();
+    const newFilename = `company-logo-${timestamp}.${ext}`;
+
+    try {
+      fileSystemService.saveCompanyLogo(companyId, newFilename, nodeBuffer);
+    } catch (err) {
+      throw new Error(`Failed to save logo file: ${(err as Error).message}`);
+    }
+
+    try {
+      await this.companyRepo.updateProfile(companyId, { logoPath: newFilename });
+    } catch (err) {
+      fileSystemService.deleteCompanyLogo(companyId, newFilename);
+      throw new Error(`Failed to update database: ${(err as Error).message}`);
+    }
+
+    if (previousLogoPath && previousLogoPath !== newFilename) {
+      try {
+        fileSystemService.deleteCompanyLogo(companyId, previousLogoPath);
+      } catch (err) {
+        console.warn('Failed to delete previous logo', err);
+      }
+    }
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    const updatedProfile = await this.getProfile(companyId);
+    return updatedProfile!;
+  }
+
+  public async deleteLogo(companyId: string): Promise<CompanyProfileDto> {
+    const { fileSystemService } = await import('./filesystem/FileSystemService');
+    const profile = await this.getProfile(companyId);
+    if (!profile) {
+      throw new Error(`Company profile with id ${companyId} not found.`);
+    }
+
+    const previousLogoPath = profile.logoPath;
+    if (previousLogoPath) {
+      await this.companyRepo.updateProfile(companyId, { logoPath: null });
+      try {
+        fileSystemService.deleteCompanyLogo(companyId, previousLogoPath);
+      } catch (err) {
+        console.warn('Failed to delete previous logo from disk', err);
+      }
+    }
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    const updatedProfile = await this.getProfile(companyId);
+    return updatedProfile!;
   }
 
   public async listCompanies(): Promise<import('@vyora/types').CompanyDto[]> {

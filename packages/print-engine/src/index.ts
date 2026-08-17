@@ -40,11 +40,10 @@ export function registerAllTemplates() {
   Handlebars.registerHelper('formatDate', function (dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   });
   Handlebars.registerHelper('eq', function (a, b) {
     return a === b;

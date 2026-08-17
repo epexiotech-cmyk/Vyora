@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   sqliteTable,
   text,
@@ -38,6 +39,7 @@ export const VoucherTypeEnum = [
   'Journal',
   'CreditNote',
   'DebitNote',
+  'OPENING_BALANCE',
 ] as const;
 export type VoucherType = (typeof VoucherTypeEnum)[number];
 
@@ -51,6 +53,8 @@ export const VoucherReferenceTypeEnum = [
   'CREDIT_NOTE',
   'DEBIT_NOTE',
   'MANUAL',
+  'PAYMENT_ACCOUNT_OPENING',
+  'FUND_TRANSFER',
 ] as const;
 export type VoucherReferenceType = (typeof VoucherReferenceTypeEnum)[number];
 // -----------------------------------------------------------------------------
@@ -186,11 +190,9 @@ export const vouchers = sqliteTable(
       table.voucherType,
       table.voucherNumber,
     ),
-    uniqueIndex('idx_vouchers_company_reference_unique').on(
-      table.companyId,
-      table.referenceType,
-      table.referenceId,
-    ),
+    uniqueIndex('idx_vouchers_company_reference_unique')
+      .on(table.companyId, table.referenceType, table.referenceId)
+      .where(sql`is_cancelled = 0`),
     index('idx_vouchers_company_date').on(table.companyId, table.voucherDate),
   ],
 );

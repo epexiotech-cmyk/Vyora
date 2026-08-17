@@ -16,4 +16,20 @@ export function registerJournalHandlers() {
       });
     },
   );
+
+  createIpcHandler<{ reversalVoucherId: string }>(
+    'journal:cancelVoucher',
+    async (_event, id: string) => {
+      const result = await journalService.cancelVoucher(id);
+      return { success: true, data: result };
+    },
+  );
+
+  createIpcHandler<{ reversalVoucherId: string }>(
+    'journal:reverseVoucher',
+    async (_event, id: string) => {
+      const result = await journalService.reverseVoucher(id);
+      return { success: true, data: result };
+    },
+  );
 }

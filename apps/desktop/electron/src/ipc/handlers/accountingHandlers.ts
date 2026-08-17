@@ -6,6 +6,8 @@ import {
   VoucherFilterDto,
   VoucherListItemDto,
   LedgerLookupDto,
+  FinancialOverviewChartRequestDto,
+  FinancialOverviewChartResponseDto,
 } from '@vyora/types';
 
 import { journalService } from '../../services/JournalService';
@@ -54,4 +56,11 @@ export function registerAccountingHandlers() {
     const data = await journalService.getActiveLedgers();
     return { success: true, data };
   });
+  createIpcHandler<FinancialOverviewChartResponseDto[]>(
+    'accounting:getFinancialOverviewChart',
+    async (_event, req: FinancialOverviewChartRequestDto) => {
+      const data = await journalService.getFinancialOverviewChart(req);
+      return { success: true, data };
+    },
+  );
 }

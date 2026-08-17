@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { VyoraDatabase } from '@vyora/database';
-import Database from 'better-sqlite3';
+import Database from 'better-sqlite3-multiple-ciphers';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 
 import { loggerService } from '../logger/LoggerService';

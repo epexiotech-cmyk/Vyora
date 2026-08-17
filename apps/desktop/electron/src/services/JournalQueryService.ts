@@ -44,6 +44,20 @@ export class JournalQueryService {
   public async getLedgerGroups(companyId: string) {
     return await journalRepository.getLedgerGroups(companyId);
   }
+
+  public async getTransferRegisterEntries(
+    companyId: string,
+    financialYearId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    return await journalRepository.getTransferRegisterEntries(
+      companyId,
+      financialYearId,
+      startDate,
+      endDate,
+    );
+  }
 }
 
 export const journalQueryService = new JournalQueryService();

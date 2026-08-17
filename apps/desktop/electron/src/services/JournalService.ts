@@ -10,6 +10,8 @@ import {
   TrialBalanceDto,
   LedgerStatementDto,
   AccountingDashboardDto,
+  FinancialOverviewChartRequestDto,
+  FinancialOverviewChartResponseDto,
 } from '@vyora/types';
 import { DocumentType } from '@vyora/types';
 import { eq, and } from 'drizzle-orm';
@@ -21,7 +23,9 @@ import { companyContextService } from './CompanyContextService';
 import { dbService } from './database/DatabaseService';
 import { documentNumberingService } from './DocumentNumberingService';
 import { financialYearContextService } from './FinancialYearContextService';
+import { profitLossService } from './ProfitLossService';
 import { systemLedgerResolver } from './SystemLedgerResolverService';
+import { trialBalanceService } from './TrialBalanceService';
 
 export class JournalService {
   /**
@@ -256,7 +260,8 @@ export class JournalService {
       invoiceId: string;
       invoiceDate: Date;
       supplierId: string;
-      totalTaxableAmount: number;
+      totalInventoryAmount: number;
+      totalExpenseAmount: number;
       totalCgst: number;
       totalSgst: number;
       totalIgst: number;
@@ -286,6 +291,7 @@ export class JournalService {
     const inputSgst = systemLedgerResolver.getSystemLedgerByName('Input SGST', tx);
     const inputIgst = systemLedgerResolver.getSystemLedgerByName('Input IGST', tx);
     const inventoryLedger = systemLedgerResolver.getSystemLedgerByName('Inventory', tx);
+    const purchasesLedger = systemLedgerResolver.getSystemLedgerByName('Purchases', tx);
     const roundOffLedger = systemLedgerResolver.getSystemLedgerByName('Round Off', tx);
 
     // 2. Build Entries
@@ -297,12 +303,24 @@ export class JournalService {
     }[] = [];
 
     // Inventory Debit (Asset Increase)
-    entries.push({
-      ledgerId: inventoryLedger.id,
-      debitAmount: payload.totalTaxableAmount,
-      creditAmount: 0,
-      narration: `Purchase Bill ${payload.invoiceId}`,
-    });
+    if (payload.totalInventoryAmount > 0) {
+      entries.push({
+        ledgerId: inventoryLedger.id,
+        debitAmount: payload.totalInventoryAmount,
+        creditAmount: 0,
+        narration: `Purchase Bill ${payload.invoiceId} (Inventory)`,
+      });
+    }
+
+    // Purchases Debit (Expenses)
+    if (payload.totalExpenseAmount > 0) {
+      entries.push({
+        ledgerId: purchasesLedger.id,
+        debitAmount: payload.totalExpenseAmount,
+        creditAmount: 0,
+        narration: `Purchase Bill ${payload.invoiceId} (Services/Non-Inventory)`,
+      });
+    }
 
     // Input GST Debits
     if (payload.totalCgst > 0) {
@@ -455,7 +473,11 @@ export class JournalService {
 
     // 5. Optionally, mark original voucher as cancelled (if required by design, though prompt said "DO NOT mutate original voucher entries". Marking the header as cancelled is usually required to link them or just leaving it is fine as long as balances offset. Let's just update header isCancelled)
     tx.update(vouchers)
-      .set({ isCancelled: true, reversalVoucherId })
+      .set({
+        isCancelled: true,
+        reversalVoucherId,
+        referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
+      })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
@@ -539,11 +561,128 @@ export class JournalService {
 
     // 5. Mark original voucher as cancelled
     tx.update(vouchers)
-      .set({ isCancelled: true, reversalVoucherId })
+      .set({
+        isCancelled: true,
+        reversalVoucherId,
+        referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
+      })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
     return { reversalVoucherId };
+  }
+
+  public async cancelVoucher(
+    voucherId: string,
+    options?: { allowSystemVoucherCancellation?: boolean },
+  ): Promise<{ reversalVoucherId: string }> {
+    const companyId = companyContextService.getActiveCompany() as string;
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!fy) throw new Error('No active financial year context');
+
+    return dbService.getDb().transaction(async (tx) => {
+      const originalVouchers = tx
+        .select()
+        .from(vouchers)
+        .where(and(eq(vouchers.id, voucherId), eq(vouchers.companyId, companyId)))
+        .all();
+
+      if (originalVouchers.length === 0) throw new Error('Voucher not found');
+      const originalVoucher = originalVouchers[0];
+
+      if (originalVoucher.isCancelled) throw new Error('Voucher is already cancelled');
+      if (originalVoucher.referenceType !== 'MANUAL' && !options?.allowSystemVoucherCancellation) {
+        throw new Error('Only manually created vouchers can be cancelled directly.');
+      }
+
+      const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
+        companyId,
+        DocumentType.JOURNAL_VOUCHER,
+        fy.id,
+        tx,
+      );
+
+      const reversalVoucher = {
+        id: randomUUID(),
+        companyId,
+        branchId: originalVoucher.branchId,
+        financialYearId: fy.id,
+        voucherType: 'Journal' as const,
+        voucherNumber: generatedVoucherNumber,
+        voucherDate: new Date(),
+        sourceModule: 'JournalService',
+        referenceType: 'MANUAL' as const,
+        referenceId: originalVoucher.id,
+        narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
+        isCancelled: false,
+        isFrozen: false,
+        syncVersion: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const createdReversal = journalRepository.cancelVoucher(voucherId, reversalVoucher, tx);
+      return { reversalVoucherId: createdReversal.id };
+    });
+  }
+
+  public async reverseVoucher(voucherId: string): Promise<{ reversalVoucherId: string }> {
+    const companyId = companyContextService.getActiveCompany() as string;
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!fy) throw new Error('No active financial year context');
+
+    return dbService.getDb().transaction(async (tx) => {
+      const originalVouchers = tx
+        .select()
+        .from(vouchers)
+        .where(and(eq(vouchers.id, voucherId), eq(vouchers.companyId, companyId)))
+        .all();
+
+      if (originalVouchers.length === 0) throw new Error('Voucher not found');
+      const originalVoucher = originalVouchers[0];
+
+      if (originalVoucher.isCancelled) throw new Error('Cannot reverse a cancelled voucher');
+      if (originalVoucher.referenceType !== 'MANUAL') {
+        throw new Error('Only manually created vouchers can be reversed directly.');
+      }
+
+      const originalEntries = tx
+        .select()
+        .from(voucher_entries)
+        .where(eq(voucher_entries.voucherId, originalVoucher.id))
+        .all();
+
+      const reversalEntries = originalEntries.map((entry) => ({
+        ledgerId: entry.ledgerId,
+        debitAmount: entry.creditAmount,
+        creditAmount: entry.debitAmount,
+        narration: `Reversal for Voucher ${originalVoucher.voucherNumber}`,
+      }));
+
+      const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
+        companyId,
+        DocumentType.JOURNAL_VOUCHER,
+        fy.id,
+        tx,
+      );
+
+      const reversalInput: CreateVoucherInput = {
+        voucherType: 'Journal',
+        voucherNumber: generatedVoucherNumber,
+        voucherDate: new Date(),
+        sourceModule: 'JournalService',
+        referenceType: 'MANUAL' as const,
+        referenceId: originalVoucher.id,
+        narration: `Reversal for ${originalVoucher.voucherNumber}`,
+        entries: reversalEntries,
+      };
+
+      const { voucherId: reversalVoucherId } = await this.createVoucher(reversalInput, tx);
+
+      // Do NOT mark the original as cancelled for a standard reversal
+
+      return { reversalVoucherId };
+    });
   }
 
   public async getVoucherById(voucherId: string): Promise<VoucherDetailDto> {
@@ -651,7 +790,204 @@ export class JournalService {
     if (!companyId) throw new Error('No active company found');
     if (!fy) throw new Error('No active financial year context');
 
-    return await journalRepository.getDashboardMetrics(companyId, fy.id);
+    // 1. Fetch DB metrics
+    const data = await journalRepository.getDashboardMetricsData(companyId, fy.id);
+
+    // 2. Fetch Trial Balance status
+    const tb = await trialBalanceService.getTrialBalance(companyId, fy.id, new Date());
+    const isBalanced = tb.grandTotalDebit === tb.grandTotalCredit;
+    const difference = Math.abs(tb.grandTotalDebit - tb.grandTotalCredit);
+
+    // 3. Fetch current Profit/Loss
+    const pl = await profitLossService.getProfitLoss(companyId, fy.id, new Date());
+    const currentProfitLoss = pl.isProfit ? pl.netResult.amount : -pl.netResult.amount;
+
+    // 4. Calculate Financial Overview (Current Month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const monthlyEntries = await journalRepository.getVoucherEntriesByDateRange(
+      companyId,
+      fy.id,
+      startOfMonth,
+      endOfMonth,
+    );
+
+    const dailyMap = new Map<string, { income: number; expense: number }>();
+
+    // Initialize map with all days in the month
+    for (let d = new Date(startOfMonth); d <= endOfMonth; d.setDate(d.getDate() + 1)) {
+      dailyMap.set(d.toISOString().split('T')[0], { income: 0, expense: 0 });
+    }
+
+    for (const entry of monthlyEntries) {
+      const dateStr = entry.voucherDate.toISOString().split('T')[0];
+      const stats = dailyMap.get(dateStr);
+      if (stats) {
+        if (entry.nature === 'Income') {
+          // Increase income if Cr, decrease if Dr
+          stats.income += entry.creditAmount - entry.debitAmount;
+        } else if (entry.nature === 'Expense') {
+          // Increase expense if Dr, decrease if Cr
+          stats.expense += entry.debitAmount - entry.creditAmount;
+        }
+      }
+    }
+
+    const financialOverview = Array.from(dailyMap.entries()).map(([dateStr, stats]) => ({
+      date: new Date(dateStr),
+      income: stats.income,
+      expense: stats.expense,
+      netProfit: stats.income - stats.expense,
+    }));
+
+    return {
+      totalLedgers: data.totalLedgers,
+      totalJournalEntries: data.totalJournalEntries,
+      trialBalanceStatus: { isBalanced, difference },
+      currentProfitLoss,
+      financialOverview,
+      recentJournals: data.recentJournals,
+      lastUpdatedAt: data.lastUpdatedAt,
+    };
+  }
+
+  public async getFinancialOverviewChart(
+    req: FinancialOverviewChartRequestDto,
+  ): Promise<FinancialOverviewChartResponseDto[]> {
+    const companyId = companyContextService.getActiveCompany();
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!companyId) throw new Error('No active company found');
+    if (!fy) throw new Error('No active financial year context');
+
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = now;
+    let groupBy: 'day' | 'week' | 'month' | 'quarter' | 'year' = 'day';
+
+    switch (req.timeRange) {
+      case 'daily':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+        groupBy = 'day';
+        break;
+      case 'weekly':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 28);
+        groupBy = 'week';
+        break;
+      case 'monthly':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        groupBy = 'day';
+        break;
+      case 'quarterly':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        groupBy = 'quarter';
+        break;
+      case 'half-yearly':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+        groupBy = 'month'; // Or custom half-year logic
+        break;
+      case 'annually':
+        startDate = new Date(now.getFullYear() - 4, 0, 1);
+        groupBy = 'year';
+        break;
+      case 'ytd':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        groupBy = 'month';
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        groupBy = 'day';
+    }
+
+    const entries = await journalRepository.getVoucherEntriesByDateRange(
+      companyId,
+      fy.id,
+      startDate,
+      endDate,
+    );
+
+    const dataMap = new Map<string, FinancialOverviewChartResponseDto>();
+
+    // Helper to format key based on grouping
+    const getGroupKey = (date: Date): { key: string; label: string; dateObj: Date } => {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const d = date.getDate();
+      switch (groupBy) {
+        case 'day':
+          return {
+            key: date.toISOString().split('T')[0],
+            label: `${d} ${date.toLocaleString('en', { month: 'short' })}`,
+            dateObj: date,
+          };
+        case 'week': {
+          // Simple weekly grouping by ISO week string could be complex. Let's just use start of week date
+          const startOfWeek = new Date(date);
+          startOfWeek.setDate(date.getDate() - date.getDay());
+          return {
+            key: startOfWeek.toISOString().split('T')[0],
+            label: `Week of ${startOfWeek.getDate()} ${startOfWeek.toLocaleString('en', { month: 'short' })}`,
+            dateObj: startOfWeek,
+          };
+        }
+        case 'month':
+          return {
+            key: `${year}-${month + 1}`,
+            label: `${date.toLocaleString('en', { month: 'short' })} ${year}`,
+            dateObj: new Date(year, month, 1),
+          };
+        case 'quarter': {
+          const q = Math.floor(month / 3) + 1;
+          return {
+            key: `${year}-Q${q}`,
+            label: `Q${q} ${year}`,
+            dateObj: new Date(year, (q - 1) * 3, 1),
+          };
+        }
+        case 'year':
+          return { key: `${year}`, label: `${year}`, dateObj: new Date(year, 0, 1) };
+        default:
+          return {
+            key: date.toISOString().split('T')[0],
+            label: date.toISOString().split('T')[0],
+            dateObj: date,
+          };
+      }
+    };
+
+    // We can pre-fill the map for 'daily' and 'monthly' (which is by day for current month) to ensure no gaps.
+    // For others, we just let it populate dynamically or we can pre-populate.
+    // Pre-populate for day grouping
+    if (groupBy === 'day') {
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const { key, label, dateObj } = getGroupKey(new Date(d));
+        dataMap.set(key, { date: dateObj, income: 0, expense: 0, netProfit: 0, label });
+      }
+    }
+
+    for (const entry of entries) {
+      const { key, label, dateObj } = getGroupKey(entry.voucherDate);
+      if (!dataMap.has(key)) {
+        dataMap.set(key, { date: dateObj, income: 0, expense: 0, netProfit: 0, label });
+      }
+      const stats = dataMap.get(key)!;
+      if (entry.nature === 'Income') {
+        stats.income += entry.creditAmount - entry.debitAmount;
+      } else if (entry.nature === 'Expense') {
+        stats.expense += entry.debitAmount - entry.creditAmount;
+      }
+    }
+
+    const results = Array.from(dataMap.values()).map((stats) => {
+      stats.netProfit = stats.income - stats.expense;
+      return stats;
+    });
+
+    results.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    return results;
   }
 
   // --- SYNC VARIANTS FOR TRANSACTION SAFETY ---
@@ -724,7 +1060,8 @@ export class JournalService {
       invoiceId: string;
       invoiceDate: Date;
       supplierId: string;
-      totalTaxableAmount: number;
+      totalInventoryAmount: number;
+      totalExpenseAmount: number;
       totalCgst: number;
       totalSgst: number;
       totalIgst: number;
@@ -753,6 +1090,7 @@ export class JournalService {
     const inputSgst = systemLedgerResolver.getSystemLedgerByName('Input SGST', tx);
     const inputIgst = systemLedgerResolver.getSystemLedgerByName('Input IGST', tx);
     const inventoryLedger = systemLedgerResolver.getSystemLedgerByName('Inventory', tx);
+    const purchasesLedger = systemLedgerResolver.getSystemLedgerByName('Purchases', tx);
     const roundOffLedger = systemLedgerResolver.getSystemLedgerByName('Round Off', tx);
 
     const entries: {
@@ -762,12 +1100,23 @@ export class JournalService {
       narration?: string;
     }[] = [];
 
-    entries.push({
-      ledgerId: inventoryLedger.id,
-      debitAmount: payload.totalTaxableAmount,
-      creditAmount: 0,
-      narration: `Purchase Bill ${payload.invoiceId}`,
-    });
+    if (payload.totalInventoryAmount > 0) {
+      entries.push({
+        ledgerId: inventoryLedger.id,
+        debitAmount: payload.totalInventoryAmount,
+        creditAmount: 0,
+        narration: `Purchase Bill ${payload.invoiceId} (Inventory)`,
+      });
+    }
+
+    if (payload.totalExpenseAmount > 0) {
+      entries.push({
+        ledgerId: purchasesLedger.id,
+        debitAmount: payload.totalExpenseAmount,
+        creditAmount: 0,
+        narration: `Purchase Bill ${payload.invoiceId} (Services/Non-Inventory)`,
+      });
+    }
 
     if (payload.totalCgst > 0) {
       entries.push({
@@ -916,7 +1265,11 @@ export class JournalService {
     );
 
     tx.update(vouchers)
-      .set({ isCancelled: true, reversalVoucherId })
+      .set({
+        isCancelled: true,
+        reversalVoucherId,
+        referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
+      })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
@@ -1115,7 +1468,11 @@ export class JournalService {
     );
 
     tx.update(vouchers)
-      .set({ isCancelled: true, reversalVoucherId })
+      .set({
+        isCancelled: true,
+        reversalVoucherId,
+        referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
+      })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 

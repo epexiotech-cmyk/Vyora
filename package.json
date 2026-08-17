@@ -5,7 +5,11 @@
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "node scripts/dev.js",
+    "dev:clean": "pnpm run kill && pnpm run dev",
+    "kill": "pnpm run kill:electron && pnpm run kill:renderer",
+    "kill:electron": "node scripts/kill-electron.js",
+    "kill:renderer": "node scripts/kill-renderer.js",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,json}\"",

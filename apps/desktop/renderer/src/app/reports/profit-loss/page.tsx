@@ -190,7 +190,7 @@ export default function ProfitLossPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-8">
+    <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profit & Loss Statement</h1>

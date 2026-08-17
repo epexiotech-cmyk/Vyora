@@ -15,10 +15,9 @@ import {
   VoucherDetailDto,
   TrialBalanceRowDto,
   LedgerStatementRowDto,
-  AccountingDashboardDto,
   JournalQueryFilter,
 } from '@vyora/types';
-import { eq, and, gte, lte, desc, asc, sql, ilike } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, asc, sql, ilike, sum } from 'drizzle-orm';
 
 import { BaseRepository, TransactionExecutor } from './BaseRepository';
 
@@ -96,7 +95,7 @@ export class JournalRepository extends BaseRepository {
     return createdReversalVoucher;
   }
 
-  public async getVoucherById(voucherId: string): Promise<VoucherDetailDto> {
+  public getVoucherById(voucherId: string): VoucherDetailDto {
     const voucher = this.db.select().from(vouchers).where(eq(vouchers.id, voucherId)).get();
     if (!voucher) throw new Error(`Voucher not found: ${voucherId}`);
 
@@ -167,10 +166,12 @@ export class JournalRepository extends BaseRepository {
         referenceId: vouchers.referenceId,
         narration: vouchers.narration,
         isCancelled: vouchers.isCancelled,
-        totalAmount: sql<number>`(SELECT SUM(${voucher_entries.debitAmount}) FROM ${voucher_entries} WHERE ${voucher_entries.voucherId} = ${vouchers.id})`,
+        totalAmount: sum(voucher_entries.debitAmount).mapWith(Number),
       })
       .from(vouchers)
+      .leftJoin(voucher_entries, eq(voucher_entries.voucherId, vouchers.id))
       .where(conditions)
+      .groupBy(vouchers.id)
       .orderBy(desc(vouchers.voucherDate), desc(vouchers.createdAt))
       .all();
 
@@ -188,8 +189,8 @@ export class JournalRepository extends BaseRepository {
       .select({
         ledgerId: voucher_entries.ledgerId,
         ledgerName: ledgers.name,
-        debitTotal: sql<number>`SUM(CAST(${voucher_entries.debitAmount} AS INTEGER))`,
-        creditTotal: sql<number>`SUM(CAST(${voucher_entries.creditAmount} AS INTEGER))`,
+        debitTotal: sum(voucher_entries.debitAmount).mapWith(Number),
+        creditTotal: sum(voucher_entries.creditAmount).mapWith(Number),
       })
       .from(voucher_entries)
       .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
@@ -331,8 +332,8 @@ export class JournalRepository extends BaseRepository {
     const movements = this.db
       .select({
         ledgerId: voucher_entries.ledgerId,
-        totalDebit: sql<number>`SUM(CAST(${voucher_entries.debitAmount} AS INTEGER))`,
-        totalCredit: sql<number>`SUM(CAST(${voucher_entries.creditAmount} AS INTEGER))`,
+        totalDebit: sum(voucher_entries.debitAmount).mapWith(Number),
+        totalCredit: sum(voucher_entries.creditAmount).mapWith(Number),
       })
       .from(voucher_entries)
       .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
@@ -394,8 +395,8 @@ export class JournalRepository extends BaseRepository {
 
     const priorEntries = this.db
       .select({
-        totalDebit: sql<number>`SUM(CAST(${voucher_entries.debitAmount} AS INTEGER))`,
-        totalCredit: sql<number>`SUM(CAST(${voucher_entries.creditAmount} AS INTEGER))`,
+        totalDebit: sum(voucher_entries.debitAmount).mapWith(Number),
+        totalCredit: sum(voucher_entries.creditAmount).mapWith(Number),
       })
       .from(voucher_entries)
       .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
@@ -451,29 +452,155 @@ export class JournalRepository extends BaseRepository {
     return { openingBalance, openingType, rows };
   }
 
-  public async getDashboardMetrics(
+  public async getVoucherEntriesByDateRange(
     companyId: string,
     financialYearId: string,
-  ): Promise<AccountingDashboardDto> {
-    const records = this.db
-      .select({ type: vouchers.voucherType, count: sql<number>`COUNT(*)` })
-      .from(vouchers)
-      .where(and(eq(vouchers.companyId, companyId), eq(vouchers.financialYearId, financialYearId)))
-      .groupBy(vouchers.voucherType)
+    startDate: Date,
+    endDate: Date,
+  ) {
+    const results = this.db
+      .select({
+        voucherDate: vouchers.voucherDate,
+        debitAmount: voucher_entries.debitAmount,
+        creditAmount: voucher_entries.creditAmount,
+        nature: ledger_groups.nature,
+      })
+      .from(voucher_entries)
+      .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
+      .innerJoin(ledgers, eq(voucher_entries.ledgerId, ledgers.id))
+      .innerJoin(ledger_groups, eq(ledgers.groupId, ledger_groups.id))
+      .where(
+        and(
+          eq(vouchers.companyId, companyId),
+          eq(vouchers.financialYearId, financialYearId),
+          gte(vouchers.voucherDate, startDate),
+          lte(vouchers.voucherDate, endDate),
+        ),
+      )
       .all();
 
-    let totalVouchers = 0;
-    let salesVoucherCount = 0;
-    let purchaseVoucherCount = 0;
+    return results;
+  }
 
-    for (const r of records) {
-      const c = Number(r.count);
-      totalVouchers += c;
-      if (r.type === 'Sales') salesVoucherCount += c;
-      if (r.type === 'Purchase') purchaseVoucherCount += c;
+  public async getDashboardMetricsData(companyId: string, financialYearId: string) {
+    const activeLedgersCount = this.db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(ledgers)
+      .where(and(eq(ledgers.companyId, companyId), eq(ledgers.isActive, true)))
+      .get();
+
+    const journalVouchersCount = this.db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(vouchers)
+      .where(
+        and(
+          eq(vouchers.companyId, companyId),
+          eq(vouchers.financialYearId, financialYearId),
+          eq(vouchers.voucherType, 'Journal'),
+        ),
+      )
+      .get();
+
+    // Find the latest update time across vouchers or ledgers
+    const latestVoucher = this.db
+      .select({ updatedAt: vouchers.updatedAt })
+      .from(vouchers)
+      .where(eq(vouchers.companyId, companyId))
+      .orderBy(desc(vouchers.updatedAt))
+      .limit(1)
+      .get();
+
+    const latestLedger = this.db
+      .select({ updatedAt: ledgers.updatedAt })
+      .from(ledgers)
+      .where(eq(ledgers.companyId, companyId))
+      .orderBy(desc(ledgers.updatedAt))
+      .limit(1)
+      .get();
+
+    let lastUpdatedAt = new Date(0);
+    if (latestVoucher?.updatedAt && latestVoucher.updatedAt > lastUpdatedAt) {
+      lastUpdatedAt = latestVoucher.updatedAt;
+    }
+    if (latestLedger?.updatedAt && latestLedger.updatedAt > lastUpdatedAt) {
+      lastUpdatedAt = latestLedger.updatedAt;
     }
 
-    return { totalVouchers, salesVoucherCount, purchaseVoucherCount };
+    // Recent Journals
+    const recentJournalVouchers = this.db
+      .select({
+        id: vouchers.id,
+        date: vouchers.voucherDate,
+        voucherNumber: vouchers.voucherNumber,
+        totalAmount: sum(voucher_entries.debitAmount).mapWith(Number),
+      })
+      .from(vouchers)
+      .leftJoin(voucher_entries, eq(voucher_entries.voucherId, vouchers.id))
+      .where(
+        and(
+          eq(vouchers.companyId, companyId),
+          eq(vouchers.financialYearId, financialYearId),
+          eq(vouchers.voucherType, 'Journal'),
+        ),
+      )
+      .groupBy(vouchers.id)
+      .orderBy(desc(vouchers.voucherDate), desc(vouchers.createdAt))
+      .limit(5)
+      .all();
+
+    return {
+      totalLedgers: Number(activeLedgersCount?.count) || 0,
+      totalJournalEntries: Number(journalVouchersCount?.count) || 0,
+      lastUpdatedAt: lastUpdatedAt.getTime() === 0 ? new Date() : lastUpdatedAt,
+      recentJournals: recentJournalVouchers.map((v) => ({
+        id: v.id,
+        date: v.date,
+        voucherNumber: v.voucherNumber,
+        amount: v.totalAmount || 0,
+      })),
+    };
+  }
+  public async getTransferRegisterEntries(
+    companyId: string,
+    financialYearId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ) {
+    let conditions = and(
+      eq(vouchers.companyId, companyId),
+      eq(vouchers.financialYearId, financialYearId),
+      eq(vouchers.referenceType, 'FUND_TRANSFER'),
+      eq(vouchers.voucherType, 'Contra'),
+    );
+    if (startDate) {
+      conditions = and(conditions, gte(vouchers.voucherDate, startDate));
+    }
+    if (endDate) {
+      conditions = and(conditions, lte(vouchers.voucherDate, endDate));
+    }
+
+    const rows = this.db
+      .select({
+        voucherId: vouchers.id,
+        voucherNumber: vouchers.voucherNumber,
+        voucherDate: vouchers.voucherDate,
+        isCancelled: vouchers.isCancelled,
+        createdAt: vouchers.createdAt,
+        ledgerId: voucher_entries.ledgerId,
+        ledgerName: ledgers.name,
+        debitAmount: voucher_entries.debitAmount,
+        creditAmount: voucher_entries.creditAmount,
+        narration: voucher_entries.narration,
+        entryId: voucher_entries.id,
+      })
+      .from(vouchers)
+      .innerJoin(voucher_entries, eq(vouchers.id, voucher_entries.voucherId))
+      .innerJoin(ledgers, eq(voucher_entries.ledgerId, ledgers.id))
+      .where(conditions)
+      .orderBy(desc(vouchers.voucherDate), desc(vouchers.createdAt))
+      .all();
+
+    return rows;
   }
 }
 

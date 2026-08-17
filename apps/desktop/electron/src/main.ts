@@ -13,6 +13,15 @@ protocol.registerSchemesAsPrivileged([
       bypassCSP: true,
     },
   },
+  {
+    scheme: 'vyora-asset',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: true,
+    },
+  },
 ]);
 
 import { registerAllHandlers } from './ipc/handlers';
@@ -50,6 +59,25 @@ async function bootstrap() {
     return net.fetch(pathToFileURL(absolutePath).toString());
   });
 
+  protocol.handle('vyora-asset', async (request) => {
+    try {
+      const urlPath = decodeURIComponent(request.url.slice('vyora-asset://'.length));
+      const cleanPath = urlPath.split('?')[0].split('#')[0];
+
+      const { fileSystemService } = await import('./services/filesystem/FileSystemService');
+      const resolvedPath = fileSystemService.resolveAttachmentPath(cleanPath);
+
+      if (!resolvedPath) {
+        return new Response('Not Found', { status: 404 });
+      }
+
+      return net.fetch(pathToFileURL(resolvedPath).toString());
+    } catch (err) {
+      console.error('Vyora Asset Protocol Error:', err);
+      return new Response('Internal Server Error', { status: 500 });
+    }
+  });
+
   // Show Splash Screen immediately
   splashWindow = new SplashWindow();
   await splashWindow.create();
@@ -82,9 +110,29 @@ async function bootstrap() {
   });
 
   try {
-    await dbService.init();
-    await directoryManagerDatabaseService.bootDirectoryDatabase();
-    registerAllHandlers();
+    try {
+      await dbService.init();
+    } catch (err) {
+      console.error('[BOOT ERROR] DatabaseService failed', err);
+      throw err;
+    }
+
+    try {
+      await directoryManagerDatabaseService.bootDirectoryDatabase();
+    } catch (err) {
+      console.error('[BOOT ERROR] Directory databases failed', err);
+      throw err;
+    }
+
+    try {
+      registerAllHandlers();
+      ipcMain.handle('system:test', () => {
+        return 'OK';
+      });
+    } catch (err) {
+      console.error('[BOOT ERROR] registerAllHandlers failed', err);
+      throw err;
+    }
 
     try {
       await companyContextService.loadActiveCompany();
@@ -182,12 +230,16 @@ async function bootstrap() {
     if (splashFinished) return;
     splashFinished = true;
 
-    mainWindow = new MainWindow(isDev);
-    await mainWindow.create(() => {
-      splashWindow?.fadeOutAndClose();
-      splashWindow = null;
-      mainWindow?.window?.show();
-    });
+    try {
+      mainWindow = new MainWindow(isDev);
+      await mainWindow.create(() => {
+        splashWindow?.fadeOutAndClose();
+        splashWindow = null;
+        mainWindow?.window?.show();
+      });
+    } catch (err) {
+      console.error('[BOOT ERROR] BrowserWindow creation failed', err);
+    }
   };
 
   // Wait for splash animation IPC event or timeout

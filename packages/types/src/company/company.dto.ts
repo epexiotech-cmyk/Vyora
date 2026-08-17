@@ -42,6 +42,11 @@ export interface CompanyProfileDto {
   mobile?: string | null;
   telephone?: string | null;
   website?: string | null;
+  logoPath?: string | null;
+  defaultUpiId?: string | null;
+  upiPayeeName?: string | null;
+  showQrOnInvoice?: boolean | null;
+  showBankDetailsOnInvoice?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date | null;
@@ -77,6 +82,10 @@ export interface UpdateCompanyProfileRequest {
   telephone?: string | null;
   website?: string | null;
   currency?: string;
+  defaultUpiId?: string | null;
+  upiPayeeName?: string | null;
+  showQrOnInvoice?: boolean | null;
+  showBankDetailsOnInvoice?: boolean | null;
 }
 
 // Backward compatibility for existing bootstrap code

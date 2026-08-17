@@ -1,4 +1,7 @@
 import type {
+  CreateLedgerGroupInput,
+  SearchLedgerGroupsOptions,
+  UpdateLedgerGroupInput,
   CreateCustomerInput,
   UpdateCustomerInput,
   SearchCustomersOptions,
@@ -34,11 +37,18 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 // Expose a secure API to the renderer process
-contextBridge.exposeInMainWorld('vyora', {
+const vyoraApi = {
   system: {
     ping: () => ipcRenderer.invoke('system:ping'),
+    test: () => ipcRenderer.invoke('system:test'),
     showAbout: () => ipcRenderer.invoke('system:show-about'),
+    openPath: (path: string) => ipcRenderer.invoke('system:openPath', path),
+    showItemInFolder: (path: string) => ipcRenderer.invoke('system:showItemInFolder', path),
     isPackaged: process.argv.includes('--is-packaged=true'),
+  },
+  export: {
+    exportFile: (request: import('@vyora/types').ExportRequest) =>
+      ipcRenderer.invoke('export:file', request),
   },
   db: {
     customers: {
@@ -61,6 +71,10 @@ contextBridge.exposeInMainWorld('vyora', {
     },
     taxes: {
       getAll: () => ipcRenderer.invoke('db:taxes:getAll'),
+      create: (data: import('@vyora/types').CreateTaxInput) =>
+        ipcRenderer.invoke('db:taxes:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateTaxInput) =>
+        ipcRenderer.invoke('db:taxes:update', data),
     },
     units: {
       getAll: () => ipcRenderer.invoke('db:units:getAll'),
@@ -95,8 +109,8 @@ contextBridge.exposeInMainWorld('vyora', {
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
         ipcRenderer.invoke('sales:invoice:create', data),
-      updateDraft: (invoiceId: string, payload: UpdateSalesInvoiceInput) =>
-        ipcRenderer.invoke('sales:invoice:updateDraft', invoiceId, payload),
+      updateDraft: (invoiceId: string, payload: UpdateSalesInvoiceInput, pin?: string) =>
+        ipcRenderer.invoke('sales:invoice:updateDraft', invoiceId, payload, pin),
       submitInvoice: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:submit', invoiceId),
       cancelInvoice: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:cancel', invoiceId),
       getById: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:getById', invoiceId),
@@ -150,6 +164,9 @@ contextBridge.exposeInMainWorld('vyora', {
     getProfile: (id: string) => ipcRenderer.invoke('company:get-profile', id),
     updateProfile: (id: string, payload: UpdateCompanyProfileRequest) =>
       ipcRenderer.invoke('company:update-profile', id, payload),
+    uploadLogo: (id: string, filename: string, buffer: ArrayBuffer) =>
+      ipcRenderer.invoke('company:upload-logo', id, filename, buffer),
+    deleteLogo: (id: string) => ipcRenderer.invoke('company:delete-logo', id),
     list: () => ipcRenderer.invoke('company:list'),
     create: (payload: import('@vyora/types').CreateCompanyInput) =>
       ipcRenderer.invoke('company:create', payload),
@@ -226,6 +243,9 @@ contextBridge.exposeInMainWorld('vyora', {
     calculateInvoice: (input: import('@vyora/types').CalculationEngineInput) =>
       ipcRenderer.invoke('calculation:calculateInvoice', input),
   },
+  developer: {
+    isEnabled: () => ipcRenderer.invoke('developer:isEnabled'),
+  },
 
   accounting: {
     getVoucherById: (id: string) => ipcRenderer.invoke('accounting:getVoucherById', id),
@@ -235,11 +255,36 @@ contextBridge.exposeInMainWorld('vyora', {
     getLedgerStatement: (ledgerId: string, fromDate: Date, toDate: Date) =>
       ipcRenderer.invoke('accounting:getLedgerStatement', ledgerId, fromDate, toDate),
     getDashboardMetrics: () => ipcRenderer.invoke('accounting:getDashboardMetrics'),
+    getFinancialOverviewChart: (req: import('@vyora/types').FinancialOverviewChartRequestDto) =>
+      ipcRenderer.invoke('accounting:getFinancialOverviewChart', req),
     getActiveLedgers: () => ipcRenderer.invoke('accounting:getActiveLedgers'),
+    groups: {
+      search: (options: SearchLedgerGroupsOptions) =>
+        ipcRenderer.invoke('db:accounting:groups:search', options),
+      getAll: () => ipcRenderer.invoke('db:accounting:groups:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:accounting:groups:getById', id),
+      create: (data: CreateLedgerGroupInput) =>
+        ipcRenderer.invoke('db:accounting:groups:create', data),
+      update: (id: string, data: UpdateLedgerGroupInput) =>
+        ipcRenderer.invoke('db:accounting:groups:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:accounting:groups:delete', id),
+    },
+    ledgers: {
+      search: (options: import('@vyora/types').SearchLedgersOptions) =>
+        ipcRenderer.invoke('db:accounting:ledgers:search', options),
+      getById: (id: string) => ipcRenderer.invoke('db:accounting:ledgers:getById', id),
+      create: (data: import('@vyora/types').CreateLedgerInput) =>
+        ipcRenderer.invoke('db:accounting:ledgers:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateLedgerInput) =>
+        ipcRenderer.invoke('db:accounting:ledgers:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:accounting:ledgers:delete', id),
+    },
   },
   journal: {
     postVoucher: (input: import('@vyora/types').CreateVoucherInput) =>
       ipcRenderer.invoke('journal:postVoucher', input),
+    cancelVoucher: (id: string) => ipcRenderer.invoke('journal:cancelVoucher', id),
+    reverseVoucher: (id: string) => ipcRenderer.invoke('journal:reverseVoucher', id),
   },
   inventory: {
     getStockSummary: (productId: string) =>
@@ -250,6 +295,9 @@ contextBridge.exposeInMainWorld('vyora', {
     getNegativeInventory: () => ipcRenderer.invoke('inventory:global:getNegative'),
   },
   reports: {
+    getTrialBalance: (asOfDate?: Date) => ipcRenderer.invoke('reports:getTrialBalance', asOfDate),
+    getGeneralLedger: (args: { startDate?: Date; endDate?: Date }) =>
+      ipcRenderer.invoke('reports:getGeneralLedger', args),
     getDayBook: (args: {
       startDate?: Date;
       endDate?: Date;
@@ -302,12 +350,79 @@ contextBridge.exposeInMainWorld('vyora', {
       reset: () => ipcRenderer.invoke('dev:documentNumbering:reset'),
     },
   },
-});
+  paymentAccounts: {
+    create: (data: import('@vyora/types').CreatePaymentAccountInput) =>
+      ipcRenderer.invoke('paymentAccount:create', data),
+    update: (id: string, data: import('@vyora/types').UpdatePaymentAccountInput) =>
+      ipcRenderer.invoke('paymentAccount:update', id, data),
+    delete: (id: string) => ipcRenderer.invoke('paymentAccount:delete', id),
+    getById: (id: string) => ipcRenderer.invoke('paymentAccount:getById', id),
+    search: (filter: import('@vyora/types').PaymentAccountFilterDto) =>
+      ipcRenderer.invoke('paymentAccount:search', filter),
+    openingBalance: {
+      create: (input: import('@vyora/types').CreateOpeningBalanceInput) =>
+        ipcRenderer.invoke('paymentAccount:openingBalance:create', input),
+      update: (input: import('@vyora/types').CreateOpeningBalanceInput) =>
+        ipcRenderer.invoke('paymentAccount:openingBalance:update', input),
+      reverse: (paymentAccountId: string) =>
+        ipcRenderer.invoke('paymentAccount:openingBalance:reverse', paymentAccountId),
+      get: (paymentAccountId: string) =>
+        ipcRenderer.invoke('paymentAccount:openingBalance:get', paymentAccountId),
+    },
+    saveWithOpeningBalance: (payload: {
+      isEditing: boolean;
+      accountId?: string;
+      accountData:
+        | import('@vyora/types').CreatePaymentAccountInput
+        | import('@vyora/types').UpdatePaymentAccountInput;
+      openingBalance?: {
+        amount: number;
+        type: 'Dr' | 'Cr';
+        date: Date;
+        notes?: string;
+      };
+    }) => ipcRenderer.invoke('paymentAccount:saveWithOpeningBalance', payload),
+  },
+  fundTransfers: {
+    create: (input: import('@vyora/types').CreateFundTransferInput) =>
+      ipcRenderer.invoke('fundTransfer:create', input),
+    update: (id: string, input: import('@vyora/types').UpdateFundTransferInput) =>
+      ipcRenderer.invoke('fundTransfer:update', { id, input }),
+    reverse: (id: string) => ipcRenderer.invoke('fundTransfer:reverse', id),
+    getAll: (filter: import('@vyora/types').FundTransferQueryFilter) =>
+      ipcRenderer.invoke('fundTransfer:getAll', filter),
+  },
+  developerDatabase: {
+    listTables: () => ipcRenderer.invoke('developer:database:listTables'),
+    getTableSchema: (tableName: string) =>
+      ipcRenderer.invoke('developer:database:getTableSchema', tableName),
+    getIndexes: (tableName: string) =>
+      ipcRenderer.invoke('developer:database:getIndexes', tableName),
+    getForeignKeys: (tableName: string) =>
+      ipcRenderer.invoke('developer:database:getForeignKeys', tableName),
+    getRows: (tableName: string, page?: number, pageSize?: number, filters?: string) =>
+      ipcRenderer.invoke('developer:database:getRows', tableName, page, pageSize, filters),
+    executeQuery: (sql: string) => ipcRenderer.invoke('developer:database:executeQuery', sql),
+    getRelations: (tableName: string, row: Record<string, unknown>) =>
+      ipcRenderer.invoke('developer:database:getRelations', tableName, row),
+  },
+};
+
+contextBridge.exposeInMainWorld('vyora', vyoraApi);
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
+  test: () => Promise<string>;
   showAbout: () => Promise<void>;
+  openPath: (path: string) => Promise<{ success: boolean; error?: string }>;
+  showItemInFolder: (path: string) => Promise<{ success: boolean; error?: string }>;
   isPackaged: boolean;
+};
+
+export type VyoraExportAPI = {
+  exportFile: (
+    request: import('@vyora/types').ExportRequest,
+  ) => Promise<import('@vyora/types').ExportSummary>;
 };
 
 export type VyoraSplashAPI = {
@@ -331,6 +446,28 @@ export type VyoraDatabaseAPI = {
   };
   taxes: {
     getAll: () => Promise<ApiResponse<import('@vyora/types').TaxDto[]>>;
+    create: (
+      data: import('@vyora/types').CreateTaxInput,
+    ) => Promise<ApiResponse<import('@vyora/types').TaxDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateTaxInput,
+    ) => Promise<ApiResponse<import('@vyora/types').TaxDto>>;
+  };
+  units: {
+    getAll: () => Promise<ApiResponse<import('@vyora/types').UnitDto[]>>;
+    search: (
+      options: import('@vyora/types').SearchUnitsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').UnitDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateUnitInput,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateUnitInput,
+    ) => Promise<ApiResponse<import('@vyora/types').UnitDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
   };
   products: {
     getAll: () => Promise<ApiResponse<ProductDto[]>>;
@@ -346,12 +483,15 @@ export type VyoraDatabaseAPI = {
     create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
     update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
+    submit: (id: string) => Promise<ApiResponse<void>>;
+    cancel: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
     updateDraft: (
       invoiceId: string,
       payload: UpdateSalesInvoiceInput,
+      pin?: string,
     ) => Promise<ApiResponse<SalesInvoiceDto>>;
     submitInvoice: (invoiceId: string) => Promise<ApiResponse<{ warnings: unknown[] }>>;
     cancelInvoice: (invoiceId: string) => Promise<ApiResponse<void>>;
@@ -401,7 +541,11 @@ export type VyoraAuthAPI = {
   unlock: (payload: Record<string, unknown>) => Promise<ApiResponse<void>>;
   isLocked: () => Promise<ApiResponse<boolean>>;
   verifySession: () => Promise<ApiResponse<unknown>>;
-  getCurrentUser: () => Promise<ApiResponse<unknown>>;
+  getCurrentUser: () => Promise<ApiResponse<import('@vyora/types').UserDto>>;
+  changePassword: (
+    payload: import('@vyora/types').ChangePasswordRequestDto,
+  ) => Promise<ApiResponse<void>>;
+  changePin: (payload: import('@vyora/types').ChangePinRequestDto) => Promise<ApiResponse<void>>;
 };
 
 export type VyoraCompanyAPI = {
@@ -413,6 +557,12 @@ export type VyoraCompanyAPI = {
     id: string,
     payload: UpdateCompanyProfileRequest,
   ) => Promise<ApiResponse<CompanyProfileDto>>;
+  uploadLogo: (
+    id: string,
+    filename: string,
+    buffer: ArrayBuffer,
+  ) => Promise<ApiResponse<CompanyProfileDto>>;
+  deleteLogo: (id: string) => Promise<ApiResponse<CompanyProfileDto>>;
   list: () => Promise<ApiResponse<import('@vyora/types').CompanyDto[]>>;
   create: (payload: import('@vyora/types').CreateCompanyInput) => Promise<ApiResponse<string>>;
   delete: (id: string) => Promise<ApiResponse<void>>;
@@ -488,6 +638,11 @@ export interface VyoraDirectoriesAPI {
 }
 
 export type VyoraAccountingAPI = {
+  getFinancialOverviewChart: (
+    req: import('@vyora/types').FinancialOverviewChartRequestDto,
+  ) => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').FinancialOverviewChartResponseDto[]>
+  >;
   getVoucherById: (
     id: string,
   ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;
@@ -508,6 +663,41 @@ export type VyoraAccountingAPI = {
   getActiveLedgers: () => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').LedgerLookupDto[]>
   >;
+  groups: {
+    search: (
+      options: SearchLedgerGroupsOptions,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupListDto>>;
+    getAll: () => Promise<
+      import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto[]>
+    >;
+    getById: (
+      id: string,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto | null>>;
+    create: (
+      data: CreateLedgerGroupInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto>>;
+    update: (
+      id: string,
+      data: UpdateLedgerGroupInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto>>;
+    delete: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+  };
+  ledgers: {
+    search: (
+      options: import('@vyora/types').SearchLedgersOptions,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerListDto>>;
+    getById: (
+      id: string,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateLedgerInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateLedgerInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto>>;
+    delete: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+  };
 };
 
 export type VyoraCalculationAPI = {
@@ -520,12 +710,14 @@ export type VyoraJournalAPI = {
   postVoucher: (
     input: import('@vyora/types').CreateVoucherInput,
   ) => Promise<ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+  cancelVoucher: (id: string) => Promise<ApiResponse<{ reversalVoucherId?: string }>>;
+  reverseVoucher: (id: string) => Promise<ApiResponse<{ reversalVoucherId: string }>>;
 };
 
 export type VyoraInventoryAPI = {
   getStockSummary: (
     productId: string,
-  ) => Promise<ApiResponse<import('@vyora/types').StockSummaryDto>>;
+  ) => Promise<ApiResponse<import('@vyora/types').ProductStockStatusDto>>;
   getStock: (productId: string) => Promise<ApiResponse<import('@vyora/types').InventoryStockDto>>;
   getLedger: (productId: string) => Promise<ApiResponse<import('@vyora/types').StockMovementDto[]>>;
   getGlobalInventory: () => Promise<ApiResponse<import('@vyora/types').GlobalInventoryRowDto[]>>;
@@ -533,6 +725,11 @@ export type VyoraInventoryAPI = {
 };
 
 export type VyoraReportsAPI = {
+  getTrialBalance: (asOfDate?: Date) => Promise<import('@vyora/types').TrialBalanceReport>;
+  getGeneralLedger: (args: {
+    startDate?: Date;
+    endDate?: Date;
+  }) => Promise<import('@vyora/types').GeneralLedgerReport>;
   getDayBook: (args: {
     startDate?: Date;
     endDate?: Date;
@@ -576,6 +773,8 @@ export type VyoraReportsAPI = {
   getStockAgeing: (args?: {
     asOfDate?: Date;
   }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockAgeingDto>>;
+  getProfitLoss: (asOfDate?: Date) => Promise<import('@vyora/types').ProfitLossReport>;
+  getBalanceSheet: (asOfDate?: Date) => Promise<import('@vyora/types').BalanceSheetReport>;
 };
 
 export type VyoraDevAPI = {
@@ -593,11 +792,95 @@ export type VyoraDevAPI = {
   };
 };
 
+export type VyoraDeveloperDatabaseAPI = {
+  listTables: () => Promise<{ name: string; rowCount: number }[]>;
+  getTableSchema: (tableName: string) => Promise<Record<string, unknown>[]>;
+  getIndexes: (tableName: string) => Promise<Record<string, unknown>[]>;
+  getForeignKeys: (tableName: string) => Promise<Record<string, unknown>[]>;
+  getRows: (
+    tableName: string,
+    page?: number,
+    pageSize?: number,
+    filters?: string,
+  ) => Promise<{ rows: Record<string, unknown>[]; total: number }>;
+  executeQuery: (sql: string) => Promise<{ rows: Record<string, unknown>[]; timeMs: number }>;
+  getRelations: (
+    tableName: string,
+    row: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>[]>;
+};
+
+export type VyoraPaymentAccountAPI = {
+  create: (
+    data: import('@vyora/types').CreatePaymentAccountInput,
+  ) => Promise<import('@vyora/types').PaymentAccountDto>;
+  update: (
+    id: string,
+    data: import('@vyora/types').UpdatePaymentAccountInput,
+  ) => Promise<import('@vyora/types').PaymentAccountDto>;
+  delete: (id: string) => Promise<{ success: boolean }>;
+  getById: (id: string) => Promise<import('@vyora/types').PaymentAccountDto | null>;
+  search: (
+    filter: import('@vyora/types').PaymentAccountFilterDto,
+  ) => Promise<import('@vyora/types').PaymentAccountDto[]>;
+  openingBalance: {
+    create: (
+      input: import('@vyora/types').CreateOpeningBalanceInput,
+    ) => Promise<import('@vyora/types').ApiResponse<{ voucherId: string }>>;
+    update: (
+      input: import('@vyora/types').CreateOpeningBalanceInput,
+    ) => Promise<import('@vyora/types').ApiResponse<{ voucherId: string }>>;
+    reverse: (
+      paymentAccountId: string,
+    ) => Promise<import('@vyora/types').ApiResponse<{ reversalVoucherId: string }>>;
+    get: (
+      paymentAccountId: string,
+    ) => Promise<
+      import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto | null>
+    >;
+  };
+  saveWithOpeningBalance: (payload: {
+    isEditing: boolean;
+    accountId?: string;
+    accountData:
+      | import('@vyora/types').CreatePaymentAccountInput
+      | import('@vyora/types').UpdatePaymentAccountInput;
+    openingBalance?: {
+      amount: number;
+      type: 'Dr' | 'Cr';
+      date: Date;
+      notes?: string;
+    };
+  }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').PaymentAccountDto>>;
+};
+
+export type VyoraFundTransferAPI = {
+  create: (
+    input: import('@vyora/types').CreateFundTransferInput,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').FundTransferDto>>;
+  update: (
+    id: string,
+    input: import('@vyora/types').UpdateFundTransferInput,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').FundTransferDto>>;
+  reverse: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<{ reversalVoucherId: string }>>;
+  getAll: (
+    filter: import('@vyora/types').FundTransferQueryFilter,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').FundTransferListDto>>;
+};
+
+export type VyoraDeveloperAPI = {
+  isEnabled: () => Promise<boolean>;
+};
+
 declare global {
   interface Window {
     vyora: {
+      export: VyoraExportAPI;
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
+      settings: VyoraSettingsAPI;
       bootstrap: VyoraBootstrapAPI;
       auth: VyoraAuthAPI;
       company: VyoraCompanyAPI;
@@ -611,6 +894,10 @@ declare global {
       inventory: VyoraInventoryAPI;
       reports: VyoraReportsAPI;
       dev: VyoraDevAPI;
+      developer: VyoraDeveloperAPI;
+      developerDatabase: VyoraDeveloperDatabaseAPI;
+      paymentAccounts: VyoraPaymentAccountAPI;
+      fundTransfers: VyoraFundTransferAPI;
     };
   }
 }

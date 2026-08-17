@@ -6,6 +6,7 @@ export class SplashWindow {
   public window: BrowserWindow | null = null;
 
   public async create() {
+    const preloadPath = path.join(__dirname, 'preload.js');
     this.window = new BrowserWindow({
       width: 900,
       height: 600,
@@ -20,7 +21,7 @@ export class SplashWindow {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'preload.js'),
+        preload: preloadPath,
         sandbox: true,
       },
     });

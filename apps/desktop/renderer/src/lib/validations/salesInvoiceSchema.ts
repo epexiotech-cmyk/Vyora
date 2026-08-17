@@ -10,6 +10,11 @@ export const salesInvoiceLineSchema = z.object({
   amount: z.coerce.number().optional(),
   unitId: z.string().optional().nullable(),
   taxId: z.string().optional().nullable(),
+  hsnCode: z.string().optional().nullable(),
+  itemTypeSnapshot: z
+    .enum(['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'])
+    .optional()
+    .nullable(),
 });
 
 export const salesInvoiceSchema = z

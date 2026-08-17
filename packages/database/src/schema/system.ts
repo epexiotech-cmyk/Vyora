@@ -33,6 +33,13 @@ export const companies = sqliteTable('companies', {
   mobile: text('mobile'),
   telephone: text('telephone'),
   website: text('website'),
+  logoPath: text('logo_path'),
+  defaultUpiId: text('default_upi_id'),
+  upiPayeeName: text('upi_payee_name'),
+  showQrOnInvoice: integer('show_qr_on_invoice', { mode: 'boolean' }).default(false).notNull(),
+  showBankDetailsOnInvoice: integer('show_bank_details_on_invoice', { mode: 'boolean' })
+    .default(false)
+    .notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),

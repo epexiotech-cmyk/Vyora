@@ -12,6 +12,7 @@ import {
 } from '@vyora/types';
 import { eq } from 'drizzle-orm';
 
+import { ProductRepository } from '../repositories';
 import { PurchaseRepository } from '../repositories/PurchaseRepository';
 
 import { companyContextService } from './CompanyContextService';
@@ -21,9 +22,11 @@ import { journalService } from './JournalService';
 
 export class PurchaseService {
   private purchaseRepo: PurchaseRepository;
+  private productRepo: ProductRepository;
 
   constructor() {
     this.purchaseRepo = new PurchaseRepository();
+    this.productRepo = new ProductRepository();
   }
 
   public async create(payload: CreatePurchaseInput): Promise<string> {
@@ -202,28 +205,50 @@ export class PurchaseService {
         throw new Error('Cannot submit invoice without items');
       }
 
-      const totalCgst = 0;
-      const totalSgst = 0;
+      let totalCgst = 0;
+      let totalSgst = 0;
       let totalIgst = 0;
+      let totalInventoryAmount = 0;
+      let totalExpenseAmount = 0;
+      let fallbackTotalTax = 0;
 
       for (const line of invoice.lines) {
-        inventoryEngine.postInboundSync(
-          {
-            companyId,
-            financialYearId: invoice.financialYearId,
-            productId: line.productId,
-            movementType: 'PURCHASE',
-            referenceType: 'PURCHASE_BILL',
-            referenceId: id,
-            quantityIn: line.quantity,
-            quantityOut: 0,
-            rate: line.rate,
-            movementDate: invoice.purchaseDate,
-            remarks: line.description || '',
-          },
-          tx,
-        );
-        totalIgst += line.taxAmount; // Simplify taxes as IGST for now, or calculate properly if needed
+        const product = this.productRepo.getByIdSync(line.productId, companyId, tx);
+        if (!product) {
+          throw new Error(`Product not found for item: ${line.productId}`);
+        }
+
+        if (product.itemType !== 'SERVICE' && product.itemType !== 'NON_INVENTORY_ITEM') {
+          totalInventoryAmount += line.taxableAmount;
+          inventoryEngine.postInboundSync(
+            {
+              companyId,
+              financialYearId: invoice.financialYearId,
+              productId: line.productId,
+              movementType: 'PURCHASE',
+              referenceType: 'PURCHASE_BILL',
+              referenceId: id,
+              quantityIn: line.quantity,
+              quantityOut: 0,
+              rate: line.rate,
+              movementDate: invoice.purchaseDate,
+              remarks: line.description || '',
+            },
+            tx,
+          );
+        } else {
+          totalExpenseAmount += line.taxableAmount;
+        }
+
+        totalCgst += line.cgstAmount || 0;
+        totalSgst += line.sgstAmount || 0;
+        totalIgst += line.igstAmount || 0;
+
+        fallbackTotalTax += line.taxAmount || 0;
+      }
+
+      if (totalCgst === 0 && totalSgst === 0 && totalIgst === 0 && fallbackTotalTax > 0) {
+        totalIgst = fallbackTotalTax;
       }
 
       journalService.postPurchaseBillSync(
@@ -233,7 +258,8 @@ export class PurchaseService {
           invoiceId: id,
           invoiceDate: invoice.purchaseDate,
           supplierId: invoice.supplierId,
-          totalTaxableAmount: invoice.subtotal - (invoice.discountAmount || 0),
+          totalInventoryAmount,
+          totalExpenseAmount,
           totalCgst,
           totalSgst,
           totalIgst,

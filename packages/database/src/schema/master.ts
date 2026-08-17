@@ -114,6 +114,10 @@ export const customers = sqliteTable(
     creditLimit: integer('credit_limit').default(0).notNull(),
     creditDays: integer('credit_days').default(0).notNull(),
 
+    // Payment Defaults (Accounting Phase 5)
+    defaultPaymentAccountId: text('default_payment_account_id'),
+    defaultQrAccountId: text('default_qr_account_id'),
+
     // Metadata & Sync
     notes: text('notes'),
     isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),

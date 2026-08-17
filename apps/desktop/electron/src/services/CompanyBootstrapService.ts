@@ -4,6 +4,7 @@ import { currencyService } from '../modules/directories/currency/CurrencyService
 import { CompanyRepository, SettingsRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
+import { paymentAccountBootstrapService } from './database/PaymentAccountBootstrapService';
 import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
 import { systemTaxSeeder } from './database/SystemTaxSeeder';
 import { systemUnitSeeder } from './database/SystemUnitSeeder';
@@ -100,6 +101,9 @@ export class CompanyBootstrapService {
       this.settingsRepo.setAppSettingSync('active_company_id', company.id, tx);
 
       systemLedgerSeeder.seedSystemLedgers(company.id, tx);
+
+      paymentAccountBootstrapService.seedPaymentAccounts(company.id, tx);
+
       systemUnitSeeder.seedSystemUnits(company.id, tx);
       systemTaxSeeder.seedSystemTaxes(company.id, tx);
 

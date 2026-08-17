@@ -10,7 +10,12 @@ export const gstInvoiceTemplate = `
 </head>
 <body>
     <div class="container">
-        <div class="header-title">TAX INVOICE</div>
+        <div class="header-title">
+          {{#if company.logoPath}}
+            <img src="{{company.logoPath}}" alt="Company Logo" style="max-height: 60px; max-width: 150px; vertical-align: middle; margin-right: 15px;" />
+          {{/if}}
+          TAX INVOICE
+        </div>
         
         <div class="row">
             <div class="col-50">
@@ -53,8 +58,8 @@ export const gstInvoiceTemplate = `
             <thead>
                 <tr>
                     <th>Sr.</th>
-                    <th>Description of Goods</th>
-                    <th>HSN/SAC</th>
+                    <th>Description of Goods/Services</th>
+                    <th>HSN / SAC</th>
                     <th>Qty</th>
                     <th>Unit</th>
                     <th>Rate</th>

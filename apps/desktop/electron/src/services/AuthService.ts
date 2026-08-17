@@ -189,6 +189,11 @@ export class AuthService {
     }
   }
 
+  public async verifyActionPin(pin: string): Promise<boolean> {
+    if (!this.currentUser || !this.currentUser.pinHash) return false;
+    return this.verifyArgon(this.currentUser.pinHash, pin);
+  }
+
   public async unlockSession(pinOrPassword: string): Promise<boolean> {
     if (!this.currentUser) return false;
 

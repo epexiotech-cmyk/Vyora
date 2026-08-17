@@ -15,7 +15,7 @@ export class DocumentNumberingService {
   public generateNextNumberSync(
     companyId: string,
     documentType: DocumentType,
-    financialYearId: string,
+    financialYearId: string | null,
     tx: import('../repositories/BaseRepository').TransactionExecutor,
   ): string {
     // 1. Fetch Config

@@ -57,7 +57,7 @@ export class ProductService {
       const sku = documentNumberingService.generateNextNumberSync(
         companyId,
         DocumentType.ITEM,
-        '',
+        activeFy?.id || null,
         tx,
       );
 

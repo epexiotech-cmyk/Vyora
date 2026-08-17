@@ -1,8 +1,13 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { renderDocument, type PrintPayload } from '@vyora/print-engine';
 import { BrowserWindow, dialog } from 'electron';
 import type { WebContentsPrintOptions, PrintToPDFOptions } from 'electron';
+
+import { companyRepository } from '../repositories/CompanyRepository';
+
+import { fileSystemService } from './filesystem/FileSystemService';
 
 type PrintTask<T> = () => Promise<T>;
 
@@ -65,7 +70,40 @@ export class PrintService {
     this.processQueue();
   }
 
+  private async injectBase64Logo<T>(payload: PrintPayload<T>) {
+    const p = payload as unknown as {
+      data?: {
+        companyId?: string;
+        companyLogoPath?: string;
+        _showQrOnInvoice?: boolean;
+        _showBankDetailsOnInvoice?: boolean;
+      };
+    };
+    if (p && p.data && p.data.companyId) {
+      try {
+        const company = await companyRepository.getById(p.data.companyId);
+        if (company) {
+          p.data._showQrOnInvoice = company.showQrOnInvoice ?? false;
+          p.data._showBankDetailsOnInvoice = company.showBankDetailsOnInvoice ?? false;
+        }
+
+        const logoPath = p.data.companyLogoPath;
+        if (logoPath && !logoPath.startsWith('data:')) {
+          const absolutePath = fileSystemService.getCompanyLogoPath(p.data.companyId, logoPath);
+          if (fs.existsSync(absolutePath)) {
+            const ext = path.extname(absolutePath).slice(1);
+            const base64 = fs.readFileSync(absolutePath, 'base64');
+            p.data.companyLogoPath = `data:image/${ext || 'png'};base64,${base64}`;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to prepare print payload data', e);
+      }
+    }
+  }
+
   public async render<T>(templateName: string, payload: PrintPayload<T>): Promise<string> {
+    await this.injectBase64Logo(payload);
     return renderDocument(templateName, payload);
   }
 
@@ -80,7 +118,9 @@ export class PrintService {
         let printOpts: WebContentsPrintOptions | undefined;
 
         if (payloadOrOptions && 'documentType' in payloadOrOptions) {
-          html = await renderDocument(templateNameOrHtml, payloadOrOptions as PrintPayload<T>);
+          const payload = payloadOrOptions as PrintPayload<T>;
+          await this.injectBase64Logo(payload);
+          html = await renderDocument(templateNameOrHtml, payload);
           printOpts = options;
         } else {
           html = templateNameOrHtml;
@@ -122,6 +162,7 @@ export class PrintService {
     options?: PrintToPDFOptions,
   ): Promise<{ buffer: Buffer }> {
     return this.enqueue(async () => {
+      await this.injectBase64Logo(payload);
       const html = await renderDocument(templateName, payload);
       const win = await this.getHiddenWindow();
 

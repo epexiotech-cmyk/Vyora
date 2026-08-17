@@ -1,0 +1,2461 @@
+{
+  "mainChannels": [
+    {
+      "channel": "accounting:getVoucherById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 17
+    },
+    {
+      "channel": "accounting:listVouchers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 25
+    },
+    {
+      "channel": "accounting:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 33
+    },
+    {
+      "channel": "accounting:getLedgerStatement",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "accounting:getDashboardMetrics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 50
+    },
+    {
+      "channel": "accounting:getActiveLedgers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 55
+    },
+    {
+      "channel": "accounting:getFinancialOverviewChart",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\accountingHandlers.ts",
+      "line": 59
+    },
+    {
+      "channel": "settings:app:getAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\appSettingsHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "settings:app:setAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\appSettingsHandlers.ts",
+      "line": 17
+    },
+    {
+      "channel": "auth:create-admin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 15
+    },
+    {
+      "channel": "auth:login",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 30
+    },
+    {
+      "channel": "auth:verify-session",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 45
+    },
+    {
+      "channel": "auth:logout",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 65
+    },
+    {
+      "channel": "auth:lock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 75
+    },
+    {
+      "channel": "auth:unlock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 80
+    },
+    {
+      "channel": "auth:is-locked",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 98
+    },
+    {
+      "channel": "auth:get-current-user",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 102
+    },
+    {
+      "channel": "auth:change-password",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 110
+    },
+    {
+      "channel": "auth:change-pin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\authHandlers.ts",
+      "line": 125
+    },
+    {
+      "channel": "bootstrap:status",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\bootstrapHandlers.ts",
+      "line": 9
+    },
+    {
+      "channel": "bootstrap:create-company",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\bootstrapHandlers.ts",
+      "line": 19
+    },
+    {
+      "channel": "calculation:calculateInvoice",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\calculationHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "db:accounting:groups:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 14
+    },
+    {
+      "channel": "db:accounting:groups:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 26
+    },
+    {
+      "channel": "db:accounting:groups:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 35
+    },
+    {
+      "channel": "db:accounting:groups:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 44
+    },
+    {
+      "channel": "db:accounting:groups:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 53
+    },
+    {
+      "channel": "db:accounting:groups:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 65
+    },
+    {
+      "channel": "db:accounting:ledgers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 78
+    },
+    {
+      "channel": "db:accounting:ledgers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 87
+    },
+    {
+      "channel": "db:accounting:ledgers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 96
+    },
+    {
+      "channel": "db:accounting:ledgers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 105
+    },
+    {
+      "channel": "db:accounting:ledgers:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\chartOfAccountsHandlers.ts",
+      "line": 117
+    },
+    {
+      "channel": "company:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 13
+    },
+    {
+      "channel": "company:get-context",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 24
+    },
+    {
+      "channel": "company:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 37
+    },
+    {
+      "channel": "company:get-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 47
+    },
+    {
+      "channel": "company:update-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 60
+    },
+    {
+      "channel": "company:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 76
+    },
+    {
+      "channel": "company:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 86
+    },
+    {
+      "channel": "company:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 99
+    },
+    {
+      "channel": "company:upload-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 109
+    },
+    {
+      "channel": "company:delete-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\companyHandlers.ts",
+      "line": 130
+    },
+    {
+      "channel": "directory:country:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\countryHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "directory:country:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\countryHandlers.ts",
+      "line": 12
+    },
+    {
+      "channel": "directory:currency:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\currencyHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "directory:currency:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\currencyHandlers.ts",
+      "line": 12
+    },
+    {
+      "channel": "directory:currency:getActive",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\currencyHandlers.ts",
+      "line": 17
+    },
+    {
+      "channel": "directory:currency:getPrimary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\currencyHandlers.ts",
+      "line": 22
+    },
+    {
+      "channel": "db:customers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\customerHandlers.ts",
+      "line": 14
+    },
+    {
+      "channel": "db:customers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\customerHandlers.ts",
+      "line": 26
+    },
+    {
+      "channel": "db:customers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\customerHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "db:customers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\customerHandlers.ts",
+      "line": 50
+    },
+    {
+      "channel": "db:customers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\customerHandlers.ts",
+      "line": 66
+    },
+    {
+      "channel": "dev:diagnostics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "dev:factoryReset:dryRun",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 16
+    },
+    {
+      "channel": "dev:factoryReset:execute",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 25
+    },
+    {
+      "channel": "dev:inventory:check",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 34
+    },
+    {
+      "channel": "dev:inventory:rebuild",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 43
+    },
+    {
+      "channel": "dev:documentNumbering:reset",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\devHandlers.ts",
+      "line": 52
+    },
+    {
+      "channel": "settings:document-numbering:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\documentNumberingHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "settings:document-numbering:save",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\documentNumberingHandlers.ts",
+      "line": 18
+    },
+    {
+      "channel": "settings:document-numbering:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\documentNumberingHandlers.ts",
+      "line": 31
+    },
+    {
+      "channel": "financial-year:get-current",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\financialYearHandlers.ts",
+      "line": 9
+    },
+    {
+      "channel": "financial-year:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\financialYearHandlers.ts",
+      "line": 27
+    },
+    {
+      "channel": "financial-year:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\financialYearHandlers.ts",
+      "line": 48
+    },
+    {
+      "channel": "financial-year:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\financialYearHandlers.ts",
+      "line": 66
+    },
+    {
+      "channel": "financial-year:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\financialYearHandlers.ts",
+      "line": 84
+    },
+    {
+      "channel": "fundTransfer:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\fundTransferHandlers.ts",
+      "line": 12
+    },
+    {
+      "channel": "fundTransfer:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\fundTransferHandlers.ts",
+      "line": 21
+    },
+    {
+      "channel": "fundTransfer:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\fundTransferHandlers.ts",
+      "line": 33
+    },
+    {
+      "channel": "fundTransfer:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\fundTransferHandlers.ts",
+      "line": 42
+    },
+    {
+      "channel": "directory:hsn:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\hsnHandlers.ts",
+      "line": 6
+    },
+    {
+      "channel": "directory:hsn:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\hsnHandlers.ts",
+      "line": 10
+    },
+    {
+      "channel": "inventory:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\inventoryHandlers.ts",
+      "line": 18
+    },
+    {
+      "channel": "inventory:stock:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\inventoryHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "inventory:ledger:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\inventoryHandlers.ts",
+      "line": 52
+    },
+    {
+      "channel": "inventory:global:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\inventoryHandlers.ts",
+      "line": 66
+    },
+    {
+      "channel": "inventory:global:getNegative",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\inventoryHandlers.ts",
+      "line": 78
+    },
+    {
+      "channel": "journal:postVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\journalHandlers.ts",
+      "line": 9
+    },
+    {
+      "channel": "journal:cancelVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\journalHandlers.ts",
+      "line": 20
+    },
+    {
+      "channel": "journal:reverseVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\journalHandlers.ts",
+      "line": 28
+    },
+    {
+      "channel": "paymentAccount:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 12
+    },
+    {
+      "channel": "paymentAccount:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 20
+    },
+    {
+      "channel": "paymentAccount:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 31
+    },
+    {
+      "channel": "paymentAccount:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 40
+    },
+    {
+      "channel": "paymentAccount:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 48
+    },
+    {
+      "channel": "paymentAccount:openingBalance:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 56
+    },
+    {
+      "channel": "paymentAccount:openingBalance:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 72
+    },
+    {
+      "channel": "paymentAccount:openingBalance:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 88
+    },
+    {
+      "channel": "paymentAccount:openingBalance:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 101
+    },
+    {
+      "channel": "paymentAccount:saveWithOpeningBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\paymentAccountHandlers.ts",
+      "line": 114
+    },
+    {
+      "channel": "directory:pincode:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\pincodeHandlers.ts",
+      "line": 8
+    },
+    {
+      "channel": "directory:pincode:smartLookup",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\pincodeHandlers.ts",
+      "line": 13
+    },
+    {
+      "channel": "directory:pincode:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\pincodeHandlers.ts",
+      "line": 18
+    },
+    {
+      "channel": "print:render",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\printHandlers.ts",
+      "line": 8
+    },
+    {
+      "channel": "print:print",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\printHandlers.ts",
+      "line": 15
+    },
+    {
+      "channel": "print:printToPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\printHandlers.ts",
+      "line": 31
+    },
+    {
+      "channel": "print:exportPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\printHandlers.ts",
+      "line": 45
+    },
+    {
+      "channel": "print:getAvailablePrinters",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\printHandlers.ts",
+      "line": 49
+    },
+    {
+      "channel": "db:products:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 14
+    },
+    {
+      "channel": "db:products:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 26
+    },
+    {
+      "channel": "db:products:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "db:products:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 50
+    },
+    {
+      "channel": "db:products:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 62
+    },
+    {
+      "channel": "db:products:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\productHandlers.ts",
+      "line": 74
+    },
+    {
+      "channel": "db:purchases:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 14
+    },
+    {
+      "channel": "db:purchases:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 26
+    },
+    {
+      "channel": "db:purchases:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "db:purchases:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 47
+    },
+    {
+      "channel": "db:purchases:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 59
+    },
+    {
+      "channel": "db:purchases:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 71
+    },
+    {
+      "channel": "db:purchases:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\purchaseHandlers.ts",
+      "line": 80
+    },
+    {
+      "channel": "reports:getLedgerStatement",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 23
+    },
+    {
+      "channel": "reports:getGeneralLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 58
+    },
+    {
+      "channel": "reports:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 79
+    },
+    {
+      "channel": "reports:getProfitLoss",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 89
+    },
+    {
+      "channel": "reports:getBalanceSheet",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 99
+    },
+    {
+      "channel": "reports:getDayBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 109
+    },
+    {
+      "channel": "reports:getCashBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 133
+    },
+    {
+      "channel": "reports:getBankBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 164
+    },
+    {
+      "channel": "reports:getOutstandingSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 195
+    },
+    {
+      "channel": "reports:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 222
+    },
+    {
+      "channel": "reports:getStockLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 242
+    },
+    {
+      "channel": "reports:getStockMovementRegister",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 275
+    },
+    {
+      "channel": "reports:getStockAgeing",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\reportsHandlers.ts",
+      "line": 298
+    },
+    {
+      "channel": "directory:sac:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\sacHandlers.ts",
+      "line": 6
+    },
+    {
+      "channel": "directory:sac:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\sacHandlers.ts",
+      "line": 10
+    },
+    {
+      "channel": "sales:invoice:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 13
+    },
+    {
+      "channel": "sales:invoice:updateDraft",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 25
+    },
+    {
+      "channel": "sales:invoice:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 42
+    },
+    {
+      "channel": "sales:invoice:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 61
+    },
+    {
+      "channel": "sales:invoice:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 73
+    },
+    {
+      "channel": "sales:invoice:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\salesHandlers.ts",
+      "line": 85
+    },
+    {
+      "channel": "directory:state:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\stateHandlers.ts",
+      "line": 6
+    },
+    {
+      "channel": "directory:state:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\stateHandlers.ts",
+      "line": 10
+    },
+    {
+      "channel": "db:suppliers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\supplierHandlers.ts",
+      "line": 14
+    },
+    {
+      "channel": "db:suppliers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\supplierHandlers.ts",
+      "line": 26
+    },
+    {
+      "channel": "db:suppliers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\supplierHandlers.ts",
+      "line": 38
+    },
+    {
+      "channel": "db:suppliers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\supplierHandlers.ts",
+      "line": 50
+    },
+    {
+      "channel": "db:suppliers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\supplierHandlers.ts",
+      "line": 66
+    },
+    {
+      "channel": "system:show-about",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\systemHandlers.ts",
+      "line": 4
+    },
+    {
+      "channel": "db:taxes:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\taxHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "db:taxes:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\taxHandlers.ts",
+      "line": 16
+    },
+    {
+      "channel": "db:taxes:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\taxHandlers.ts",
+      "line": 28
+    },
+    {
+      "channel": "db:units:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 7
+    },
+    {
+      "channel": "db:units:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 16
+    },
+    {
+      "channel": "db:units:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 25
+    },
+    {
+      "channel": "db:units:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 34
+    },
+    {
+      "channel": "db:units:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 43
+    },
+    {
+      "channel": "db:units:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\unitHandlers.ts",
+      "line": 52
+    },
+    {
+      "channel": "directory:uqc:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\uqcHandlers.ts",
+      "line": 6
+    },
+    {
+      "channel": "directory:uqc:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\ipc\\handlers\\uqcHandlers.ts",
+      "line": 10
+    },
+    {
+      "channel": "system:ping",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\main.ts",
+      "line": 109
+    }
+  ],
+  "rendererChannels": [
+    {
+      "channel": "system:ping",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 42
+    },
+    {
+      "channel": "system:show-about",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 43
+    },
+    {
+      "channel": "db:customers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 49
+    },
+    {
+      "channel": "db:customers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 50
+    },
+    {
+      "channel": "db:customers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 51
+    },
+    {
+      "channel": "db:customers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 53
+    },
+    {
+      "channel": "db:customers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 54
+    },
+    {
+      "channel": "db:suppliers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 58
+    },
+    {
+      "channel": "db:suppliers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 59
+    },
+    {
+      "channel": "db:suppliers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 60
+    },
+    {
+      "channel": "db:suppliers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 62
+    },
+    {
+      "channel": "db:suppliers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 63
+    },
+    {
+      "channel": "db:taxes:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 66
+    },
+    {
+      "channel": "db:taxes:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 68
+    },
+    {
+      "channel": "db:taxes:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 70
+    },
+    {
+      "channel": "db:units:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 73
+    },
+    {
+      "channel": "db:units:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 75
+    },
+    {
+      "channel": "db:units:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 76
+    },
+    {
+      "channel": "db:units:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 78
+    },
+    {
+      "channel": "db:units:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 80
+    },
+    {
+      "channel": "db:units:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 81
+    },
+    {
+      "channel": "db:products:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 84
+    },
+    {
+      "channel": "db:products:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 85
+    },
+    {
+      "channel": "db:products:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 86
+    },
+    {
+      "channel": "db:products:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 87
+    },
+    {
+      "channel": "db:products:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 89
+    },
+    {
+      "channel": "db:products:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 90
+    },
+    {
+      "channel": "db:purchases:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 94
+    },
+    {
+      "channel": "db:purchases:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 95
+    },
+    {
+      "channel": "db:purchases:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 96
+    },
+    {
+      "channel": "db:purchases:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 97
+    },
+    {
+      "channel": "db:purchases:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 98
+    },
+    {
+      "channel": "db:purchases:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 99
+    },
+    {
+      "channel": "db:purchases:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 100
+    },
+    {
+      "channel": "sales:invoice:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 104
+    },
+    {
+      "channel": "sales:invoice:updateDraft",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 106
+    },
+    {
+      "channel": "sales:invoice:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 107
+    },
+    {
+      "channel": "sales:invoice:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 108
+    },
+    {
+      "channel": "sales:invoice:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 109
+    },
+    {
+      "channel": "sales:invoice:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 111
+    },
+    {
+      "channel": "settings:app:getAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 116
+    },
+    {
+      "channel": "settings:app:setAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 118
+    },
+    {
+      "channel": "settings:document-numbering:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 122
+    },
+    {
+      "channel": "settings:document-numbering:save",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 124
+    },
+    {
+      "channel": "settings:document-numbering:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 125
+    },
+    {
+      "channel": "bootstrap:status",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 129
+    },
+    {
+      "channel": "bootstrap:create-company",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 136
+    },
+    {
+      "channel": "auth:create-admin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 140
+    },
+    {
+      "channel": "auth:login",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 141
+    },
+    {
+      "channel": "auth:logout",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 142
+    },
+    {
+      "channel": "auth:lock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 143
+    },
+    {
+      "channel": "auth:unlock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 144
+    },
+    {
+      "channel": "auth:is-locked",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 145
+    },
+    {
+      "channel": "auth:verify-session",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 146
+    },
+    {
+      "channel": "auth:get-current-user",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 147
+    },
+    {
+      "channel": "auth:change-password",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 149
+    },
+    {
+      "channel": "auth:change-pin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 151
+    },
+    {
+      "channel": "company:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 154
+    },
+    {
+      "channel": "company:get-context",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 155
+    },
+    {
+      "channel": "company:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 156
+    },
+    {
+      "channel": "company:get-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 157
+    },
+    {
+      "channel": "company:update-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 159
+    },
+    {
+      "channel": "company:upload-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 161
+    },
+    {
+      "channel": "company:delete-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 162
+    },
+    {
+      "channel": "company:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 163
+    },
+    {
+      "channel": "company:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 165
+    },
+    {
+      "channel": "company:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 166
+    },
+    {
+      "channel": "financial-year:get-current",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 169
+    },
+    {
+      "channel": "financial-year:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 170
+    },
+    {
+      "channel": "financial-year:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 171
+    },
+    {
+      "channel": "financial-year:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 172
+    },
+    {
+      "channel": "financial-year:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 174
+    },
+    {
+      "channel": "print:render",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 181
+    },
+    {
+      "channel": "print:print",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 188
+    },
+    {
+      "channel": "print:printToPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 193
+    },
+    {
+      "channel": "print:exportPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 195
+    },
+    {
+      "channel": "print:getAvailablePrinters",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 196
+    },
+    {
+      "channel": "directory:pincode:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 200
+    },
+    {
+      "channel": "directory:pincode:smartLookup",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 202
+    },
+    {
+      "channel": "directory:pincode:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 204
+    },
+    {
+      "channel": "directory:country:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 207
+    },
+    {
+      "channel": "directory:country:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 208
+    },
+    {
+      "channel": "directory:currency:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 211
+    },
+    {
+      "channel": "directory:currency:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 212
+    },
+    {
+      "channel": "directory:currency:getActive",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 213
+    },
+    {
+      "channel": "directory:currency:getPrimary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 214
+    },
+    {
+      "channel": "directory:state:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 217
+    },
+    {
+      "channel": "directory:state:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 218
+    },
+    {
+      "channel": "directory:uqc:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 221
+    },
+    {
+      "channel": "directory:uqc:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 222
+    },
+    {
+      "channel": "directory:hsn:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 225
+    },
+    {
+      "channel": "directory:hsn:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 227
+    },
+    {
+      "channel": "directory:sac:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 230
+    },
+    {
+      "channel": "directory:sac:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 232
+    },
+    {
+      "channel": "calculation:calculateInvoice",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 237
+    },
+    {
+      "channel": "accounting:getVoucherById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 241
+    },
+    {
+      "channel": "accounting:listVouchers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 243
+    },
+    {
+      "channel": "accounting:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 244
+    },
+    {
+      "channel": "accounting:getLedgerStatement",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 246
+    },
+    {
+      "channel": "accounting:getDashboardMetrics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 247
+    },
+    {
+      "channel": "accounting:getFinancialOverviewChart",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 249
+    },
+    {
+      "channel": "accounting:getActiveLedgers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 250
+    },
+    {
+      "channel": "db:accounting:groups:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 253
+    },
+    {
+      "channel": "db:accounting:groups:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 254
+    },
+    {
+      "channel": "db:accounting:groups:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 255
+    },
+    {
+      "channel": "db:accounting:groups:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 257
+    },
+    {
+      "channel": "db:accounting:groups:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 259
+    },
+    {
+      "channel": "db:accounting:groups:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 260
+    },
+    {
+      "channel": "db:accounting:ledgers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 264
+    },
+    {
+      "channel": "db:accounting:ledgers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 265
+    },
+    {
+      "channel": "db:accounting:ledgers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 267
+    },
+    {
+      "channel": "db:accounting:ledgers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 269
+    },
+    {
+      "channel": "db:accounting:ledgers:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 270
+    },
+    {
+      "channel": "journal:postVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 275
+    },
+    {
+      "channel": "journal:cancelVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 276
+    },
+    {
+      "channel": "journal:reverseVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 277
+    },
+    {
+      "channel": "inventory:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 281
+    },
+    {
+      "channel": "inventory:stock:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 282
+    },
+    {
+      "channel": "inventory:ledger:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 283
+    },
+    {
+      "channel": "inventory:global:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 284
+    },
+    {
+      "channel": "inventory:global:getNegative",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 285
+    },
+    {
+      "channel": "reports:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 288
+    },
+    {
+      "channel": "reports:getGeneralLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 290
+    },
+    {
+      "channel": "reports:getDayBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 296
+    },
+    {
+      "channel": "reports:getCashBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 303
+    },
+    {
+      "channel": "reports:getBankBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 310
+    },
+    {
+      "channel": "reports:getOutstandingSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 312
+    },
+    {
+      "channel": "reports:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 314
+    },
+    {
+      "channel": "reports:getStockLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 321
+    },
+    {
+      "channel": "reports:getStockMovementRegister",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 323
+    },
+    {
+      "channel": "reports:getStockAgeing",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 325
+    },
+    {
+      "channel": "reports:getProfitLoss",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 326
+    },
+    {
+      "channel": "reports:getBalanceSheet",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 327
+    },
+    {
+      "channel": "dev:diagnostics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 330
+    },
+    {
+      "channel": "dev:factoryReset:dryRun",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 332
+    },
+    {
+      "channel": "dev:factoryReset:execute",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 333
+    },
+    {
+      "channel": "dev:inventory:check",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 336
+    },
+    {
+      "channel": "dev:inventory:rebuild",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 337
+    },
+    {
+      "channel": "dev:documentNumbering:reset",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 340
+    },
+    {
+      "channel": "paymentAccount:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 345
+    },
+    {
+      "channel": "paymentAccount:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 347
+    },
+    {
+      "channel": "paymentAccount:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 348
+    },
+    {
+      "channel": "paymentAccount:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 349
+    },
+    {
+      "channel": "paymentAccount:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 351
+    },
+    {
+      "channel": "paymentAccount:openingBalance:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 354
+    },
+    {
+      "channel": "paymentAccount:openingBalance:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 356
+    },
+    {
+      "channel": "paymentAccount:openingBalance:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 358
+    },
+    {
+      "channel": "paymentAccount:openingBalance:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 360
+    },
+    {
+      "channel": "paymentAccount:saveWithOpeningBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 374
+    },
+    {
+      "channel": "fundTransfer:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 378
+    },
+    {
+      "channel": "fundTransfer:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 380
+    },
+    {
+      "channel": "fundTransfer:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 381
+    },
+    {
+      "channel": "fundTransfer:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 383
+    }
+  ],
+  "preloadChannels": [
+    {
+      "key": "ping",
+      "channel": "system:ping",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 42
+    },
+    {
+      "key": "showAbout",
+      "channel": "system:show-about",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 43
+    },
+    {
+      "key": "search",
+      "channel": "db:customers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 49
+    },
+    {
+      "key": "getById",
+      "channel": "db:customers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 50
+    },
+    {
+      "key": "create",
+      "channel": "db:customers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 51
+    },
+    {
+      "key": "update",
+      "channel": "db:customers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 53
+    },
+    {
+      "key": "deactivate",
+      "channel": "db:customers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 54
+    },
+    {
+      "key": "search",
+      "channel": "db:suppliers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 58
+    },
+    {
+      "key": "getById",
+      "channel": "db:suppliers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 59
+    },
+    {
+      "key": "create",
+      "channel": "db:suppliers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 60
+    },
+    {
+      "key": "update",
+      "channel": "db:suppliers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 62
+    },
+    {
+      "key": "deactivate",
+      "channel": "db:suppliers:deactivate",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 63
+    },
+    {
+      "key": "getAll",
+      "channel": "db:taxes:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 66
+    },
+    {
+      "key": "create",
+      "channel": "db:taxes:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 68
+    },
+    {
+      "key": "update",
+      "channel": "db:taxes:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 70
+    },
+    {
+      "key": "getAll",
+      "channel": "db:units:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 73
+    },
+    {
+      "key": "search",
+      "channel": "db:units:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 75
+    },
+    {
+      "key": "getById",
+      "channel": "db:units:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 76
+    },
+    {
+      "key": "create",
+      "channel": "db:units:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 78
+    },
+    {
+      "key": "update",
+      "channel": "db:units:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 80
+    },
+    {
+      "key": "delete",
+      "channel": "db:units:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 81
+    },
+    {
+      "key": "getAll",
+      "channel": "db:products:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 84
+    },
+    {
+      "key": "search",
+      "channel": "db:products:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 85
+    },
+    {
+      "key": "getById",
+      "channel": "db:products:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 86
+    },
+    {
+      "key": "create",
+      "channel": "db:products:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 87
+    },
+    {
+      "key": "update",
+      "channel": "db:products:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 89
+    },
+    {
+      "key": "delete",
+      "channel": "db:products:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 90
+    },
+    {
+      "key": "search",
+      "channel": "db:purchases:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 94
+    },
+    {
+      "key": "getById",
+      "channel": "db:purchases:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 95
+    },
+    {
+      "key": "create",
+      "channel": "db:purchases:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 96
+    },
+    {
+      "key": "update",
+      "channel": "db:purchases:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 97
+    },
+    {
+      "key": "delete",
+      "channel": "db:purchases:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 98
+    },
+    {
+      "key": "submit",
+      "channel": "db:purchases:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 99
+    },
+    {
+      "key": "cancel",
+      "channel": "db:purchases:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 100
+    },
+    {
+      "key": "createInvoice",
+      "channel": "sales:invoice:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 104
+    },
+    {
+      "key": "updateDraft",
+      "channel": "sales:invoice:updateDraft",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 106
+    },
+    {
+      "key": "submitInvoice",
+      "channel": "sales:invoice:submit",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 107
+    },
+    {
+      "key": "cancelInvoice",
+      "channel": "sales:invoice:cancel",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 108
+    },
+    {
+      "key": "getById",
+      "channel": "sales:invoice:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 109
+    },
+    {
+      "key": "list",
+      "channel": "sales:invoice:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 111
+    },
+    {
+      "key": "getAppearance",
+      "channel": "settings:app:getAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 116
+    },
+    {
+      "key": "setAppearance",
+      "channel": "settings:app:setAppearance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 118
+    },
+    {
+      "key": "get",
+      "channel": "settings:document-numbering:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 122
+    },
+    {
+      "key": "save",
+      "channel": "settings:document-numbering:save",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 124
+    },
+    {
+      "key": "getAll",
+      "channel": "settings:document-numbering:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 125
+    },
+    {
+      "key": "status",
+      "channel": "bootstrap:status",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 129
+    },
+    {
+      "key": "createCompany",
+      "channel": "bootstrap:create-company",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 136
+    },
+    {
+      "key": "createAdmin",
+      "channel": "auth:create-admin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 140
+    },
+    {
+      "key": "login",
+      "channel": "auth:login",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 141
+    },
+    {
+      "key": "logout",
+      "channel": "auth:logout",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 142
+    },
+    {
+      "key": "lock",
+      "channel": "auth:lock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 143
+    },
+    {
+      "key": "unlock",
+      "channel": "auth:unlock",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 144
+    },
+    {
+      "key": "isLocked",
+      "channel": "auth:is-locked",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 145
+    },
+    {
+      "key": "verifySession",
+      "channel": "auth:verify-session",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 146
+    },
+    {
+      "key": "getCurrentUser",
+      "channel": "auth:get-current-user",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 147
+    },
+    {
+      "key": "changePassword",
+      "channel": "auth:change-password",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 149
+    },
+    {
+      "key": "changePin",
+      "channel": "auth:change-pin",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 151
+    },
+    {
+      "key": "getActive",
+      "channel": "company:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 154
+    },
+    {
+      "key": "getContext",
+      "channel": "company:get-context",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 155
+    },
+    {
+      "key": "setActive",
+      "channel": "company:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 156
+    },
+    {
+      "key": "getProfile",
+      "channel": "company:get-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 157
+    },
+    {
+      "key": "updateProfile",
+      "channel": "company:update-profile",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 159
+    },
+    {
+      "key": "uploadLogo",
+      "channel": "company:upload-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 161
+    },
+    {
+      "key": "deleteLogo",
+      "channel": "company:delete-logo",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 162
+    },
+    {
+      "key": "list",
+      "channel": "company:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 163
+    },
+    {
+      "key": "create",
+      "channel": "company:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 165
+    },
+    {
+      "key": "delete",
+      "channel": "company:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 166
+    },
+    {
+      "key": "getCurrent",
+      "channel": "financial-year:get-current",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 169
+    },
+    {
+      "key": "getActive",
+      "channel": "financial-year:get-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 170
+    },
+    {
+      "key": "setActive",
+      "channel": "financial-year:set-active",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 171
+    },
+    {
+      "key": "list",
+      "channel": "financial-year:list",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 172
+    },
+    {
+      "key": "create",
+      "channel": "financial-year:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 174
+    },
+    {
+      "key": "render",
+      "channel": "print:render",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 181
+    },
+    {
+      "key": "print",
+      "channel": "print:print",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 188
+    },
+    {
+      "key": "printToPdf",
+      "channel": "print:printToPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 193
+    },
+    {
+      "key": "exportPdf",
+      "channel": "print:exportPdf",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 195
+    },
+    {
+      "key": "getAvailablePrinters",
+      "channel": "print:getAvailablePrinters",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 196
+    },
+    {
+      "key": "get",
+      "channel": "directory:pincode:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 200
+    },
+    {
+      "key": "smartLookup",
+      "channel": "directory:pincode:smartLookup",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 202
+    },
+    {
+      "key": "search",
+      "channel": "directory:pincode:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 204
+    },
+    {
+      "key": "get",
+      "channel": "directory:country:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 207
+    },
+    {
+      "key": "search",
+      "channel": "directory:country:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 208
+    },
+    {
+      "key": "get",
+      "channel": "directory:currency:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 211
+    },
+    {
+      "key": "search",
+      "channel": "directory:currency:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 212
+    },
+    {
+      "key": "getActive",
+      "channel": "directory:currency:getActive",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 213
+    },
+    {
+      "key": "getPrimary",
+      "channel": "directory:currency:getPrimary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 214
+    },
+    {
+      "key": "get",
+      "channel": "directory:state:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 217
+    },
+    {
+      "key": "search",
+      "channel": "directory:state:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 218
+    },
+    {
+      "key": "getByCode",
+      "channel": "directory:uqc:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 221
+    },
+    {
+      "key": "search",
+      "channel": "directory:uqc:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 222
+    },
+    {
+      "key": "getByCode",
+      "channel": "directory:hsn:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 225
+    },
+    {
+      "key": "search",
+      "channel": "directory:hsn:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 227
+    },
+    {
+      "key": "getByCode",
+      "channel": "directory:sac:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 230
+    },
+    {
+      "key": "search",
+      "channel": "directory:sac:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 232
+    },
+    {
+      "key": "calculateInvoice",
+      "channel": "calculation:calculateInvoice",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 237
+    },
+    {
+      "key": "getVoucherById",
+      "channel": "accounting:getVoucherById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 241
+    },
+    {
+      "key": "listVouchers",
+      "channel": "accounting:listVouchers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 243
+    },
+    {
+      "key": "getTrialBalance",
+      "channel": "accounting:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 244
+    },
+    {
+      "key": "getLedgerStatement",
+      "channel": "accounting:getLedgerStatement",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 246
+    },
+    {
+      "key": "getDashboardMetrics",
+      "channel": "accounting:getDashboardMetrics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 247
+    },
+    {
+      "key": "getFinancialOverviewChart",
+      "channel": "accounting:getFinancialOverviewChart",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 249
+    },
+    {
+      "key": "getActiveLedgers",
+      "channel": "accounting:getActiveLedgers",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 250
+    },
+    {
+      "key": "search",
+      "channel": "db:accounting:groups:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 253
+    },
+    {
+      "key": "getAll",
+      "channel": "db:accounting:groups:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 254
+    },
+    {
+      "key": "getById",
+      "channel": "db:accounting:groups:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 255
+    },
+    {
+      "key": "create",
+      "channel": "db:accounting:groups:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 257
+    },
+    {
+      "key": "update",
+      "channel": "db:accounting:groups:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 259
+    },
+    {
+      "key": "delete",
+      "channel": "db:accounting:groups:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 260
+    },
+    {
+      "key": "search",
+      "channel": "db:accounting:ledgers:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 264
+    },
+    {
+      "key": "getById",
+      "channel": "db:accounting:ledgers:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 265
+    },
+    {
+      "key": "create",
+      "channel": "db:accounting:ledgers:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 267
+    },
+    {
+      "key": "update",
+      "channel": "db:accounting:ledgers:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 269
+    },
+    {
+      "key": "delete",
+      "channel": "db:accounting:ledgers:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 270
+    },
+    {
+      "key": "postVoucher",
+      "channel": "journal:postVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 275
+    },
+    {
+      "key": "cancelVoucher",
+      "channel": "journal:cancelVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 276
+    },
+    {
+      "key": "reverseVoucher",
+      "channel": "journal:reverseVoucher",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 277
+    },
+    {
+      "key": "getStockSummary",
+      "channel": "inventory:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 281
+    },
+    {
+      "key": "getStock",
+      "channel": "inventory:stock:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 282
+    },
+    {
+      "key": "getLedger",
+      "channel": "inventory:ledger:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 283
+    },
+    {
+      "key": "getGlobalInventory",
+      "channel": "inventory:global:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 284
+    },
+    {
+      "key": "getNegativeInventory",
+      "channel": "inventory:global:getNegative",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 285
+    },
+    {
+      "key": "getTrialBalance",
+      "channel": "reports:getTrialBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 288
+    },
+    {
+      "key": "getGeneralLedger",
+      "channel": "reports:getGeneralLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 290
+    },
+    {
+      "key": "getDayBook",
+      "channel": "reports:getDayBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 296
+    },
+    {
+      "key": "getCashBook",
+      "channel": "reports:getCashBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 303
+    },
+    {
+      "key": "getBankBook",
+      "channel": "reports:getBankBook",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 310
+    },
+    {
+      "key": "getOutstandingSummary",
+      "channel": "reports:getOutstandingSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 312
+    },
+    {
+      "key": "getStockSummary",
+      "channel": "reports:getStockSummary",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 314
+    },
+    {
+      "key": "getStockLedger",
+      "channel": "reports:getStockLedger",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 321
+    },
+    {
+      "key": "getStockMovementRegister",
+      "channel": "reports:getStockMovementRegister",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 323
+    },
+    {
+      "key": "getStockAgeing",
+      "channel": "reports:getStockAgeing",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 325
+    },
+    {
+      "key": "getProfitLoss",
+      "channel": "reports:getProfitLoss",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 326
+    },
+    {
+      "key": "getBalanceSheet",
+      "channel": "reports:getBalanceSheet",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 327
+    },
+    {
+      "key": "getDiagnostics",
+      "channel": "dev:diagnostics",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 330
+    },
+    {
+      "key": "dryRun",
+      "channel": "dev:factoryReset:dryRun",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 332
+    },
+    {
+      "key": "execute",
+      "channel": "dev:factoryReset:execute",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 333
+    },
+    {
+      "key": "check",
+      "channel": "dev:inventory:check",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 336
+    },
+    {
+      "key": "rebuild",
+      "channel": "dev:inventory:rebuild",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 337
+    },
+    {
+      "key": "reset",
+      "channel": "dev:documentNumbering:reset",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 340
+    },
+    {
+      "key": "create",
+      "channel": "paymentAccount:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 345
+    },
+    {
+      "key": "update",
+      "channel": "paymentAccount:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 347
+    },
+    {
+      "key": "delete",
+      "channel": "paymentAccount:delete",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 348
+    },
+    {
+      "key": "getById",
+      "channel": "paymentAccount:getById",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 349
+    },
+    {
+      "key": "search",
+      "channel": "paymentAccount:search",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 351
+    },
+    {
+      "key": "create",
+      "channel": "paymentAccount:openingBalance:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 354
+    },
+    {
+      "key": "update",
+      "channel": "paymentAccount:openingBalance:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 356
+    },
+    {
+      "key": "reverse",
+      "channel": "paymentAccount:openingBalance:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 358
+    },
+    {
+      "key": "get",
+      "channel": "paymentAccount:openingBalance:get",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 360
+    },
+    {
+      "key": "saveWithOpeningBalance",
+      "channel": "paymentAccount:saveWithOpeningBalance",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 374
+    },
+    {
+      "key": "create",
+      "channel": "fundTransfer:create",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 378
+    },
+    {
+      "key": "update",
+      "channel": "fundTransfer:update",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 380
+    },
+    {
+      "key": "reverse",
+      "channel": "fundTransfer:reverse",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 381
+    },
+    {
+      "key": "getAll",
+      "channel": "fundTransfer:getAll",
+      "file": "d:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\preload.ts",
+      "line": 383
+    }
+  ]
+}

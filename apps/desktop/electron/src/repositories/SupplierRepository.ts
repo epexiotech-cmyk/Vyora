@@ -147,7 +147,7 @@ export class SupplierRepository extends BaseRepository {
     return documentNumberingService.generateNextNumberSync(
       companyId,
       DocumentType.SUPPLIER,
-      '',
+      null,
       tx,
     );
   }

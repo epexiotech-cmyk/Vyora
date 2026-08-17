@@ -69,6 +69,7 @@ export interface UpdateProductInput {
 export interface SearchProductsOptions {
   query?: string;
   isActive?: boolean;
+  itemTypes?: ItemType[];
   limit?: number;
   offset?: number;
 }
@@ -131,6 +132,7 @@ export const updateProductSchema = z.object({
 export const searchProductsSchema = z.object({
   query: z.string().optional(),
   isActive: z.boolean().optional(),
+  itemTypes: z.array(z.enum(['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'])).optional(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
 });

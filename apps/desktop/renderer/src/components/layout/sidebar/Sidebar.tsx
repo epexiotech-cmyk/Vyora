@@ -11,15 +11,23 @@ import {
   ChevronLeft,
   ChevronRight,
   Calculator,
+  ListTree,
   Users,
   Truck,
   PackageOpen,
   Scale,
   LayoutDashboard,
+  FileText,
+  Library,
+  TrendingUp,
+  Building,
+  Wrench,
+  Database,
 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
 
+import { SidebarAccordion } from './SidebarAccordion';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarItem } from './SidebarItem';
 
@@ -27,6 +35,22 @@ import { useLayoutStore } from '@/store/useLayoutStore';
 
 export function Sidebar() {
   const { isSidebarExpanded, toggleSidebar } = useLayoutStore();
+  const [isPackaged, setIsPackaged] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && window.vyora?.developer?.isEnabled) {
+      window.vyora.developer
+        .isEnabled()
+        .then((enabled) => {
+          setIsPackaged(!enabled);
+        })
+        .catch(() => {
+          setIsPackaged(true);
+        });
+    } else {
+      setTimeout(() => setIsPackaged(true), 0);
+    }
+  }, []);
 
   return (
     <motion.aside
@@ -65,9 +89,57 @@ export function Sidebar() {
           <SidebarItem icon={Box} label="Inventory" href="/dashboard/inventory" />
         </SidebarGroup>
 
-        <SidebarGroup label="Accounting">
-          <SidebarItem icon={Calculator} label="Accounting" href="/dashboard/accounting" />
-        </SidebarGroup>
+        <SidebarAccordion
+          icon={Calculator}
+          label="Accounting"
+          href="/dashboard/accounting"
+          activeMatches={['/dashboard/accounting']}
+        >
+          <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard/accounting" />
+          <SidebarItem
+            icon={ListTree}
+            label="Chart of Accounts"
+            href="/dashboard/accounting/chart-of-accounts"
+          />
+          <SidebarItem
+            icon={FileText}
+            label="Journal Entries"
+            href="/dashboard/accounting/journal"
+          />
+          <SidebarItem
+            icon={Library}
+            label="General Ledger"
+            href="/dashboard/accounting/general-ledger"
+          />
+          <SidebarItem
+            icon={Scale}
+            label="Trial Balance"
+            href="/dashboard/accounting/trial-balance"
+          />
+          <SidebarItem
+            icon={TrendingUp}
+            label="Profit & Loss"
+            href="/dashboard/accounting/profit-loss"
+          />
+          <SidebarItem
+            icon={Building}
+            label="Balance Sheet"
+            href="/dashboard/accounting/balance-sheet"
+          />
+          <SidebarItem icon={FileText} label="Bank Book" href="/dashboard/accounting/bank-book" />
+          <SidebarItem icon={FileText} label="Cash Book" href="/dashboard/accounting/cash-book" />
+          <SidebarItem icon={FileText} label="UPI Book" href="/dashboard/accounting/upi-book" />
+          <SidebarItem
+            icon={ListTree}
+            label="Transfer Register"
+            href="/dashboard/accounting/transfer-register"
+          />
+          <SidebarItem
+            icon={BarChart3}
+            label="Account Balance Summary"
+            href="/dashboard/accounting/account-balance-summary"
+          />
+        </SidebarAccordion>
 
         <SidebarGroup label="Reporting">
           <SidebarItem icon={BarChart3} label="Reports" href="/dashboard/reports" />
@@ -78,13 +150,56 @@ export function Sidebar() {
           <SidebarItem icon={Users} label="Customers" href="/dashboard/customers" />
           <SidebarItem icon={Truck} label="Suppliers" href="/dashboard/suppliers" />
           <SidebarItem icon={PackageOpen} label="Items" href="/dashboard/items" />
+          <SidebarItem icon={PackageOpen} label="Services" href="/dashboard/services" />
           <SidebarItem icon={Scale} label="Units" href="/dashboard/units" />
         </SidebarGroup>
       </div>
 
-      {/* Footer / Settings */}
       <div className="mt-auto border-t p-2">
-        <SidebarItem icon={Settings} label="Settings" href="/dashboard/settings" />
+        <SidebarAccordion
+          icon={Settings}
+          label="Settings"
+          href="/dashboard/settings"
+          activeMatches={['/dashboard/settings']}
+        >
+          <SidebarItem
+            icon={Building}
+            label="Company Profile"
+            href="/dashboard/settings/company-profile"
+          />
+          <SidebarItem
+            icon={Receipt}
+            label="Tax Compliance"
+            href="/dashboard/settings/tax-compliance"
+          />
+          <SidebarItem icon={Scale} label="Units" href="/dashboard/units" />
+          <SidebarItem icon={Users} label="Users" href="/dashboard/settings/users" />
+          <SidebarItem
+            icon={Settings}
+            label="Payment Accounts"
+            href="/dashboard/settings/payment-accounts"
+          />
+        </SidebarAccordion>
+
+        {isPackaged === false && (
+          <SidebarAccordion
+            icon={Wrench}
+            label="Developer"
+            href="/dashboard/developer"
+            activeMatches={['/dashboard/developer', '/dashboard/settings/developer-tools']}
+          >
+            <SidebarItem
+              icon={Database}
+              label="Database Explorer"
+              href="/dashboard/developer/database"
+            />
+            <SidebarItem
+              icon={Wrench}
+              label="Development Data Reset"
+              href="/dashboard/settings/developer-tools"
+            />
+          </SidebarAccordion>
+        )}
       </div>
 
       {/* Collapse Toggle */}

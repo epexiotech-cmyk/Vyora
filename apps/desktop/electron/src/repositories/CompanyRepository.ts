@@ -20,12 +20,18 @@ function mapToDto(entity: Company): CompanyDto {
     city: entity.city,
     district: entity.district,
     stateCode: entity.stateCode,
+    gstStateId: entity.gstStateId,
     countryCode: entity.countryCode,
     pincode: entity.pincode,
     email: entity.email,
     mobile: entity.mobile,
     telephone: entity.telephone,
     website: entity.website,
+    logoPath: entity.logoPath,
+    defaultUpiId: entity.defaultUpiId,
+    upiPayeeName: entity.upiPayeeName,
+    showQrOnInvoice: entity.showQrOnInvoice,
+    showBankDetailsOnInvoice: entity.showBankDetailsOnInvoice,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
     deletedAt: entity.deletedAt,
@@ -96,9 +102,15 @@ export class CompanyRepository extends BaseRepository {
     const executor = tx || this.db;
     const now = new Date();
 
+    const { showQrOnInvoice, showBankDetailsOnInvoice, ...restData } = data;
+
     const updateData = {
-      ...data,
+      ...restData,
       updatedAt: now,
+      ...(showQrOnInvoice !== undefined ? { showQrOnInvoice: showQrOnInvoice ?? false } : {}),
+      ...(showBankDetailsOnInvoice !== undefined
+        ? { showBankDetailsOnInvoice: showBankDetailsOnInvoice ?? false }
+        : {}),
     };
 
     await executor.update(companies).set(updateData).where(eq(companies.id, id));
@@ -122,3 +134,5 @@ export class CompanyRepository extends BaseRepository {
     await executor.update(companies).set({ deletedAt: now }).where(eq(companies.id, id));
   }
 }
+
+export const companyRepository = new CompanyRepository();

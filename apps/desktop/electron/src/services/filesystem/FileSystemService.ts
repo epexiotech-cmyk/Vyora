@@ -42,6 +42,55 @@ export class FileSystemService {
   public getPath(type: keyof typeof this.dirs): string {
     return this.dirs[type];
   }
+
+  public resolveAttachmentPath(relativePath: string): string | null {
+    // Prevent obvious path traversal in the input
+    if (relativePath.includes('..')) {
+      return null;
+    }
+
+    // Normalize path to OS specific separators
+    const normalizedPath = path.normalize(relativePath);
+    const absolutePath = path.join(this.dirs.attachments, normalizedPath);
+
+    // Ensure the resolved path strictly resides within the attachments folder
+    if (!absolutePath.startsWith(this.dirs.attachments)) {
+      return null;
+    }
+
+    if (fs.existsSync(absolutePath)) {
+      return absolutePath;
+    }
+
+    return null;
+  }
+
+  public getCompanyLogoDirectory(companyId: string): string {
+    const dir = path.join(this.dirs.attachments, 'companies', companyId);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+  }
+
+  public getCompanyLogoPath(companyId: string, filename: string): string {
+    const dir = this.getCompanyLogoDirectory(companyId);
+    const safeFilename = path.basename(filename);
+    return path.join(dir, safeFilename);
+  }
+
+  public saveCompanyLogo(companyId: string, filename: string, buffer: Buffer): string {
+    const destPath = this.getCompanyLogoPath(companyId, filename);
+    fs.writeFileSync(destPath, buffer);
+    return destPath;
+  }
+
+  public deleteCompanyLogo(companyId: string, filename: string): void {
+    const targetPath = this.getCompanyLogoPath(companyId, filename);
+    if (fs.existsSync(targetPath)) {
+      fs.unlinkSync(targetPath);
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();

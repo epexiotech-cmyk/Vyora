@@ -283,8 +283,7 @@ export class InventoryEngine {
         invoiceId,
         innerTx,
       );
-      if (originalMovements.length === 0)
-        throw new Error(`No inventory movements found for Sales Invoice ${invoiceId}`);
+      if (originalMovements.length === 0) return; // No inventory movements to reverse
 
       for (const movement of originalMovements) {
         if (movement.quantityOut <= 0) continue;
@@ -327,8 +326,7 @@ export class InventoryEngine {
         purchaseId,
         innerTx,
       );
-      if (originalMovements.length === 0)
-        throw new Error(`No inventory movements found for Purchase Bill ${purchaseId}`);
+      if (originalMovements.length === 0) return; // No inventory movements to reverse
 
       for (const movement of originalMovements) {
         if (movement.quantityIn <= 0) continue;
@@ -517,8 +515,7 @@ export class InventoryEngine {
       purchaseId,
       tx,
     );
-    if (originalMovements.length === 0)
-      throw new Error(`No inventory movements found for Purchase Bill ${purchaseId}`);
+    if (originalMovements.length === 0) return; // No inventory movements to reverse
 
     for (const movement of originalMovements) {
       if (movement.quantityIn <= 0) continue;
@@ -608,8 +605,7 @@ export class InventoryEngine {
       invoiceId,
       tx,
     );
-    if (originalMovements.length === 0)
-      throw new Error(`No inventory movements found for Sales Invoice ${invoiceId}`);
+    if (originalMovements.length === 0) return; // No inventory movements to reverse (e.g., service-only invoice)
 
     for (const movement of originalMovements) {
       if (movement.quantityOut <= 0) continue;

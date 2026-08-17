@@ -81,6 +81,23 @@ export function mapErrorToContract(err: unknown): ErrorContract {
       };
     }
 
+    if (err.name === 'PaymentAccountDeletionError') {
+      const customErr = err as unknown as Record<string, unknown>;
+      return {
+        success: false,
+        error: err.message,
+        code: (customErr.code as string) || 'ACCOUNT_HAS_HISTORY',
+        details: {
+          reason: customErr.reason,
+          journalCount: customErr.journalCount,
+          voucherCount: customErr.voucherCount,
+          ledgerId: customErr.ledgerId,
+          recommendedAction: customErr.recommendedAction,
+        },
+        retryable: false,
+      };
+    }
+
     // Fallback for general errors
     log?.error?.(`[IPC Error] ${err.name}: ${err.message}`, { stack: err.stack });
     return {

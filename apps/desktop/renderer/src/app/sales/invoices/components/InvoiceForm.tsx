@@ -15,6 +15,7 @@ import { InvoiceToolbar } from './InvoiceToolbar';
 import { InvoiceTotals } from './InvoiceTotals';
 import { useLeaveWarning } from './useLeaveWarning';
 
+import { ConstrainedSection } from '@/components/layout/ConstrainedSection';
 import { usePrintPreview } from '@/components/print/usePrintPreview';
 
 type InvoiceFormValues = z.input<typeof createSalesInvoiceSchema>;
@@ -191,11 +192,13 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
         />
 
         <div className="flex-1 space-y-6 overflow-y-auto p-6">
-          <div className="mx-auto max-w-7xl space-y-6">
+          <div className="w-full space-y-6">
             {/* Header section */}
-            <div className="bg-card rounded-md border shadow-sm">
-              <InvoiceHeader isReadOnly={isReadOnly} />
-            </div>
+            <ConstrainedSection>
+              <div className="bg-card rounded-md border shadow-sm">
+                <InvoiceHeader isReadOnly={isReadOnly} />
+              </div>
+            </ConstrainedSection>
 
             {/* Line items section */}
             <div className="shadow-sm">
@@ -203,11 +206,13 @@ export function InvoiceForm({ initialData, mode }: InvoiceFormProps) {
             </div>
 
             {/* Totals section */}
-            <div className="flex justify-end">
-              <div className="w-full md:w-1/3">
-                <InvoiceTotals calculationState={calculationState} />
+            <ConstrainedSection>
+              <div className="flex justify-end">
+                <div className="w-full lg:max-w-xl">
+                  <InvoiceTotals calculationState={calculationState} />
+                </div>
               </div>
-            </div>
+            </ConstrainedSection>
           </div>
         </div>
       </form>

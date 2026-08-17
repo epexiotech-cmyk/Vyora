@@ -16,6 +16,10 @@ export const createSalesInvoiceItemSchema = z.object({
   cessRateSnapshot: z.number().optional().nullable(),
   description: z.string().optional().nullable(),
   hsnCode: z.string().optional().nullable(),
+  itemTypeSnapshot: z
+    .enum(['INVENTORY_ITEM', 'NON_INVENTORY_ITEM', 'SERVICE'])
+    .optional()
+    .nullable(),
   quantity: z.number().int().min(1),
   rate: z.number().int().min(0),
   discountAmount: z.number().int().min(0).default(0),
@@ -46,6 +50,7 @@ export const createSalesInvoiceSchema = z.object({
   companyStateNameSnapshot: z.string().optional().nullable(),
   companyStateCodeSnapshot: z.string().optional().nullable(),
   companyPanSnapshot: z.string().optional().nullable(),
+  companyLogoPath: z.string().optional().nullable(),
 
   placeOfSupplyCode: z.string().optional().nullable(),
 
@@ -64,6 +69,16 @@ export const createSalesInvoiceSchema = z.object({
   shippingPincode: z.string().optional().nullable(),
   shippingGstin: z.string().optional().nullable(),
   shippingStateCode: z.string().optional().nullable(),
+
+  paymentAccountId: z.string().uuid().optional().nullable(),
+  bankNameSnapshot: z.string().optional().nullable(),
+  accountNumberSnapshot: z.string().optional().nullable(),
+  ifscCodeSnapshot: z.string().optional().nullable(),
+  branchNameSnapshot: z.string().optional().nullable(),
+
+  qrAccountId: z.string().uuid().optional().nullable(),
+  upiIdSnapshot: z.string().optional().nullable(),
+  upiPayeeNameSnapshot: z.string().optional().nullable(),
 
   subtotal: z.number().int().min(0),
   discountAmount: z.number().int().min(0).default(0),
@@ -96,6 +111,7 @@ export interface SalesInvoiceLineDto {
   cessRateSnapshot?: number | null;
   description?: string | null;
   hsnCode?: string | null;
+  itemTypeSnapshot?: 'INVENTORY_ITEM' | 'NON_INVENTORY_ITEM' | 'SERVICE' | null;
   quantity: number;
   rate: number;
   discountAmount: number;
@@ -125,6 +141,7 @@ export interface SalesInvoiceDto {
   companyStateNameSnapshot?: string | null;
   companyStateCodeSnapshot?: string | null;
   companyPanSnapshot?: string | null;
+  companyLogoPath?: string | null;
 
   placeOfSupplyCode?: string | null;
 
@@ -143,6 +160,16 @@ export interface SalesInvoiceDto {
   shippingPincode?: string | null;
   shippingGstin?: string | null;
   shippingStateCode?: string | null;
+
+  paymentAccountId?: string | null;
+  bankNameSnapshot?: string | null;
+  accountNumberSnapshot?: string | null;
+  ifscCodeSnapshot?: string | null;
+  branchNameSnapshot?: string | null;
+
+  qrAccountId?: string | null;
+  upiIdSnapshot?: string | null;
+  upiPayeeNameSnapshot?: string | null;
 
   subtotal: number;
   discountAmount: number;

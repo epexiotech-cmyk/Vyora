@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+export * from './financialOverview.dto';
+export * from './payment-account.dto';
+
 export const VoucherTypeEnum = [
   'Sales',
   'Purchase',
@@ -9,6 +12,7 @@ export const VoucherTypeEnum = [
   'Journal',
   'CreditNote',
   'DebitNote',
+  'OPENING_BALANCE',
 ] as const;
 
 export const VoucherReferenceTypeEnum = [
@@ -21,6 +25,8 @@ export const VoucherReferenceTypeEnum = [
   'CREDIT_NOTE',
   'DEBIT_NOTE',
   'MANUAL',
+  'PAYMENT_ACCOUNT_OPENING',
+  'FUND_TRANSFER',
 ] as const;
 
 export const CreateVoucherEntrySchema = z.object({
@@ -43,6 +49,14 @@ export const CreateVoucherInputSchema = z.object({
 
 export type CreateVoucherEntryInput = z.infer<typeof CreateVoucherEntrySchema>;
 export type CreateVoucherInput = z.infer<typeof CreateVoucherInputSchema>;
+
+export interface CreateOpeningBalanceInput {
+  paymentAccountId: string;
+  amount: number;
+  balanceType: 'Dr' | 'Cr';
+  voucherDate: Date;
+  notes?: string;
+}
 
 export interface CalculationLineInput {
   quantity: number;
@@ -209,7 +223,84 @@ export interface LedgerStatementDto {
 }
 
 export interface AccountingDashboardDto {
-  totalVouchers: number;
-  salesVoucherCount: number;
-  purchaseVoucherCount: number;
+  totalVouchers?: number;
+  salesVoucherCount?: number;
+  purchaseVoucherCount?: number;
+  totalLedgers: number;
+  totalJournalEntries: number;
+  trialBalanceStatus: { isBalanced: boolean; difference: number };
+  currentProfitLoss: number;
+  financialOverview: { date: Date; income: number; expense: number; netProfit: number }[];
+  recentJournals: { id: string; date: Date; voucherNumber: string; amount: number }[];
+  lastUpdatedAt: Date;
 }
+
+// -----------------------------------------------------------------------------
+// LEDGER GROUPS
+// -----------------------------------------------------------------------------
+export const LedgerGroupNatureEnum = ['Asset', 'Liability', 'Equity', 'Income', 'Expense'] as const;
+export type LedgerGroupNature = (typeof LedgerGroupNatureEnum)[number];
+
+export const createLedgerGroupSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  parentGroupId: z.string().optional().nullable(),
+  nature: z.enum(LedgerGroupNatureEnum),
+  isActive: z.boolean().optional(),
+});
+export type CreateLedgerGroupInput = z.infer<typeof createLedgerGroupSchema>;
+
+export const updateLedgerGroupSchema = createLedgerGroupSchema.partial();
+export type UpdateLedgerGroupInput = z.infer<typeof updateLedgerGroupSchema>;
+
+export interface SearchLedgerGroupsOptions {
+  companyId?: string;
+  query?: string;
+  nature?: LedgerGroupNature;
+  isActive?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+export const searchLedgerGroupsSchema = z.any(); // placeholder
+
+export interface LedgerGroupListDto {
+  data: LedgerGroupDto[];
+  total: number;
+}
+
+// -----------------------------------------------------------------------------
+// LEDGERS
+// -----------------------------------------------------------------------------
+export const LedgerOpeningTypeEnum = ['Dr', 'Cr'] as const;
+export type LedgerOpeningType = (typeof LedgerOpeningTypeEnum)[number];
+
+export const createLedgerSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  groupId: z.string().min(1, 'Group is required'),
+  alias: z.string().optional().nullable(),
+  openingBalance: z.number().optional().nullable(),
+  openingType: z.enum(LedgerOpeningTypeEnum).optional().nullable(),
+  isActive: z.boolean().optional(),
+  notes: z.string().optional().nullable(),
+});
+export type CreateLedgerInput = z.infer<typeof createLedgerSchema>;
+
+export const updateLedgerSchema = createLedgerSchema.partial();
+export type UpdateLedgerInput = z.infer<typeof updateLedgerSchema>;
+
+export interface SearchLedgersOptions {
+  companyId?: string;
+  query?: string;
+  groupId?: string;
+  isActive?: boolean;
+  limit?: number;
+  offset?: number;
+}
+export const searchLedgersSchema = z.any(); // placeholder
+
+export interface LedgerListDto {
+  data: LedgerDto[];
+  total: number;
+}
+
+export * from './fund-transfer.dto';

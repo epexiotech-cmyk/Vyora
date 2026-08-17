@@ -40,6 +40,8 @@ function mapToDto(entity: Customer): CustomerProfileDto {
     openingType: entity.openingType as CustomerProfileDto['openingType'],
     creditLimit: entity.creditLimit,
     creditDays: entity.creditDays,
+    defaultPaymentAccountId: entity.defaultPaymentAccountId,
+    defaultQrAccountId: entity.defaultQrAccountId,
     notes: entity.notes,
     isActive: entity.isActive,
     syncVersion: entity.syncVersion,
@@ -144,7 +146,7 @@ export class CustomerRepository extends BaseRepository {
     return documentNumberingService.generateNextNumberSync(
       companyId,
       DocumentType.CUSTOMER,
-      '',
+      null,
       tx,
     );
   }
@@ -271,3 +273,5 @@ export class CustomerRepository extends BaseRepository {
       .where(eq(customers.id, id));
   }
 }
+
+export const customerRepository = new CustomerRepository();

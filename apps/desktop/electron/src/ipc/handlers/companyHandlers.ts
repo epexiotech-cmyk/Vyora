@@ -105,4 +105,38 @@ export function registerCompanyHandlers() {
       return { success: false, error: (error as Error).message };
     }
   });
+
+  ipcMain.handle(
+    'company:upload-logo',
+    async (
+      _,
+      companyId: string,
+      filename: string,
+      buffer: Buffer,
+    ): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        if (buffer.length > 5 * 1024 * 1024) {
+          throw new Error('File size exceeds the maximum limit of 5MB.');
+        }
+        const updatedProfile = await companyContextService.uploadLogo(companyId, filename, buffer);
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error uploading company logo:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:delete-logo',
+    async (_, companyId: string): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.deleteLogo(companyId);
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error deleting company logo:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
 }

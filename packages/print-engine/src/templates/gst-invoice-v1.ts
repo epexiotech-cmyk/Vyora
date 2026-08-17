@@ -1,4 +1,5 @@
 import { SalesInvoiceDto, SalesInvoiceLineDto } from '@vyora/types';
+import QRCode from 'qrcode';
 
 import { PrintPayload, TemplateDefinition } from '../types';
 import { formatCurrencyINR } from '../utils/formatCurrency';
@@ -18,13 +19,32 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
     const formatDate = (dateString?: string | Date) => {
       if (!dateString) return '';
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
     };
 
     const items = data.items || [];
 
     const fmt = (amount: number | null | undefined) =>
       formatCurrencyINR(amount, payload.currencyMeta);
+
+    const hasItems = items.some(
+      (i: SalesInvoiceLineDto) =>
+        i.itemTypeSnapshot === 'INVENTORY_ITEM' || i.itemTypeSnapshot === 'NON_INVENTORY_ITEM',
+    );
+    const hasServices = items.some((i: SalesInvoiceLineDto) => i.itemTypeSnapshot === 'SERVICE');
+
+    let hsnSacHeader = 'HSN / SAC';
+    let descHeader = 'Description of Goods/Services';
+    if (hasItems && !hasServices) {
+      hsnSacHeader = 'HSN Code';
+      descHeader = 'Description of Goods';
+    } else if (!hasItems && hasServices) {
+      hsnSacHeader = 'SAC Code';
+      descHeader = 'Description of Services';
+    }
 
     // Calculate Tax Summary
     let totalCgst = 0;
@@ -53,6 +73,50 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
       `;
       })
       .join('');
+
+    const extData = data as SalesInvoiceDto & {
+      _showBankDetailsOnInvoice?: boolean;
+      _showQrOnInvoice?: boolean;
+    };
+
+    let bankHtml = '';
+    if (extData._showBankDetailsOnInvoice && extData.bankNameSnapshot) {
+      bankHtml = `
+        <div style="flex: 1; padding: 10px;">
+          <div class="strong">Bank Details:</div>
+          <div>Bank Name: ${extData.bankNameSnapshot || ''}</div>
+          <div>A/C No: ${extData.accountNumberSnapshot || ''}</div>
+          <div>IFSC: ${extData.ifscCodeSnapshot || ''}</div>
+          <div>Branch: ${extData.branchNameSnapshot || ''}</div>
+        </div>
+      `;
+    }
+
+    let qrHtml = '';
+    if (extData._showQrOnInvoice && extData.upiIdSnapshot) {
+      try {
+        const upiString = `upi://pay?pa=${extData.upiIdSnapshot}&pn=${encodeURIComponent(extData.upiPayeeNameSnapshot || extData.companyNameSnapshot || '')}&am=${data.grandTotal || 0}`;
+        const qrDataUrl = await QRCode.toDataURL(upiString, { margin: 1, width: 100 });
+        qrHtml = `
+          <div style="padding: 10px; text-align: center; border-left: 1px solid #000;">
+            <img src="${qrDataUrl}" alt="QR Code" style="width: 80px; height: 80px;" />
+            <div style="font-size: 9px; margin-top: 2px;">Scan to Pay</div>
+          </div>
+        `;
+      } catch (e) {
+        console.error('Failed to generate QR code', e);
+      }
+    }
+
+    let paymentSection = '';
+    if (bankHtml || qrHtml) {
+      paymentSection = `
+        <div style="display: flex; border-bottom: 1px solid #000;">
+          ${bankHtml}
+          ${qrHtml}
+        </div>
+      `;
+    }
 
     return `
       <!DOCTYPE html>
@@ -155,7 +219,14 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
       </head>
       <body>
           <div class="container">
-              <div class="header-title">TAX INVOICE</div>
+              <div class="header-title">
+                  ${
+                    data.companyLogoPath // Assuming we need to pass this or use a generic field. Wait, is logo path in data?
+                      ? `<img src="${data.companyLogoPath}" alt="Company Logo" style="max-height: 60px; max-width: 150px; vertical-align: middle; margin-right: 15px;" />`
+                      : ''
+                  }
+                  TAX INVOICE
+              </div>
               
               <div class="row">
                   <div class="col-50">
@@ -196,8 +267,8 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
                   <thead>
                       <tr>
                           <th>Sr.</th>
-                          <th>Description of Goods</th>
-                          <th>HSN/SAC</th>
+                          <th>${descHeader}</th>
+                          <th>${hsnSacHeader}</th>
                           <th>Qty</th>
                           <th>Rate</th>
                           <th>Taxable Value</th>
@@ -255,6 +326,8 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
               <div class="amount-words">
                   Amount in words: Rupees ${numberToWordsINR(data.grandTotal || 0)} Only
               </div>
+
+              ${paymentSection}
 
               <div class="footer-row">
                   <div class="declaration">

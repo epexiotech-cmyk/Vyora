@@ -10,7 +10,7 @@ import {
   ItemType,
   TaxabilityType,
 } from '@vyora/types';
-import { eq, and, or, like, desc, isNull } from 'drizzle-orm';
+import { eq, and, or, like, desc, isNull, inArray } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -55,6 +55,10 @@ export class ProductRepository extends BaseRepository {
 
     if (options.isActive !== undefined) {
       conditions.push(eq(products.isActive, options.isActive));
+    }
+
+    if (options.itemTypes && options.itemTypes.length > 0) {
+      conditions.push(inArray(products.itemType, options.itemTypes));
     }
 
     if (options.query) {

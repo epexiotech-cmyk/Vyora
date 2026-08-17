@@ -43,6 +43,8 @@ export interface CustomerProfileDto {
   openingType?: 'Dr' | 'Cr' | null;
   creditLimit: number;
   creditDays: number;
+  defaultPaymentAccountId?: string | null;
+  defaultQrAccountId?: string | null;
   shippingAddresses?: ShippingAddressDto[] | null;
   notes?: string | null;
   isActive: boolean;
@@ -121,6 +123,8 @@ export const createCustomerSchema = z.object({
   openingType: z.enum(['Dr', 'Cr']).optional().nullable(),
   creditLimit: z.coerce.number().int().min(0).default(0),
   creditDays: z.coerce.number().int().min(0).default(0),
+  defaultPaymentAccountId: z.string().uuid('Invalid Payment Account ID').optional().nullable(),
+  defaultQrAccountId: z.string().uuid('Invalid QR Account ID').optional().nullable(),
   notes: z.string().optional().nullable(),
   shippingAddresses: z.array(shippingAddressSchema).optional().nullable(),
   isActive: z.boolean().default(true),

@@ -1,4 +1,7 @@
 import type {
+  CreateLedgerGroupInput,
+  SearchLedgerGroupsOptions,
+  UpdateLedgerGroupInput,
   ApiResponse,
   CustomerProfileDto,
   CreateCustomerInput,
@@ -25,15 +28,38 @@ import type {
   PincodeDTO,
   PincodeSearchResponse,
   SmartPincodeLookupResponse,
-  VyoraAuthAPI,
   ProductStockStatusDto,
 } from '@vyora/types';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
 
 export type VyoraSystemAPI = {
   ping: () => Promise<string>;
-  showAbout: () => Promise<{ success: boolean; error?: string }>;
+  test: () => Promise<string>;
+  showAbout: () => Promise<void>;
+  openPath: (path: string) => Promise<{ success: boolean; error?: string }>;
+  showItemInFolder: (path: string) => Promise<{ success: boolean; error?: string }>;
   isPackaged: boolean;
+};
+
+export type VyoraExportAPI = {
+  exportFile: (
+    request: import('@vyora/types').ExportRequest,
+  ) => Promise<import('@vyora/types').ExportSummary>;
+};
+
+export type VyoraAuthAPI = {
+  createAdmin: (payload: Record<string, unknown>) => Promise<ApiResponse<void>>;
+  login: (payload: Record<string, unknown>) => Promise<ApiResponse<unknown>>;
+  logout: () => Promise<ApiResponse<void>>;
+  lock: () => Promise<ApiResponse<void>>;
+  unlock: (payload: Record<string, unknown>) => Promise<ApiResponse<void>>;
+  isLocked: () => Promise<ApiResponse<boolean>>;
+  verifySession: () => Promise<ApiResponse<unknown>>;
+  getCurrentUser: () => Promise<ApiResponse<import('@vyora/types').UserDto>>;
+  changePassword: (
+    payload: import('@vyora/types').ChangePasswordRequestDto,
+  ) => Promise<ApiResponse<void>>;
+  changePin: (payload: import('@vyora/types').ChangePinRequestDto) => Promise<ApiResponse<void>>;
 };
 
 export type VyoraSettingsAPI = {
@@ -75,6 +101,13 @@ export type VyoraDatabaseAPI = {
   };
   taxes: {
     getAll: () => Promise<ApiResponse<import('@vyora/types').TaxDto[]>>;
+    create: (
+      data: import('@vyora/types').CreateTaxInput,
+    ) => Promise<ApiResponse<import('@vyora/types').TaxDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateTaxInput,
+    ) => Promise<ApiResponse<import('@vyora/types').TaxDto>>;
   };
   units: {
     getAll: () => Promise<ApiResponse<import('@vyora/types').UnitDto[]>>;
@@ -109,15 +142,16 @@ export type VyoraDatabaseAPI = {
     getById: (id: string) => Promise<ApiResponse<PurchaseDto | null>>;
     create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
     update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
     submit: (id: string) => Promise<ApiResponse<void>>;
     cancel: (id: string) => Promise<ApiResponse<void>>;
-    delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
     updateDraft: (
       invoiceId: string,
       payload: UpdateSalesInvoiceInput,
+      pin?: string,
     ) => Promise<ApiResponse<SalesInvoiceDto>>;
     submitInvoice: (invoiceId: string) => Promise<ApiResponse<{ warnings: unknown[] }>>;
     cancelInvoice: (invoiceId: string) => Promise<ApiResponse<void>>;
@@ -146,6 +180,12 @@ export type VyoraCompanyAPI = {
     id: string,
     payload: import('@vyora/types').UpdateCompanyProfileRequest,
   ) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto>>;
+  uploadLogo: (
+    id: string,
+    filename: string,
+    buffer: ArrayBuffer,
+  ) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto>>;
+  deleteLogo: (id: string) => Promise<ApiResponse<import('@vyora/types').CompanyProfileDto>>;
   list: () => Promise<ApiResponse<import('@vyora/types').CompanyDto[]>>;
   create: (payload: import('@vyora/types').CreateCompanyInput) => Promise<ApiResponse<string>>;
   delete: (id: string) => Promise<ApiResponse<void>>;
@@ -229,6 +269,11 @@ export type VyoraDirectoriesAPI = {
 };
 
 export type VyoraAccountingAPI = {
+  getFinancialOverviewChart: (
+    req: import('@vyora/types').FinancialOverviewChartRequestDto,
+  ) => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').FinancialOverviewChartResponseDto[]>
+  >;
   getVoucherById: (
     id: string,
   ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;
@@ -246,9 +291,49 @@ export type VyoraAccountingAPI = {
   getDashboardMetrics: () => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').AccountingDashboardDto>
   >;
+  getFinancialOverviewChart: (
+    req: import('@vyora/types').FinancialOverviewChartRequestDto,
+  ) => Promise<
+    import('@vyora/types').ApiResponse<import('@vyora/types').FinancialOverviewChartResponseDto[]>
+  >;
   getActiveLedgers: () => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').LedgerLookupDto[]>
   >;
+  groups: {
+    search: (
+      options: SearchLedgerGroupsOptions,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupListDto>>;
+    getAll: () => Promise<
+      import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto[]>
+    >;
+    getById: (
+      id: string,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto | null>>;
+    create: (
+      data: CreateLedgerGroupInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto>>;
+    update: (
+      id: string,
+      data: UpdateLedgerGroupInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerGroupDto>>;
+    delete: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+  };
+  ledgers: {
+    search: (
+      options: import('@vyora/types').SearchLedgersOptions,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerListDto>>;
+    getById: (
+      id: string,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateLedgerInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateLedgerInput,
+    ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').LedgerDto>>;
+    delete: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+  };
 };
 
 export type VyoraCalculationAPI = {
@@ -260,7 +345,13 @@ export type VyoraCalculationAPI = {
 export type VyoraJournalAPI = {
   postVoucher: (
     input: import('@vyora/types').CreateVoucherInput,
-  ) => Promise<ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+  ) => Promise<import('@vyora/types').ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+  cancelVoucher: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<{ reversalVoucherId?: string }>>;
+  reverseVoucher: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<{ reversalVoucherId: string }>>;
 };
 
 export type VyoraInventoryAPI = {
@@ -272,6 +363,13 @@ export type VyoraInventoryAPI = {
 };
 
 export type VyoraReportsAPI = {
+  getTrialBalance: (asOfDate?: Date) => Promise<import('@vyora/types').TrialBalanceReport>;
+  getProfitLoss: (asOfDate?: Date) => Promise<import('@vyora/types').ProfitLossReport>;
+  getBalanceSheet: (asOfDate?: Date) => Promise<import('@vyora/types').BalanceSheetReport>;
+  getGeneralLedger: (args: {
+    startDate?: Date;
+    endDate?: Date;
+  }) => Promise<import('@vyora/types').GeneralLedgerReport>;
   getDayBook: (args: {
     startDate?: Date;
     endDate?: Date;
@@ -322,6 +420,7 @@ export type VyoraReportsAPI = {
 declare global {
   interface Window {
     vyora: {
+      export: VyoraExportAPI;
       auth: VyoraAuthAPI;
       system: VyoraSystemAPI;
       db: VyoraDatabaseAPI;
@@ -338,6 +437,10 @@ declare global {
       inventory: VyoraInventoryAPI;
       reports: VyoraReportsAPI;
       dev: VyoraDevAPI;
+      developer: VyoraDeveloperAPI;
+      developerDatabase: import('../../electron/src/preload').VyoraDeveloperDatabaseAPI;
+      paymentAccounts: import('../../electron/src/preload').VyoraPaymentAccountAPI;
+      fundTransfers: import('../../electron/src/preload').VyoraFundTransferAPI;
     };
   }
 }
@@ -355,4 +458,8 @@ export type VyoraDevAPI = {
   documentNumbering: {
     reset: () => Promise<ApiResponse<void>>;
   };
+};
+
+export type VyoraDeveloperAPI = {
+  isEnabled: () => Promise<boolean>;
 };

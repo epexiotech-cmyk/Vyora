@@ -9,7 +9,7 @@ export interface AppModalProps {
   onClose: () => void;
   title: string;
   description?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onConfirm?: () => void;
   confirmLabel?: string;
   cancelLabel?: string;

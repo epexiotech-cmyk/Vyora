@@ -25,10 +25,10 @@ describe('gst-invoice-v1 template', () => {
     billingGstin: '27BBBBB0000B1Z5',
     billingStateCode: '27',
 
-    subtotal: 1000,
-    taxAmount: 180,
+    subtotal: 100000,
+    taxAmount: 18000,
     roundOffAmount: 0,
-    grandTotal: 1180,
+    grandTotal: 118000,
 
     items: [
       {
@@ -36,15 +36,15 @@ describe('gst-invoice-v1 template', () => {
         salesInvoiceId: 'inv_1',
         description: 'Test Item',
         quantity: 1,
-        rate: 1000,
-        taxableAmount: 1000,
+        rate: 100000,
+        taxableAmount: 100000,
         cgstRate: 9,
-        cgstAmount: 90,
+        cgstAmount: 9000,
         sgstRate: 9,
-        sgstAmount: 90,
+        sgstAmount: 9000,
         igstRate: 0,
         igstAmount: 0,
-        lineTotal: 1180,
+        lineTotal: 118000,
       },
     ],
   } as unknown as SalesInvoiceDto;
