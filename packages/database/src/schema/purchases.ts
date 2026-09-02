@@ -1,6 +1,8 @@
 import { sqliteTable, text, integer, index, unique, real } from 'drizzle-orm/sqlite-core';
 
-import { suppliers, products, units, taxes, tax_groups } from './master';
+import { ledgers } from './accounting';
+import { suppliers, products, units, taxes, tax_groups, expense_presets } from './master';
+import { payment_accounts } from './paymentAccounts';
 import { companies, financial_years, states } from './system';
 
 export const purchase_invoices = sqliteTable(
@@ -15,11 +17,13 @@ export const purchase_invoices = sqliteTable(
       .notNull(),
     purchaseNumber: text('purchase_number').notNull(),
     purchaseDate: integer('purchase_date', { mode: 'timestamp' }).notNull(),
+    documentType: text('document_type', { enum: ['PURCHASE', 'EXPENSE'] })
+      .default('PURCHASE')
+      .notNull(),
+    paymentAccountId: text('payment_account_id').references(() => payment_accounts.id),
     placeOfSupplyStateId: text('place_of_supply_state_id').references(() => states.id),
     isReverseCharge: integer('is_reverse_charge', { mode: 'boolean' }).default(false).notNull(),
-    supplierId: text('supplier_id')
-      .references(() => suppliers.id)
-      .notNull(),
+    supplierId: text('supplier_id').references(() => suppliers.id),
     supplierName: text('supplier_name').notNull(),
     supplierGstin: text('supplier_gstin'),
     supplierInvoiceNumber: text('supplier_invoice_number'),
@@ -58,18 +62,14 @@ export const purchase_invoice_items = sqliteTable(
     purchaseInvoiceId: text('purchase_invoice_id')
       .references(() => purchase_invoices.id)
       .notNull(),
-    productId: text('product_id')
-      .references(() => products.id)
-      .notNull(),
+    productId: text('product_id').references(() => products.id),
+    expensePresetId: text('expense_preset_id').references(() => expense_presets.id),
+    expenseLedgerId: text('expense_ledger_id').references(() => ledgers.id),
     itemName: text('item_name').notNull(),
     itemCode: text('item_code'),
-    unitId: text('unit_id')
-      .references(() => units.id)
-      .notNull(),
-    unitShortName: text('unit_short_name').notNull(),
-    taxId: text('tax_id')
-      .references(() => taxes.id)
-      .notNull(), // kept for backward compat if needed
+    unitId: text('unit_id').references(() => units.id),
+    unitShortName: text('unit_short_name'),
+    taxId: text('tax_id').references(() => taxes.id), // kept for backward compat if needed
     taxGroupId: text('tax_group_id').references(() => tax_groups.id),
     taxGroupCodeSnapshot: text('tax_group_code_snapshot'),
     taxGroupNameSnapshot: text('tax_group_name_snapshot'),

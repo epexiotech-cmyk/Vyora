@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a49c41fb-2a7e-4edc-b372-0ed760739906",
+  "id": "17f86882-7d82-4db6-82aa-a3739a75e0e1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ledger_groups": {
@@ -889,7 +889,8 @@
         "idx_vouchers_company_reference_unique": {
           "name": "idx_vouchers_company_reference_unique",
           "columns": ["company_id", "reference_type", "reference_id"],
-          "isUnique": true
+          "isUnique": true,
+          "where": "is_cancelled = 0"
         },
         "idx_vouchers_company_date": {
           "name": "idx_vouchers_company_date",
@@ -1058,6 +1059,22 @@
           "notNull": true,
           "autoincrement": false
         },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'en-IN'"
+        },
+        "symbol_position": {
+          "name": "symbol_position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PREFIX'"
+        },
         "decimal_places": {
           "name": "decimal_places",
           "type": "integer",
@@ -1065,6 +1082,14 @@
           "notNull": true,
           "autoincrement": false,
           "default": 2
+        },
+        "is_primary": {
+          "name": "is_primary",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "is_active": {
           "name": "is_active",
@@ -2123,6 +2148,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "landline": {
+          "name": "landline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -2158,6 +2190,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "district": {
+          "name": "district",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "state": {
           "name": "state",
           "type": "text",
@@ -2165,8 +2204,22 @@
           "notNull": false,
           "autoincrement": false
         },
+        "gst_state_id": {
+          "name": "gst_state_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "pincode": {
           "name": "pincode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_addresses": {
+          "name": "shipping_addresses",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2223,6 +2276,27 @@
           "notNull": true,
           "autoincrement": false,
           "default": 0
+        },
+        "default_payment_account_id": {
+          "name": "default_payment_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "default_qr_account_id": {
+          "name": "default_qr_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "default_signature_id": {
+          "name": "default_signature_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "notes": {
           "name": "notes",
@@ -2305,6 +2379,139 @@
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "customers_gst_state_id_states_id_fk": {
+          "name": "customers_gst_state_id_states_id_fk",
+          "tableFrom": "customers",
+          "tableTo": "states",
+          "columnsFrom": ["gst_state_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "expense_presets": {
+      "name": "expense_presets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ledger_id": {
+          "name": "ledger_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "default_tax_group_id": {
+          "name": "default_tax_group_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "is_system": {
+          "name": "is_system",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "sync_version": {
+          "name": "sync_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_expense_presets_company_name": {
+          "name": "idx_expense_presets_company_name",
+          "columns": ["company_id", "name"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "expense_presets_company_id_companies_id_fk": {
+          "name": "expense_presets_company_id_companies_id_fk",
+          "tableFrom": "expense_presets",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "expense_presets_ledger_id_ledgers_id_fk": {
+          "name": "expense_presets_ledger_id_ledgers_id_fk",
+          "tableFrom": "expense_presets",
+          "tableTo": "ledgers",
+          "columnsFrom": ["ledger_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "expense_presets_default_tax_group_id_tax_groups_id_fk": {
+          "name": "expense_presets_default_tax_group_id_tax_groups_id_fk",
+          "tableFrom": "expense_presets",
+          "tableTo": "tax_groups",
+          "columnsFrom": ["default_tax_group_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2342,6 +2549,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "barcode_value": {
+          "name": "barcode_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "barcode_type": {
+          "name": "barcode_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "item_type": {
           "name": "item_type",
           "type": "text",
@@ -2362,6 +2583,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "taxability_type": {
+          "name": "taxability_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Taxable'"
         },
         "unit_id": {
           "name": "unit_id",
@@ -2396,6 +2625,14 @@
         "stock": {
           "name": "stock",
           "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "opening_valuation_rate": {
+          "name": "opening_valuation_rate",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -2458,10 +2695,10 @@
           "columns": ["company_id", "sku"],
           "isUnique": true
         },
-        "idx_products_name": {
-          "name": "idx_products_name",
+        "idx_products_name_unique": {
+          "name": "idx_products_name_unique",
           "columns": ["company_id", "name"],
-          "isUnique": false
+          "isUnique": true
         },
         "idx_products_hsn_code": {
           "name": "idx_products_hsn_code",
@@ -2564,6 +2801,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "landline": {
+          "name": "landline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -2599,8 +2843,22 @@
           "notNull": false,
           "autoincrement": false
         },
+        "district": {
+          "name": "district",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "state": {
           "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gst_state_id": {
+          "name": "gst_state_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2680,6 +2938,14 @@
           "autoincrement": false,
           "default": true
         },
+        "is_system": {
+          "name": "is_system",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "sync_version": {
           "name": "sync_version",
           "type": "integer",
@@ -2721,6 +2987,12 @@
           "columns": ["company_id", "supplier_code"],
           "isUnique": true
         },
+        "idx_suppliers_system_unique": {
+          "name": "idx_suppliers_system_unique",
+          "columns": ["company_id"],
+          "isUnique": true,
+          "where": "\"suppliers\".\"is_system\" = ?"
+        },
         "idx_suppliers_name": {
           "name": "idx_suppliers_name",
           "columns": ["company_id", "name"],
@@ -2741,6 +3013,200 @@
         "suppliers_company_id_companies_id_fk": {
           "name": "suppliers_company_id_companies_id_fk",
           "tableFrom": "suppliers",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "suppliers_gst_state_id_states_id_fk": {
+          "name": "suppliers_gst_state_id_states_id_fk",
+          "tableFrom": "suppliers",
+          "tableTo": "states",
+          "columnsFrom": ["gst_state_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tax_components": {
+      "name": "tax_components",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tax_group_id": {
+          "name": "tax_group_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "component_type": {
+          "name": "component_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rate": {
+          "name": "rate",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "calculation_priority": {
+          "name": "calculation_priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tax_components_tax_group_id_tax_groups_id_fk": {
+          "name": "tax_components_tax_group_id_tax_groups_id_fk",
+          "tableFrom": "tax_components",
+          "tableTo": "tax_groups",
+          "columnsFrom": ["tax_group_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tax_groups": {
+      "name": "tax_groups",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "sync_version": {
+          "name": "sync_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tax_groups_company_id_companies_id_fk": {
+          "name": "tax_groups_company_id_companies_id_fk",
+          "tableFrom": "tax_groups",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
           "columnsTo": ["id"],
@@ -2951,6 +3417,226 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "payment_accounts": {
+      "name": "payment_accounts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ledger_id": {
+          "name": "ledger_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_type": {
+          "name": "account_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_order": {
+          "name": "display_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "bank_name": {
+          "name": "bank_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "account_holder_name": {
+          "name": "account_holder_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "account_number": {
+          "name": "account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ifsc_code": {
+          "name": "ifsc_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "branch_name": {
+          "name": "branch_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "upi_id": {
+          "name": "upi_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "merchant_name": {
+          "name": "merchant_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qr_enabled": {
+          "name": "qr_enabled",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "is_system": {
+          "name": "is_system",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sync_version": {
+          "name": "sync_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_payment_accounts_company": {
+          "name": "idx_payment_accounts_company",
+          "columns": ["company_id"],
+          "isUnique": false
+        },
+        "idx_payment_accounts_type": {
+          "name": "idx_payment_accounts_type",
+          "columns": ["company_id", "account_type"],
+          "isUnique": false
+        },
+        "idx_payment_accounts_ledger": {
+          "name": "idx_payment_accounts_ledger",
+          "columns": ["ledger_id"],
+          "isUnique": false
+        },
+        "idx_payment_accounts_ledger_unique": {
+          "name": "idx_payment_accounts_ledger_unique",
+          "columns": ["company_id", "ledger_id"],
+          "isUnique": true
+        },
+        "idx_payment_accounts_acc_num_unique": {
+          "name": "idx_payment_accounts_acc_num_unique",
+          "columns": ["company_id", "account_number"],
+          "isUnique": true
+        },
+        "idx_payment_accounts_upi_unique": {
+          "name": "idx_payment_accounts_upi_unique",
+          "columns": ["company_id", "upi_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "payment_accounts_company_id_companies_id_fk": {
+          "name": "payment_accounts_company_id_companies_id_fk",
+          "tableFrom": "payment_accounts",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "payment_accounts_ledger_id_ledgers_id_fk": {
+          "name": "payment_accounts_ledger_id_ledgers_id_fk",
+          "tableFrom": "payment_accounts",
+          "tableTo": "ledgers",
+          "columnsFrom": ["ledger_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "purchase_invoice_items": {
       "name": "purchase_invoice_items",
       "columns": {
@@ -2972,7 +3658,21 @@
           "name": "product_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expense_preset_id": {
+          "name": "expense_preset_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expense_ledger_id": {
+          "name": "expense_ledger_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "item_name": {
@@ -2993,21 +3693,77 @@
           "name": "unit_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "unit_short_name": {
           "name": "unit_short_name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "tax_id": {
           "name": "tax_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_group_id": {
+          "name": "tax_group_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_group_code_snapshot": {
+          "name": "tax_group_code_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_group_name_snapshot": {
+          "name": "tax_group_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_rate_snapshot": {
+          "name": "tax_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cgst_rate_snapshot": {
+          "name": "cgst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sgst_rate_snapshot": {
+          "name": "sgst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "igst_rate_snapshot": {
+          "name": "igst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cess_rate_snapshot": {
+          "name": "cess_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "tax_percentage": {
@@ -3066,6 +3822,38 @@
         },
         "tax_amount": {
           "name": "tax_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cgst_amount": {
+          "name": "cgst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "sgst_amount": {
+          "name": "sgst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "igst_amount": {
+          "name": "igst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cess_amount": {
+          "name": "cess_amount",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -3154,6 +3942,24 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "purchase_invoice_items_expense_preset_id_expense_presets_id_fk": {
+          "name": "purchase_invoice_items_expense_preset_id_expense_presets_id_fk",
+          "tableFrom": "purchase_invoice_items",
+          "tableTo": "expense_presets",
+          "columnsFrom": ["expense_preset_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_invoice_items_expense_ledger_id_ledgers_id_fk": {
+          "name": "purchase_invoice_items_expense_ledger_id_ledgers_id_fk",
+          "tableFrom": "purchase_invoice_items",
+          "tableTo": "ledgers",
+          "columnsFrom": ["expense_ledger_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "purchase_invoice_items_unit_id_units_id_fk": {
           "name": "purchase_invoice_items_unit_id_units_id_fk",
           "tableFrom": "purchase_invoice_items",
@@ -3168,6 +3974,15 @@
           "tableFrom": "purchase_invoice_items",
           "tableTo": "taxes",
           "columnsFrom": ["tax_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_invoice_items_tax_group_id_tax_groups_id_fk": {
+          "name": "purchase_invoice_items_tax_group_id_tax_groups_id_fk",
+          "tableFrom": "purchase_invoice_items",
+          "tableTo": "tax_groups",
+          "columnsFrom": ["tax_group_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -3215,11 +4030,41 @@
           "notNull": true,
           "autoincrement": false
         },
+        "document_type": {
+          "name": "document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PURCHASE'"
+        },
+        "payment_account_id": {
+          "name": "payment_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "place_of_supply_state_id": {
+          "name": "place_of_supply_state_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_reverse_charge": {
+          "name": "is_reverse_charge",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "supplier_id": {
           "name": "supplier_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "supplier_name": {
@@ -3398,6 +4243,24 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "purchase_invoices_payment_account_id_payment_accounts_id_fk": {
+          "name": "purchase_invoices_payment_account_id_payment_accounts_id_fk",
+          "tableFrom": "purchase_invoices",
+          "tableTo": "payment_accounts",
+          "columnsFrom": ["payment_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_invoices_place_of_supply_state_id_states_id_fk": {
+          "name": "purchase_invoices_place_of_supply_state_id_states_id_fk",
+          "tableFrom": "purchase_invoices",
+          "tableTo": "states",
+          "columnsFrom": ["place_of_supply_state_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "purchase_invoices_supplier_id_suppliers_id_fk": {
           "name": "purchase_invoices_supplier_id_suppliers_id_fk",
           "tableFrom": "purchase_invoices",
@@ -3450,6 +4313,62 @@
           "notNull": true,
           "autoincrement": false
         },
+        "tax_group_id": {
+          "name": "tax_group_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_group_code_snapshot": {
+          "name": "tax_group_code_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_group_name_snapshot": {
+          "name": "tax_group_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tax_rate_snapshot": {
+          "name": "tax_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cgst_rate_snapshot": {
+          "name": "cgst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sgst_rate_snapshot": {
+          "name": "sgst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "igst_rate_snapshot": {
+          "name": "igst_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cess_rate_snapshot": {
+          "name": "cess_rate_snapshot",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "description": {
           "name": "description",
           "type": "text",
@@ -3459,6 +4378,13 @@
         },
         "hsn_code": {
           "name": "hsn_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "item_type_snapshot": {
+          "name": "item_type_snapshot",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -3498,6 +4424,38 @@
         },
         "tax_amount": {
           "name": "tax_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cgst_amount": {
+          "name": "cgst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "sgst_amount": {
+          "name": "sgst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "igst_amount": {
+          "name": "igst_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "cess_amount": {
+          "name": "cess_amount",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -3561,6 +4519,15 @@
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "sales_invoice_items_tax_group_id_tax_groups_id_fk": {
+          "name": "sales_invoice_items_tax_group_id_tax_groups_id_fk",
+          "tableFrom": "sales_invoice_items",
+          "tableTo": "tax_groups",
+          "columnsFrom": ["tax_group_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3610,6 +4577,231 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "place_of_supply_state_id": {
+          "name": "place_of_supply_state_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "place_of_supply_code": {
+          "name": "place_of_supply_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_reverse_charge": {
+          "name": "is_reverse_charge",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "company_name_snapshot": {
+          "name": "company_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_address_snapshot": {
+          "name": "company_address_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_gstin_snapshot": {
+          "name": "company_gstin_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_state_name_snapshot": {
+          "name": "company_state_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_state_code_snapshot": {
+          "name": "company_state_code_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_pan_snapshot": {
+          "name": "company_pan_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_name": {
+          "name": "billing_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_address": {
+          "name": "billing_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_city": {
+          "name": "billing_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_district": {
+          "name": "billing_district",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_pincode": {
+          "name": "billing_pincode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_gstin": {
+          "name": "billing_gstin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "billing_state_code": {
+          "name": "billing_state_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_name": {
+          "name": "shipping_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_address": {
+          "name": "shipping_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_city": {
+          "name": "shipping_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_district": {
+          "name": "shipping_district",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_pincode": {
+          "name": "shipping_pincode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_gstin": {
+          "name": "shipping_gstin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shipping_state_code": {
+          "name": "shipping_state_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payment_account_id": {
+          "name": "payment_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bank_name_snapshot": {
+          "name": "bank_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "account_number_snapshot": {
+          "name": "account_number_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ifsc_code_snapshot": {
+          "name": "ifsc_code_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "branch_name_snapshot": {
+          "name": "branch_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "qr_account_id": {
+          "name": "qr_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "upi_id_snapshot": {
+          "name": "upi_id_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "upi_payee_name_snapshot": {
+          "name": "upi_payee_name_snapshot",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "signature_id": {
+          "name": "signature_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "subtotal": {
@@ -3689,6 +4881,11 @@
           "name": "sales_invoices_customer_idx",
           "columns": ["customer_id"],
           "isUnique": false
+        },
+        "sales_invoices_company_inv_num_idx": {
+          "name": "sales_invoices_company_inv_num_idx",
+          "columns": ["company_id", "invoice_number"],
+          "isUnique": true
         }
       },
       "foreignKeys": {
@@ -3715,6 +4912,15 @@
           "tableFrom": "sales_invoices",
           "tableTo": "customers",
           "columnsFrom": ["customer_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "sales_invoices_place_of_supply_state_id_states_id_fk": {
+          "name": "sales_invoices_place_of_supply_state_id_states_id_fk",
+          "tableFrom": "sales_invoices",
+          "tableTo": "states",
+          "columnsFrom": ["place_of_supply_state_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -3835,6 +5041,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "gst_state_id": {
+          "name": "gst_state_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "country_code": {
           "name": "country_code",
           "type": "text",
@@ -3877,6 +5090,50 @@
           "notNull": false,
           "autoincrement": false
         },
+        "logo_path": {
+          "name": "logo_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "signature_path": {
+          "name": "signature_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "default_upi_id": {
+          "name": "default_upi_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "upi_payee_name": {
+          "name": "upi_payee_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "show_qr_on_invoice": {
+          "name": "show_qr_on_invoice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "show_bank_details_on_invoice": {
+          "name": "show_bank_details_on_invoice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -3900,7 +5157,17 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "companies_gst_state_id_states_id_fk": {
+          "name": "companies_gst_state_id_states_id_fk",
+          "tableFrom": "companies",
+          "tableTo": "states",
+          "columnsFrom": ["gst_state_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -3945,84 +5212,6 @@
           "autoincrement": false,
           "default": false
         },
-        "sales_prefix": {
-          "name": "sales_prefix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'INV'"
-        },
-        "sales_suffix": {
-          "name": "sales_suffix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sales_padding": {
-          "name": "sales_padding",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 4
-        },
-        "sales_start_from": {
-          "name": "sales_start_from",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 1
-        },
-        "sales_reset_policy": {
-          "name": "sales_reset_policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'YEARLY'"
-        },
-        "purchase_prefix": {
-          "name": "purchase_prefix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'PUR'"
-        },
-        "purchase_suffix": {
-          "name": "purchase_suffix",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "purchase_padding": {
-          "name": "purchase_padding",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 4
-        },
-        "purchase_start_from": {
-          "name": "purchase_start_from",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 1
-        },
-        "purchase_reset_policy": {
-          "name": "purchase_reset_policy",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'YEARLY'"
-        },
         "default_invoice_notes": {
           "name": "default_invoice_notes",
           "type": "text",
@@ -4061,8 +5250,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "document_sequences": {
-      "name": "document_sequences",
+    "company_signatures": {
+      "name": "company_signatures",
       "columns": {
         "id": {
           "name": "id",
@@ -4078,11 +5267,82 @@
           "notNull": true,
           "autoincrement": false
         },
-        "financial_year_id": {
-          "name": "financial_year_id",
+        "file_path": {
+          "name": "file_path",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "designation": {
+          "name": "designation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'Authorized Signatory'"
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "company_signatures_company_id_companies_id_fk": {
+          "name": "company_signatures_company_id_companies_id_fk",
+          "tableFrom": "company_signatures",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "document_numbering_configs": {
+      "name": "document_numbering_configs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         },
         "document_type": {
@@ -4092,8 +5352,117 @@
           "notNull": true,
           "autoincrement": false
         },
-        "current_value": {
-          "name": "current_value",
+        "prefix": {
+          "name": "prefix",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "format_template": {
+          "name": "format_template",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'{{PREFIX}}-{{FY}}-{{SEQ}}'"
+        },
+        "fy_format": {
+          "name": "fy_format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'YY-YY'"
+        },
+        "starting_number": {
+          "name": "starting_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "zero_padding": {
+          "name": "zero_padding",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 4
+        },
+        "reset_yearly": {
+          "name": "reset_yearly",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "document_numbering_configs_company_id_companies_id_fk": {
+          "name": "document_numbering_configs_company_id_companies_id_fk",
+          "tableFrom": "document_numbering_configs",
+          "tableTo": "companies",
+          "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "document_numbering_sequences": {
+      "name": "document_numbering_sequences",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_type": {
+          "name": "document_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "financial_year_id": {
+          "name": "financial_year_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "current_sequence": {
+          "name": "current_sequence",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -4108,20 +5477,26 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "doc_numbering_seq_idx": {
+          "name": "doc_numbering_seq_idx",
+          "columns": ["company_id", "document_type", "financial_year_id"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
-        "document_sequences_company_id_companies_id_fk": {
-          "name": "document_sequences_company_id_companies_id_fk",
-          "tableFrom": "document_sequences",
+        "document_numbering_sequences_company_id_companies_id_fk": {
+          "name": "document_numbering_sequences_company_id_companies_id_fk",
+          "tableFrom": "document_numbering_sequences",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "document_sequences_financial_year_id_financial_years_id_fk": {
-          "name": "document_sequences_financial_year_id_financial_years_id_fk",
-          "tableFrom": "document_sequences",
+        "document_numbering_sequences_financial_year_id_financial_years_id_fk": {
+          "name": "document_numbering_sequences_financial_year_id_financial_years_id_fk",
+          "tableFrom": "document_numbering_sequences",
           "tableTo": "financial_years",
           "columnsFrom": ["financial_year_id"],
           "columnsTo": ["id"],
@@ -4180,13 +5555,96 @@
           "default": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "active_financial_year_idx": {
+          "name": "active_financial_year_idx",
+          "columns": ["company_id"],
+          "isUnique": true,
+          "where": "\"is_active\" = 1"
+        }
+      },
       "foreignKeys": {
         "financial_years_company_id_companies_id_fk": {
           "name": "financial_years_company_id_companies_id_fk",
           "tableFrom": "financial_years",
           "tableTo": "companies",
           "columnsFrom": ["company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "device_name": {
+          "name": "device_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_accessed_at": {
+          "name": "last_accessed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sessions_user_id_users_id_fk": {
+          "name": "sessions_user_id_users_id_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -4253,6 +5711,177 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "states": {
+      "name": "states",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gst_state_code": {
+          "name": "gst_state_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "iso_code": {
+          "name": "iso_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_union_territory": {
+          "name": "is_union_territory",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "states_gst_state_code_unique": {
+          "name": "states_gst_state_code_unique",
+          "columns": ["gst_state_code"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_settings": {
+      "name": "user_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_active_company_id": {
+          "name": "last_active_company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "startup_preference": {
+          "name": "startup_preference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'last_company'"
+        },
+        "theme": {
+          "name": "theme",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'system'"
+        },
+        "language": {
+          "name": "language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'en'"
+        },
+        "date_format": {
+          "name": "date_format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'DD/MM/YYYY'"
+        },
+        "remember_session": {
+          "name": "remember_session",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_settings_user_id_users_id_fk": {
+          "name": "user_settings_user_id_users_id_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "user_settings_last_active_company_id_companies_id_fk": {
+          "name": "user_settings_last_active_company_id_companies_id_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "companies",
+          "columnsFrom": ["last_active_company_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "users": {
       "name": "users",
       "columns": {
@@ -4277,11 +5906,39 @@
           "notNull": true,
           "autoincrement": false
         },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "password_hash": {
           "name": "password_hash",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "pin_hash": {
+          "name": "pin_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pin_length": {
+          "name": "pin_length",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "role": {
@@ -4291,8 +5948,45 @@
           "notNull": true,
           "autoincrement": false
         },
+        "is_active": {
+          "name": "is_active",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "failed_login_attempts": {
+          "name": "failed_login_attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "locked_until": {
+          "name": "locked_until",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

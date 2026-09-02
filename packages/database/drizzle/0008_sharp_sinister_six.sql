@@ -1,1 +1,0 @@
-ALTER TABLE `customers` ADD `shipping_addresses` text;

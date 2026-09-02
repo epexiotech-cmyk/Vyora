@@ -34,6 +34,7 @@ export const companies = sqliteTable('companies', {
   telephone: text('telephone'),
   website: text('website'),
   logoPath: text('logo_path'),
+  signaturePath: text('signature_path'),
   defaultUpiId: text('default_upi_id'),
   upiPayeeName: text('upi_payee_name'),
   showQrOnInvoice: integer('show_qr_on_invoice', { mode: 'boolean' }).default(false).notNull(),
@@ -43,6 +44,19 @@ export const companies = sqliteTable('companies', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+});
+
+export const company_signatures = sqliteTable('company_signatures', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id')
+    .notNull()
+    .references(() => companies.id),
+  filePath: text('file_path').notNull(),
+  label: text('label').notNull(),
+  designation: text('designation').notNull().default('Authorized Signatory'),
+  isDefault: integer('is_default', { mode: 'boolean' }).default(false).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
 
 export const app_settings = sqliteTable('app_settings', {

@@ -1,1 +1,0 @@
-ALTER TABLE `sales_invoice_items` ADD `item_type_snapshot` text;

@@ -59,6 +59,7 @@ export const sales_invoices = sqliteTable(
     qrAccountId: text('qr_account_id'),
     upiIdSnapshot: text('upi_id_snapshot'),
     upiPayeeNameSnapshot: text('upi_payee_name_snapshot'),
+    signatureId: text('signature_id'),
     subtotal: integer('subtotal').default(0).notNull(),
     discountAmount: integer('discount_amount').default(0).notNull(),
     taxAmount: integer('tax_amount').default(0).notNull(),

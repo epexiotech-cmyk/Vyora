@@ -133,7 +133,7 @@ CREATE TABLE `vouchers` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `idx_vouchers_unique` ON `vouchers` (`company_id`,`financial_year_id`,`voucher_type`,`voucher_number`);--> statement-breakpoint
-CREATE UNIQUE INDEX `idx_vouchers_company_reference_unique` ON `vouchers` (`company_id`,`reference_type`,`reference_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_vouchers_company_reference_unique` ON `vouchers` (`company_id`,`reference_type`,`reference_id`) WHERE is_cancelled = 0;--> statement-breakpoint
 CREATE INDEX `idx_vouchers_company_date` ON `vouchers` (`company_id`,`voucher_date`);--> statement-breakpoint
 CREATE TABLE `country_master` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -156,7 +156,10 @@ CREATE TABLE `currency_master` (
 	`currency_code` text NOT NULL,
 	`currency_name` text NOT NULL,
 	`symbol` text NOT NULL,
+	`locale` text DEFAULT 'en-IN' NOT NULL,
+	`symbol_position` text DEFAULT 'PREFIX' NOT NULL,
 	`decimal_places` integer DEFAULT 2 NOT NULL,
+	`is_primary` integer DEFAULT false NOT NULL,
 	`is_active` integer DEFAULT true,
 	`sort_order` integer DEFAULT 0,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP
@@ -327,13 +330,17 @@ CREATE TABLE `customers` (
 	`contact_person` text,
 	`mobile` text,
 	`alternate_mobile` text,
+	`landline` text,
 	`email` text,
 	`address_line_1` text,
 	`address_line_2` text,
 	`area` text,
 	`city` text,
+	`district` text,
 	`state` text,
+	`gst_state_id` text,
 	`pincode` text,
+	`shipping_addresses` text,
 	`gstin` text,
 	`pan` text,
 	`registration_type` text,
@@ -341,13 +348,17 @@ CREATE TABLE `customers` (
 	`opening_type` text,
 	`credit_limit` integer DEFAULT 0 NOT NULL,
 	`credit_days` integer DEFAULT 0 NOT NULL,
+	`default_payment_account_id` text,
+	`default_qr_account_id` text,
+	`default_signature_id` text,
 	`notes` text,
 	`is_active` integer DEFAULT true NOT NULL,
 	`sync_version` integer DEFAULT 1 NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	`deleted_at` integer,
-	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`gst_state_id`) REFERENCES `states`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `idx_customers_company_id` ON `customers` (`company_id`);--> statement-breakpoint
@@ -355,19 +366,41 @@ CREATE UNIQUE INDEX `idx_customers_code` ON `customers` (`company_id`,`customer_
 CREATE INDEX `idx_customers_name` ON `customers` (`company_id`,`name`);--> statement-breakpoint
 CREATE INDEX `idx_customers_mobile` ON `customers` (`company_id`,`mobile`);--> statement-breakpoint
 CREATE INDEX `idx_customers_gstin` ON `customers` (`company_id`,`gstin`);--> statement-breakpoint
+CREATE TABLE `expense_presets` (
+	`id` text PRIMARY KEY NOT NULL,
+	`company_id` text NOT NULL,
+	`name` text NOT NULL,
+	`ledger_id` text NOT NULL,
+	`default_tax_group_id` text,
+	`is_active` integer DEFAULT true NOT NULL,
+	`is_system` integer DEFAULT false NOT NULL,
+	`sync_version` integer DEFAULT 1 NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`deleted_at` integer,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`ledger_id`) REFERENCES `ledgers`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`default_tax_group_id`) REFERENCES `tax_groups`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_expense_presets_company_name` ON `expense_presets` (`company_id`,`name`);--> statement-breakpoint
 CREATE TABLE `products` (
 	`id` text PRIMARY KEY NOT NULL,
 	`company_id` text NOT NULL,
 	`name` text NOT NULL,
 	`sku` text NOT NULL,
+	`barcode_value` text,
+	`barcode_type` text,
 	`item_type` text NOT NULL,
 	`description` text,
 	`hsn_code` text,
+	`taxability_type` text DEFAULT 'Taxable' NOT NULL,
 	`unit_id` text NOT NULL,
 	`tax_id` text NOT NULL,
 	`sale_price` integer DEFAULT 0 NOT NULL,
 	`purchase_price` integer DEFAULT 0 NOT NULL,
 	`stock` real DEFAULT 0 NOT NULL,
+	`opening_valuation_rate` integer DEFAULT 0 NOT NULL,
 	`reorder_level` real DEFAULT 0 NOT NULL,
 	`is_active` integer DEFAULT true NOT NULL,
 	`sync_version` integer DEFAULT 1 NOT NULL,
@@ -381,7 +414,7 @@ CREATE TABLE `products` (
 --> statement-breakpoint
 CREATE INDEX `idx_products_company_id` ON `products` (`company_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `idx_products_sku` ON `products` (`company_id`,`sku`);--> statement-breakpoint
-CREATE INDEX `idx_products_name` ON `products` (`company_id`,`name`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_products_name_unique` ON `products` (`company_id`,`name`);--> statement-breakpoint
 CREATE INDEX `idx_products_hsn_code` ON `products` (`company_id`,`hsn_code`);--> statement-breakpoint
 CREATE INDEX `idx_products_is_active` ON `products` (`company_id`,`is_active`);--> statement-breakpoint
 CREATE INDEX `idx_products_deleted_at` ON `products` (`company_id`,`deleted_at`);--> statement-breakpoint
@@ -393,12 +426,15 @@ CREATE TABLE `suppliers` (
 	`contact_person` text,
 	`mobile` text,
 	`alternate_mobile` text,
+	`landline` text,
 	`email` text,
 	`address_line_1` text,
 	`address_line_2` text,
 	`area` text,
 	`city` text,
+	`district` text,
 	`state` text,
+	`gst_state_id` text,
 	`pincode` text,
 	`gstin` text,
 	`pan` text,
@@ -409,6 +445,42 @@ CREATE TABLE `suppliers` (
 	`credit_days` integer DEFAULT 0 NOT NULL,
 	`notes` text,
 	`is_active` integer DEFAULT true NOT NULL,
+	`is_system` integer DEFAULT false NOT NULL,
+	`sync_version` integer DEFAULT 1 NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`deleted_at` integer,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`gst_state_id`) REFERENCES `states`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE INDEX `idx_suppliers_company_id` ON `suppliers` (`company_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_suppliers_code` ON `suppliers` (`company_id`,`supplier_code`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_suppliers_system_unique` ON `suppliers` (`company_id`) WHERE "suppliers"."is_system" = 1;--> statement-breakpoint
+CREATE INDEX `idx_suppliers_name` ON `suppliers` (`company_id`,`name`);--> statement-breakpoint
+CREATE INDEX `idx_suppliers_mobile` ON `suppliers` (`company_id`,`mobile`);--> statement-breakpoint
+CREATE INDEX `idx_suppliers_gstin` ON `suppliers` (`company_id`,`gstin`);--> statement-breakpoint
+CREATE TABLE `tax_components` (
+	`id` text PRIMARY KEY NOT NULL,
+	`tax_group_id` text NOT NULL,
+	`component_type` text NOT NULL,
+	`rate` real NOT NULL,
+	`sequence` integer DEFAULT 0 NOT NULL,
+	`calculation_priority` integer DEFAULT 0 NOT NULL,
+	`is_active` integer DEFAULT true NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`deleted_at` integer,
+	FOREIGN KEY (`tax_group_id`) REFERENCES `tax_groups`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `tax_groups` (
+	`id` text PRIMARY KEY NOT NULL,
+	`company_id` text NOT NULL,
+	`code` text NOT NULL,
+	`name` text NOT NULL,
+	`description` text,
+	`is_active` integer DEFAULT true NOT NULL,
 	`sync_version` integer DEFAULT 1 NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
@@ -416,11 +488,6 @@ CREATE TABLE `suppliers` (
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE INDEX `idx_suppliers_company_id` ON `suppliers` (`company_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `idx_suppliers_code` ON `suppliers` (`company_id`,`supplier_code`);--> statement-breakpoint
-CREATE INDEX `idx_suppliers_name` ON `suppliers` (`company_id`,`name`);--> statement-breakpoint
-CREATE INDEX `idx_suppliers_mobile` ON `suppliers` (`company_id`,`mobile`);--> statement-breakpoint
-CREATE INDEX `idx_suppliers_gstin` ON `suppliers` (`company_id`,`gstin`);--> statement-breakpoint
 CREATE TABLE `taxes` (
 	`id` text PRIMARY KEY NOT NULL,
 	`company_id` text NOT NULL,
@@ -453,15 +520,58 @@ CREATE INDEX `idx_units_is_active` ON `units` (`company_id`,`is_active`);--> sta
 CREATE INDEX `idx_units_deleted_at` ON `units` (`company_id`,`deleted_at`);--> statement-breakpoint
 CREATE UNIQUE INDEX `idx_units_name_unique` ON `units` (`company_id`,`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `idx_units_short_name_unique` ON `units` (`company_id`,`short_name`);--> statement-breakpoint
+CREATE TABLE `payment_accounts` (
+	`id` text PRIMARY KEY NOT NULL,
+	`company_id` text NOT NULL,
+	`ledger_id` text NOT NULL,
+	`account_type` text NOT NULL,
+	`display_name` text NOT NULL,
+	`display_order` integer DEFAULT 0 NOT NULL,
+	`bank_name` text,
+	`account_holder_name` text,
+	`account_number` text,
+	`ifsc_code` text,
+	`branch_name` text,
+	`upi_id` text,
+	`merchant_name` text,
+	`qr_enabled` integer DEFAULT false NOT NULL,
+	`is_default` integer DEFAULT false NOT NULL,
+	`is_system` integer DEFAULT false NOT NULL,
+	`is_active` integer DEFAULT true NOT NULL,
+	`notes` text,
+	`sync_version` integer DEFAULT 1 NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`deleted_at` integer,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`ledger_id`) REFERENCES `ledgers`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE INDEX `idx_payment_accounts_company` ON `payment_accounts` (`company_id`);--> statement-breakpoint
+CREATE INDEX `idx_payment_accounts_type` ON `payment_accounts` (`company_id`,`account_type`);--> statement-breakpoint
+CREATE INDEX `idx_payment_accounts_ledger` ON `payment_accounts` (`ledger_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_payment_accounts_ledger_unique` ON `payment_accounts` (`company_id`,`ledger_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_payment_accounts_acc_num_unique` ON `payment_accounts` (`company_id`,`account_number`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_payment_accounts_upi_unique` ON `payment_accounts` (`company_id`,`upi_id`);--> statement-breakpoint
 CREATE TABLE `purchase_invoice_items` (
 	`id` text PRIMARY KEY NOT NULL,
 	`purchase_invoice_id` text NOT NULL,
-	`product_id` text NOT NULL,
+	`product_id` text,
+	`expense_preset_id` text,
+	`expense_ledger_id` text,
 	`item_name` text NOT NULL,
 	`item_code` text,
-	`unit_id` text NOT NULL,
-	`unit_short_name` text NOT NULL,
-	`tax_id` text NOT NULL,
+	`unit_id` text,
+	`unit_short_name` text,
+	`tax_id` text,
+	`tax_group_id` text,
+	`tax_group_code_snapshot` text,
+	`tax_group_name_snapshot` text,
+	`tax_rate_snapshot` real,
+	`cgst_rate_snapshot` real,
+	`sgst_rate_snapshot` real,
+	`igst_rate_snapshot` real,
+	`cess_rate_snapshot` real,
 	`tax_percentage` integer DEFAULT 0 NOT NULL,
 	`hsn_code` text,
 	`description` text,
@@ -470,6 +580,10 @@ CREATE TABLE `purchase_invoice_items` (
 	`discount_amount` integer DEFAULT 0 NOT NULL,
 	`taxable_amount` integer DEFAULT 0 NOT NULL,
 	`tax_amount` integer DEFAULT 0 NOT NULL,
+	`cgst_amount` integer DEFAULT 0 NOT NULL,
+	`sgst_amount` integer DEFAULT 0 NOT NULL,
+	`igst_amount` integer DEFAULT 0 NOT NULL,
+	`cess_amount` integer DEFAULT 0 NOT NULL,
 	`line_total` integer DEFAULT 0 NOT NULL,
 	`is_active` integer DEFAULT true NOT NULL,
 	`created_at` integer NOT NULL,
@@ -478,8 +592,11 @@ CREATE TABLE `purchase_invoice_items` (
 	`sync_version` integer DEFAULT 1 NOT NULL,
 	FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`expense_preset_id`) REFERENCES `expense_presets`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`expense_ledger_id`) REFERENCES `ledgers`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`unit_id`) REFERENCES `units`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`tax_id`) REFERENCES `taxes`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`tax_id`) REFERENCES `taxes`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`tax_group_id`) REFERENCES `tax_groups`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `purchase_items_invoice_idx` ON `purchase_invoice_items` (`purchase_invoice_id`);--> statement-breakpoint
@@ -491,7 +608,11 @@ CREATE TABLE `purchase_invoices` (
 	`financial_year_id` text NOT NULL,
 	`purchase_number` text NOT NULL,
 	`purchase_date` integer NOT NULL,
-	`supplier_id` text NOT NULL,
+	`document_type` text DEFAULT 'PURCHASE' NOT NULL,
+	`payment_account_id` text,
+	`place_of_supply_state_id` text,
+	`is_reverse_charge` integer DEFAULT false NOT NULL,
+	`supplier_id` text,
 	`supplier_name` text NOT NULL,
 	`supplier_gstin` text,
 	`supplier_invoice_number` text,
@@ -510,6 +631,8 @@ CREATE TABLE `purchase_invoices` (
 	`sync_version` integer DEFAULT 1 NOT NULL,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`payment_account_id`) REFERENCES `payment_accounts`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`place_of_supply_state_id`) REFERENCES `states`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`supplier_id`) REFERENCES `suppliers`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -526,18 +649,32 @@ CREATE TABLE `sales_invoice_items` (
 	`product_id` text NOT NULL,
 	`unit_id` text NOT NULL,
 	`tax_id` text NOT NULL,
+	`tax_group_id` text,
+	`tax_group_code_snapshot` text,
+	`tax_group_name_snapshot` text,
+	`tax_rate_snapshot` real,
+	`cgst_rate_snapshot` real,
+	`sgst_rate_snapshot` real,
+	`igst_rate_snapshot` real,
+	`cess_rate_snapshot` real,
 	`description` text,
 	`hsn_code` text,
+	`item_type_snapshot` text,
 	`quantity` integer DEFAULT 0 NOT NULL,
 	`rate` integer DEFAULT 0 NOT NULL,
 	`discount_amount` integer DEFAULT 0 NOT NULL,
 	`taxable_amount` integer DEFAULT 0 NOT NULL,
 	`tax_amount` integer DEFAULT 0 NOT NULL,
+	`cgst_amount` integer DEFAULT 0 NOT NULL,
+	`sgst_amount` integer DEFAULT 0 NOT NULL,
+	`igst_amount` integer DEFAULT 0 NOT NULL,
+	`cess_amount` integer DEFAULT 0 NOT NULL,
 	`line_total` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoices`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`unit_id`) REFERENCES `units`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`tax_id`) REFERENCES `taxes`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`tax_id`) REFERENCES `taxes`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`tax_group_id`) REFERENCES `tax_groups`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `sales_items_invoice_idx` ON `sales_invoice_items` (`sales_invoice_id`);--> statement-breakpoint
@@ -549,6 +686,38 @@ CREATE TABLE `sales_invoices` (
 	`customer_id` text NOT NULL,
 	`invoice_number` text NOT NULL,
 	`invoice_date` integer NOT NULL,
+	`place_of_supply_state_id` text,
+	`place_of_supply_code` text,
+	`is_reverse_charge` integer DEFAULT false NOT NULL,
+	`company_name_snapshot` text,
+	`company_address_snapshot` text,
+	`company_gstin_snapshot` text,
+	`company_state_name_snapshot` text,
+	`company_state_code_snapshot` text,
+	`company_pan_snapshot` text,
+	`billing_name` text,
+	`billing_address` text,
+	`billing_city` text,
+	`billing_district` text,
+	`billing_pincode` text,
+	`billing_gstin` text,
+	`billing_state_code` text,
+	`shipping_name` text,
+	`shipping_address` text,
+	`shipping_city` text,
+	`shipping_district` text,
+	`shipping_pincode` text,
+	`shipping_gstin` text,
+	`shipping_state_code` text,
+	`payment_account_id` text,
+	`bank_name_snapshot` text,
+	`account_number_snapshot` text,
+	`ifsc_code_snapshot` text,
+	`branch_name_snapshot` text,
+	`qr_account_id` text,
+	`upi_id_snapshot` text,
+	`upi_payee_name_snapshot` text,
+	`signature_id` text,
 	`subtotal` integer DEFAULT 0 NOT NULL,
 	`discount_amount` integer DEFAULT 0 NOT NULL,
 	`tax_amount` integer DEFAULT 0 NOT NULL,
@@ -559,12 +728,14 @@ CREATE TABLE `sales_invoices` (
 	`created_at` integer NOT NULL,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`place_of_supply_state_id`) REFERENCES `states`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `sales_invoices_company_fy_idx` ON `sales_invoices` (`company_id`,`financial_year_id`);--> statement-breakpoint
 CREATE INDEX `sales_invoices_date_idx` ON `sales_invoices` (`invoice_date`);--> statement-breakpoint
 CREATE INDEX `sales_invoices_customer_idx` ON `sales_invoices` (`customer_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `sales_invoices_company_inv_num_idx` ON `sales_invoices` (`company_id`,`invoice_number`);--> statement-breakpoint
 CREATE TABLE `app_settings` (
 	`key` text PRIMARY KEY NOT NULL,
 	`value` text NOT NULL
@@ -583,15 +754,23 @@ CREATE TABLE `companies` (
 	`city` text,
 	`district` text,
 	`state_code` text,
+	`gst_state_id` text,
 	`country_code` text,
 	`pincode` text,
 	`email` text,
 	`mobile` text,
 	`telephone` text,
 	`website` text,
+	`logo_path` text,
+	`signature_path` text,
+	`default_upi_id` text,
+	`upi_payee_name` text,
+	`show_qr_on_invoice` integer DEFAULT false NOT NULL,
+	`show_bank_details_on_invoice` integer DEFAULT false NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	`deleted_at` integer
+	`deleted_at` integer,
+	FOREIGN KEY (`gst_state_id`) REFERENCES `states`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `company_settings` (
@@ -600,33 +779,51 @@ CREATE TABLE `company_settings` (
 	`financial_year_start` integer,
 	`currency` text DEFAULT 'INR' NOT NULL,
 	`is_gst_registered` integer DEFAULT false NOT NULL,
-	`sales_prefix` text DEFAULT 'INV',
-	`sales_suffix` text,
-	`sales_padding` integer DEFAULT 4,
-	`sales_start_from` integer DEFAULT 1,
-	`sales_reset_policy` text DEFAULT 'YEARLY',
-	`purchase_prefix` text DEFAULT 'PUR',
-	`purchase_suffix` text,
-	`purchase_padding` integer DEFAULT 4,
-	`purchase_start_from` integer DEFAULT 1,
-	`purchase_reset_policy` text DEFAULT 'YEARLY',
 	`default_invoice_notes` text,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `document_sequences` (
+CREATE TABLE `company_signatures` (
 	`id` text PRIMARY KEY NOT NULL,
 	`company_id` text NOT NULL,
-	`financial_year_id` text,
+	`file_path` text NOT NULL,
+	`label` text NOT NULL,
+	`designation` text DEFAULT 'Authorized Signatory' NOT NULL,
+	`is_default` integer DEFAULT false NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `document_numbering_configs` (
+	`id` text PRIMARY KEY NOT NULL,
+	`company_id` text NOT NULL,
 	`document_type` text NOT NULL,
-	`current_value` integer DEFAULT 0 NOT NULL,
+	`prefix` text,
+	`format_template` text DEFAULT '{{PREFIX}}-{{FY}}-{{SEQ}}' NOT NULL,
+	`fy_format` text DEFAULT 'YY-YY' NOT NULL,
+	`starting_number` integer DEFAULT 1 NOT NULL,
+	`zero_padding` integer DEFAULT 4 NOT NULL,
+	`reset_yearly` integer DEFAULT true NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `document_numbering_sequences` (
+	`id` text PRIMARY KEY NOT NULL,
+	`company_id` text NOT NULL,
+	`document_type` text NOT NULL,
+	`financial_year_id` text,
+	`current_sequence` integer DEFAULT 0 NOT NULL,
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`financial_year_id`) REFERENCES `financial_years`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `doc_numbering_seq_idx` ON `document_numbering_sequences` (`company_id`,`document_type`,`financial_year_id`);--> statement-breakpoint
 CREATE TABLE `financial_years` (
 	`id` text PRIMARY KEY NOT NULL,
 	`company_id` text NOT NULL,
@@ -635,6 +832,19 @@ CREATE TABLE `financial_years` (
 	`end_date` integer NOT NULL,
 	`is_active` integer DEFAULT false NOT NULL,
 	FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `active_financial_year_idx` ON `financial_years` (`company_id`) WHERE "is_active" = 1;--> statement-breakpoint
+CREATE TABLE `sessions` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`token_hash` text NOT NULL,
+	`device_name` text,
+	`expires_at` integer NOT NULL,
+	`last_accessed_at` integer,
+	`revoked_at` integer,
+	`created_at` integer NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `settings` (
@@ -646,13 +856,48 @@ CREATE TABLE `settings` (
 	FOREIGN KEY (`default_company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `states` (
+	`id` text PRIMARY KEY NOT NULL,
+	`gst_state_code` text NOT NULL,
+	`iso_code` text NOT NULL,
+	`name` text NOT NULL,
+	`is_union_territory` integer DEFAULT false NOT NULL,
+	`is_active` integer DEFAULT true NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	`deleted_at` integer
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `states_gst_state_code_unique` ON `states` (`gst_state_code`);--> statement-breakpoint
+CREATE TABLE `user_settings` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`last_active_company_id` text,
+	`startup_preference` text DEFAULT 'last_company',
+	`theme` text DEFAULT 'system',
+	`language` text DEFAULT 'en',
+	`date_format` text DEFAULT 'DD/MM/YYYY',
+	`remember_session` integer DEFAULT true NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`last_active_company_id`) REFERENCES `companies`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`full_name` text NOT NULL,
 	`username` text NOT NULL,
+	`email` text,
+	`avatar` text,
 	`password_hash` text NOT NULL,
+	`pin_hash` text,
+	`pin_length` integer,
 	`role` text NOT NULL,
-	`created_at` integer NOT NULL
+	`is_active` integer DEFAULT true NOT NULL,
+	`failed_login_attempts` integer DEFAULT 0 NOT NULL,
+	`locked_until` integer,
+	`last_login_at` integer,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `users_username_unique` ON `users` (`username`);

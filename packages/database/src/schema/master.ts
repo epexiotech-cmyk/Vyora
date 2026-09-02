@@ -1,5 +1,7 @@
+import { eq } from 'drizzle-orm';
 import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+import { ledgers } from './accounting';
 import { companies, states } from './system';
 
 export const taxes = sqliteTable('taxes', {
@@ -117,6 +119,7 @@ export const customers = sqliteTable(
     // Payment Defaults (Accounting Phase 5)
     defaultPaymentAccountId: text('default_payment_account_id'),
     defaultQrAccountId: text('default_qr_account_id'),
+    defaultSignatureId: text('default_signature_id'),
 
     // Metadata & Sync
     notes: text('notes'),
@@ -178,6 +181,7 @@ export const suppliers = sqliteTable(
     // Metadata & Sync
     notes: text('notes'),
     isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isSystem: integer('is_system', { mode: 'boolean' }).default(false).notNull(),
     syncVersion: integer('sync_version').default(1).notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
@@ -186,6 +190,7 @@ export const suppliers = sqliteTable(
   (table) => [
     index('idx_suppliers_company_id').on(table.companyId),
     uniqueIndex('idx_suppliers_code').on(table.companyId, table.supplierCode),
+    uniqueIndex('idx_suppliers_system_unique').on(table.companyId).where(eq(table.isSystem, true)),
     index('idx_suppliers_name').on(table.companyId, table.name),
     index('idx_suppliers_mobile').on(table.companyId, table.mobile),
     index('idx_suppliers_gstin').on(table.companyId, table.gstin),
@@ -251,3 +256,28 @@ export type InsertProduct = typeof products.$inferInsert;
 
 export type Unit = typeof units.$inferSelect;
 export type InsertUnit = typeof units.$inferInsert;
+
+export const expense_presets = sqliteTable(
+  'expense_presets',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    ledgerId: text('ledger_id')
+      .references(() => ledgers.id)
+      .notNull(),
+    defaultTaxGroupId: text('default_tax_group_id').references(() => tax_groups.id),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isSystem: integer('is_system', { mode: 'boolean' }).default(false).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_expense_presets_company_name').on(table.companyId, table.name)],
+);
+
+export type ExpensePreset = typeof expense_presets.$inferSelect;
+export type InsertExpensePreset = typeof expense_presets.$inferInsert;
