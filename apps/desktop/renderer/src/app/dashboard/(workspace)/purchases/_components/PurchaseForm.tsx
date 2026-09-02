@@ -6,6 +6,7 @@ import { Save, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { PurchaseLineGrid } from './PurchaseLineGrid';
@@ -14,6 +15,7 @@ import { PurchaseTotalsCard } from './PurchaseTotalsCard';
 
 import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
+import { RecordSettlementDialog } from '@/components/forms/RecordSettlementDialog';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -66,6 +68,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [activeCompanyId, setActiveCompanyId] = React.useState<string>('');
   const [activeFinancialYearId, setActiveFinancialYearId] = React.useState<string>('');
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
 
   const defaultValues = initialData
     ? {
@@ -172,8 +175,8 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
         const engineIn = engineInput.items[index];
         return {
           productId: uiLine.productId!,
-          unitId: uiLine.unitId || '11111111-1111-4111-8111-111111111111',
-          taxId: uiLine.taxId || '22222222-2222-4222-8222-222222222222',
+          unitId: uiLine.unitId || undefined,
+          taxId: uiLine.taxId || undefined,
           description: uiLine.description || undefined,
           quantity: engineIn.quantity,
           rate: engineIn.rate,
@@ -186,6 +189,7 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
 
       const payload: Omit<CreatePurchaseInput, 'companyId'> & { status: InvoiceStatus } = {
         financialYearId: activeFinancialYearId,
+        documentType: 'PURCHASE',
         purchaseDate: new Date(data.purchaseDate),
         supplierId: data.supplierId,
         supplierInvoiceNumber: data.supplierInvoiceNumber || undefined,
@@ -255,8 +259,8 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
       setErrorMsg(null);
       const res = await window.vyora.db.purchases.submit(initialData.id);
       if (res.success) {
-        setSuccessMsg('Purchase submitted successfully!');
-        window.location.reload();
+        toast.success('Purchase submitted successfully!');
+        setTimeout(() => router.push('/dashboard/purchases'), 150);
       } else {
         setErrorMsg(res.error || 'Failed to submit purchase.');
       }
@@ -276,8 +280,8 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
       setErrorMsg(null);
       const res = await window.vyora.db.purchases.cancel(initialData.id);
       if (res.success) {
-        setSuccessMsg('Purchase cancelled successfully!');
-        window.location.reload();
+        toast.success('Purchase cancelled successfully!');
+        setTimeout(() => router.push('/dashboard/purchases'), 150);
       } else {
         setErrorMsg(res.error || 'Failed to cancel purchase.');
       }
@@ -429,6 +433,20 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
             </AppButton>
           )}
 
+          {isEditMode &&
+            (currentStatus === 'SUBMITTED' || currentStatus === 'PARTIALLY_PAID') &&
+            initialData && (
+              <AppButton
+                variant="default"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                onClick={() => setIsPaymentModalOpen(true)}
+                disabled={isSubmitting || isCancelling || isSaving}
+                data-testid="record-payment-purchase-btn"
+              >
+                Record Payment
+              </AppButton>
+            )}
+
           {isEditMode && currentStatus !== 'CANCELLED' && (
             <AppButton
               variant="destructive"
@@ -461,6 +479,21 @@ export function PurchaseForm({ isEditMode, initialData, forceReadOnly }: Purchas
           )}
         </div>
       </div>
+
+      {isEditMode && initialData && (
+        <RecordSettlementDialog
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          type="PAYMENT"
+          defaultPartyId={initialData.supplierId}
+          defaultAllocationId={initialData.id}
+          defaultAmount={initialData.balanceDue ?? 0}
+          onSuccess={() => {
+            toast.success('Payment recorded successfully!');
+            router.push('/dashboard/purchases');
+          }}
+        />
+      )}
     </div>
   );
 }

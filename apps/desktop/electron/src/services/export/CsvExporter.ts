@@ -41,5 +41,10 @@ export class CsvExporter implements IExporter {
         await writer.write(dataRow + '\n');
       }
     }
+
+    if (request.totals && finalColumns && finalColumns.length > 0) {
+      const totalsRow = finalColumns.map((col) => escapeValue(request.totals![col.key])).join(',');
+      await writer.write(totalsRow + '\n');
+    }
   }
 }

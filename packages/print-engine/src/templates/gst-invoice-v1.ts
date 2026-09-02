@@ -1,4 +1,5 @@
 import { SalesInvoiceDto, SalesInvoiceLineDto } from '@vyora/types';
+import { GST_STATE_CODES } from '@vyora/utils';
 import QRCode from 'qrcode';
 
 import { PrintPayload, TemplateDefinition } from '../types';
@@ -77,6 +78,8 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
     const extData = data as SalesInvoiceDto & {
       _showBankDetailsOnInvoice?: boolean;
       _showQrOnInvoice?: boolean;
+      _accountHolderNameSnapshot?: string;
+      companySignaturePath?: string;
     };
 
     let bankHtml = '';
@@ -85,6 +88,7 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
         <div style="flex: 1; padding: 10px;">
           <div class="strong">Bank Details:</div>
           <div>Bank Name: ${extData.bankNameSnapshot || ''}</div>
+          <div style="color: #007bff; font-weight: bold;">Account Name: ${extData._accountHolderNameSnapshot || extData.companyNameSnapshot || ''}</div>
           <div>A/C No: ${extData.accountNumberSnapshot || ''}</div>
           <div>IFSC: ${extData.ifscCodeSnapshot || ''}</div>
           <div>Branch: ${extData.branchNameSnapshot || ''}</div>
@@ -95,12 +99,15 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
     let qrHtml = '';
     if (extData._showQrOnInvoice && extData.upiIdSnapshot) {
       try {
-        const upiString = `upi://pay?pa=${extData.upiIdSnapshot}&pn=${encodeURIComponent(extData.upiPayeeNameSnapshot || extData.companyNameSnapshot || '')}&am=${data.grandTotal || 0}`;
+        const upiString = `upi://pay?pa=${extData.upiIdSnapshot}&pn=${encodeURIComponent(extData.upiPayeeNameSnapshot || extData.companyNameSnapshot || '')}&am=${((data.grandTotal || 0) / 100).toFixed(2)}`;
         const qrDataUrl = await QRCode.toDataURL(upiString, { margin: 1, width: 100 });
+        const payeeName = extData.upiPayeeNameSnapshot || extData.companyNameSnapshot || '';
         qrHtml = `
           <div style="padding: 10px; text-align: center; border-left: 1px solid #000;">
             <img src="${qrDataUrl}" alt="QR Code" style="width: 80px; height: 80px;" />
-            <div style="font-size: 9px; margin-top: 2px;">Scan to Pay</div>
+            <div style="font-size: 10px; font-weight: bold; margin-top: 2px;">Scan to Pay</div>
+            <div style="font-size: 9px; margin-top: 2px;">${payeeName}</div>
+            <div style="font-size: 9px;">${extData.upiIdSnapshot}</div>
           </div>
         `;
       } catch (e) {
@@ -233,13 +240,13 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
                       <div class="strong" style="font-size: 14px;">${data.companyNameSnapshot || ''}</div>
                       <div>${data.companyAddressSnapshot || ''}</div>
                       <div><span class="strong">GSTIN/UIN:</span> ${data.companyGstinSnapshot || ''}</div>
-                      <div><span class="strong">State Name:</span> ${data.companyStateNameSnapshot || ''}, <span class="strong">Code:</span> ${data.companyStateCodeSnapshot || ''}</div>
+                      <div><span class="strong">State Name:</span> ${data.companyStateNameSnapshot || (data.companyStateCodeSnapshot ? GST_STATE_CODES[data.companyStateCodeSnapshot] : '') || ''}, <span class="strong">Code:</span> ${data.companyStateCodeSnapshot || ''}</div>
                       <div><span class="strong">PAN:</span> ${data.companyPanSnapshot || ''}</div>
                   </div>
                   <div class="col-50 col-right">
                       <div><span class="strong">Invoice No:</span> ${data.invoiceNumber || ''}</div>
                       <div><span class="strong">Invoice Date:</span> ${formatDate(data.invoiceDate)}</div>
-                      <div><span class="strong">Place of Supply:</span> ${data.placeOfSupplyCode || ''}</div>
+                      <div><span class="strong">Place of Supply:</span> ${data.placeOfSupplyCode ? (GST_STATE_CODES[data.placeOfSupplyCode] ? `${GST_STATE_CODES[data.placeOfSupplyCode]}-${data.placeOfSupplyCode}` : data.placeOfSupplyCode) : ''}</div>
                       <div><span class="strong">Reverse Charge:</span> ${data.isReverseCharge ? 'Y' : 'N'}</div>
                   </div>
               </div>
@@ -336,7 +343,8 @@ export const GstInvoiceV1: TemplateDefinition<SalesInvoiceDto> = {
                   </div>
                   <div class="signature">
                       <div class="strong">For ${data.companyNameSnapshot || 'Company'}</div>
-                      <div style="margin-top: 50px;">Authorized Signatory</div>
+                      ${(data as SalesInvoiceDto & { companySignaturePath?: string | null }).companySignaturePath ? `<div style="text-align: right; margin: 5px 0;"><img src="${(data as SalesInvoiceDto & { companySignaturePath?: string | null }).companySignaturePath}" alt="Signature" style="max-height: 50px; max-width: 150px; object-fit: contain; margin: 0 0 0 auto; mix-blend-mode: multiply;" /></div>` : '<div style="margin-top: 50px;"></div>'}
+                      <div>${(data as SalesInvoiceDto & { companySignatureDesignation?: string | null }).companySignatureDesignation || 'Authorized Signatory'}</div>
                   </div>
               </div>
           </div>

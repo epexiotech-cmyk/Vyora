@@ -64,8 +64,8 @@ export function PurchaseTotalsCard({ className, calculationState }: PurchaseTota
           </div>
         )}
 
-        <div className="border-border/50 mt-2 border-t pt-3">
-          <div className="flex items-center justify-between text-lg font-semibold">
+        <div className="bg-muted/30 border-border/40 mt-4 rounded-lg border p-4">
+          <div className="text-foreground flex items-center justify-between text-2xl font-bold tracking-tight">
             <span>Grand Total</span>
             <span>{formatMoney(totals.grandTotal, context?.currency)}</span>
           </div>

@@ -14,7 +14,7 @@ type FlatRow =
 /**
  * Recursively prunes empty branches when hideZeroBalances is true.
  */
-function pruneBranch(
+export function pruneBranch(
   group: TrialBalanceGroup,
   hideZeroBalances: boolean,
 ): TrialBalanceGroup | null {
@@ -43,7 +43,7 @@ function pruneBranch(
   };
 }
 
-function flattenGroups(
+export function flattenGroups(
   groups: TrialBalanceGroup[],
   currentIndent: number,
   hideZeroBalances: boolean,

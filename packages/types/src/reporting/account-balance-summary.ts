@@ -5,6 +5,7 @@ export interface PaymentAccountBalanceDto {
   accountName: string;
   accountType: PaymentAccountType;
   ledgerId: string;
+  isDefault: boolean;
 
   openingBalance: {
     amount: number;

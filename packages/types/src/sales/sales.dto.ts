@@ -80,6 +80,8 @@ export const createSalesInvoiceSchema = z.object({
   upiIdSnapshot: z.string().optional().nullable(),
   upiPayeeNameSnapshot: z.string().optional().nullable(),
 
+  signatureId: z.string().uuid().optional().nullable(),
+
   subtotal: z.number().int().min(0),
   discountAmount: z.number().int().min(0).default(0),
   taxAmount: z.number().int().min(0),
@@ -171,11 +173,15 @@ export interface SalesInvoiceDto {
   upiIdSnapshot?: string | null;
   upiPayeeNameSnapshot?: string | null;
 
+  signatureId?: string | null;
+
   subtotal: number;
   discountAmount: number;
   taxAmount: number;
   roundOffAmount: number;
   grandTotal: number;
+  amountPaid?: number;
+  balanceDue?: number;
   notes?: string | null;
   status: InvoiceStatus;
   createdAt: Date;
@@ -187,6 +193,8 @@ export interface SalesInvoiceSummaryDto {
   invoiceNumber: string;
   invoiceDate: Date;
   grandTotal: number;
+  amountPaid?: number;
+  balanceDue?: number;
   status: InvoiceStatus;
 }
 
@@ -195,4 +203,12 @@ export interface ListSalesInvoicesOptions {
   financialYearId?: string;
   limit?: number;
   offset?: number;
+  query?: string;
+  status?: InvoiceStatus;
+  customerId?: string;
+}
+
+export interface SalesInvoiceListDto {
+  data: SalesInvoiceDto[];
+  total: number;
 }

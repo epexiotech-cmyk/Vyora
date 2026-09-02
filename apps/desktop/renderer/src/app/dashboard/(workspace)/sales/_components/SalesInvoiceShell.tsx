@@ -12,6 +12,7 @@ import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
 import { InvoiceLineGrid } from '@/components/forms/InvoiceLineGrid';
 import { InvoiceTotalsCard } from '@/components/forms/InvoiceTotalsCard';
+import { RecordSettlementDialog } from '@/components/forms/RecordSettlementDialog';
 import { SalesCustomerSelector } from '@/components/forms/SalesCustomerSelector';
 import { ConstrainedSection } from '@/components/layout/ConstrainedSection';
 import { usePrintPreview } from '@/components/print/usePrintPreview';
@@ -226,6 +227,7 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
   const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
   const [savedInvoiceId, setSavedInvoiceId] = React.useState<string | null>(null);
   const [pinPromptOpen, setPinPromptOpen] = React.useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
 
   const [pinLength, setPinLength] = React.useState(4);
   const [pinArray, setPinArray] = React.useState<string[]>(Array(4).fill(''));
@@ -803,6 +805,20 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
               </AppButton>
             )}
 
+            {isEditMode &&
+              (currentStatus === 'SUBMITTED' || currentStatus === 'PARTIALLY_PAID') &&
+              initialData && (
+                <AppButton
+                  variant="default"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  disabled={isSubmitting || isCancelling || isSaving}
+                  data-testid="record-payment-sales-btn"
+                >
+                  Record Payment
+                </AppButton>
+              )}
+
             {isEditMode && currentStatus !== 'CANCELLED' && (
               <AppButton
                 variant="destructive"
@@ -835,6 +851,21 @@ export function SalesInvoiceShell({ isEditMode, initialData }: SalesInvoiceShell
           </div>
         </div>
       </div>
+
+      {isEditMode && initialData && (
+        <RecordSettlementDialog
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          type="RECEIPT"
+          defaultPartyId={initialData.customerId}
+          defaultAllocationId={initialData.id}
+          defaultAmount={initialData.balanceDue ?? 0}
+          onSuccess={() => {
+            // refresh invoice
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
   );
 }

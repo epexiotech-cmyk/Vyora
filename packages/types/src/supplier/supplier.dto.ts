@@ -61,6 +61,7 @@ export const createSupplierSchema = z.object({
 
   notes: z.string().optional().nullable(),
   isActive: z.boolean().default(true),
+  isSystem: z.boolean().default(false),
 });
 
 export const updateSupplierSchema = createSupplierSchema.partial();

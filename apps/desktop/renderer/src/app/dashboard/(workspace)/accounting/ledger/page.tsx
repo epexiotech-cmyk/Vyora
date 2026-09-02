@@ -1,15 +1,19 @@
 'use client';
 
 import { LedgerStatementDto, LedgerStatementRowDto } from '@vyora/types';
+import { ExportFormat, ExportColumn } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { AppDatePicker } from '@/components/shared/form/AppDatePicker';
 import { AppSelect } from '@/components/shared/form/AppSelect';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export default function LedgerStatement() {
   const { context: companyContext, loading: companyLoading } = useCompanyContext();
@@ -101,9 +105,55 @@ export default function LedgerStatement() {
     },
   ];
 
+  const { exportData, isExporting } = useExport();
+
+  const handleExport = (format: ExportFormat) => {
+    if (!data) return;
+
+    const columns: ExportColumn[] = [
+      { key: 'date', header: 'Date', type: 'date' },
+      { key: 'particulars', header: 'Particulars' },
+      { key: 'voucherType', header: 'Voucher Type' },
+      { key: 'voucherNumber', header: 'Voucher No.' },
+      { key: 'debit', header: 'Debit', type: 'currency' },
+      { key: 'credit', header: 'Credit', type: 'currency' },
+      { key: 'balance', header: 'Balance', type: 'string' },
+    ];
+
+    const rows = data.rows.map((r) => ({
+      date: typeof r.date === 'string' ? new Date(r.date) : r.date,
+      particulars: r.particulars,
+      voucherType: r.voucherType,
+      voucherNumber: r.voucherNumber,
+      debit: r.debitAmount || 0,
+      credit: r.creditAmount || 0,
+      balance: `${r.balance} ${r.balanceType}`,
+    }));
+
+    exportData(
+      format,
+      generateExportFilename('ledger-statement', toDate),
+      columns,
+      rows,
+      {
+        title: 'Ledger Statement',
+        ledgerId: ledgerId,
+        fromDate: fromDate.toISOString(),
+        toDate: toDate.toISOString(),
+      },
+      {
+        openingBalance: `${data.openingBalance} ${data.openingType}`,
+        closingBalance: `${data.closingBalance} ${data.closingType}`,
+      },
+    );
+  };
+
   return (
     <div className="space-y-6">
-      <SectionHeader title="Ledger Statement" description="View Ledger Statement" />
+      <div className="flex items-center justify-between">
+        <SectionHeader title="Ledger Statement" description="View Ledger Statement" />
+        <AppExportDropdown onExport={handleExport} isExporting={isExporting} />
+      </div>
 
       <div className="flex items-center space-x-4">
         <AppSelect

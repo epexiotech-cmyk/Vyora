@@ -9,7 +9,9 @@ import { GeneralLedgerV1 } from './templates/general-ledger-v1';
 import { GstInvoiceV1 } from './templates/gst-invoice-v1';
 import { LedgerStatementV1 } from './templates/ledger-statement-v1';
 import { OutstandingV1 } from './templates/outstanding-v1';
+import { PaymentV1 } from './templates/payment-v1';
 import { ProfitLossV1 } from './templates/profit-loss-v1';
+import { ReceiptV1 } from './templates/receipt-v1';
 import { TrialBalanceV1 } from './templates/trial-balance-v1';
 import { formatCurrencyINR } from './utils/formatCurrency';
 
@@ -45,6 +47,10 @@ export function registerAllTemplates() {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   });
+  Handlebars.registerHelper('formatMoney', function (value, options) {
+    if (value === undefined || value === null) return '-';
+    return formatCurrencyINR(value, options?.data?.root?.currencyMeta);
+  });
   Handlebars.registerHelper('eq', function (a, b) {
     return a === b;
   });
@@ -77,6 +83,8 @@ export function registerAllTemplates() {
   TemplateRegistry.register(OutstandingV1);
   TemplateRegistry.register(ProfitLossV1);
   TemplateRegistry.register(TrialBalanceV1);
+  TemplateRegistry.register(ReceiptV1);
+  TemplateRegistry.register(PaymentV1);
   isRegistered = true;
 }
 

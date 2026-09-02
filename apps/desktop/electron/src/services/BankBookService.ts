@@ -56,6 +56,8 @@ export class BankBookService {
           voucherNumber: entry.voucherNumber,
           voucherDate: entry.voucherDate,
           voucherType: entry.voucherType,
+          referenceType: entry.referenceType,
+          isCancelled: entry.isCancelled,
           entries: [],
           runningBalance: { amount: 0, type: 'Dr' }, // Placeholder, computed next
         };

@@ -74,6 +74,7 @@ export interface GlobalInventoryRowDto {
   productSku?: string | null;
   unitId: string;
   unitShortName: string;
+  reorderLevel: number;
   currentQty: number;
   currentWacPaise: number;
   currentValuePaise: number;

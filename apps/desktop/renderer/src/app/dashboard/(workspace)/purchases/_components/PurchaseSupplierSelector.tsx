@@ -237,7 +237,7 @@ export function PurchaseSupplierSelector({
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border shadow-md">
+        <div className="animate-in fade-in-0 zoom-in-95 absolute top-full left-0 z-50 mt-1 max-h-60 w-full overflow-hidden rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg">
           {isLoading && suppliers.length === 0 ? (
             <div className="text-muted-foreground flex items-center justify-center py-6 text-sm">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...

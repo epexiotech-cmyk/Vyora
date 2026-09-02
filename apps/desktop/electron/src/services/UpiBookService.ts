@@ -84,12 +84,13 @@ export class UpiBookService {
         voucherNumber: entry.voucherNumber,
         voucherDate: entry.voucherDate,
         voucherType: entry.voucherType as UpiBookVoucherDto['voucherType'],
+        referenceType: entry.referenceType as UpiBookVoucherDto['referenceType'],
         narration: entry.narration || undefined,
         debitAmount: entry.debitAmount,
         creditAmount: entry.creditAmount,
         balance: currentBalance,
         balanceType: currentType === 'Dr' ? 'DR' : 'CR',
-        isCancelled: false, // In current implementation, JournalQueryService handles cancellation (if it returns them, they might be reversed. Usually, getJournalEntries filters cancelled or zeroes them out).
+        isCancelled: !!entry.isCancelled, // Updated to use the actual isCancelled flag from the entry
         createdAt: entry.voucherDate, // Assuming voucherDate for now, normally we'd pull createdAt if available.
       };
     });

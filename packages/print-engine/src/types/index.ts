@@ -24,7 +24,9 @@ export interface PrintPayload<T = unknown> {
     | 'DAY_BOOK'
     | 'CASH_BOOK'
     | 'BANK_BOOK'
-    | 'OUTSTANDING_REPORT';
+    | 'OUTSTANDING_REPORT'
+    | 'RECEIPT'
+    | 'PAYMENT';
   currencyMeta?: import('@vyora/types').CurrencyMeta;
   data: T;
 }

@@ -22,6 +22,17 @@ export interface CompanyContextDto {
   currency: CurrencyMeta;
 }
 
+export interface CompanySignatureDto {
+  id: string;
+  companyId: string;
+  filePath: string;
+  label: string;
+  designation: string;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface CompanyProfileDto {
   id: string;
   legalName: string;
@@ -43,6 +54,8 @@ export interface CompanyProfileDto {
   telephone?: string | null;
   website?: string | null;
   logoPath?: string | null;
+  signaturePath?: string | null;
+  signatures?: CompanySignatureDto[];
   defaultUpiId?: string | null;
   upiPayeeName?: string | null;
   showQrOnInvoice?: boolean | null;
@@ -81,6 +94,8 @@ export interface UpdateCompanyProfileRequest {
   mobile?: string | null;
   telephone?: string | null;
   website?: string | null;
+  logoPath?: string | null;
+  signaturePath?: string | null;
   currency?: string;
   defaultUpiId?: string | null;
   upiPayeeName?: string | null;

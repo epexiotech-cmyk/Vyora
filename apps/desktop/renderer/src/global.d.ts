@@ -222,6 +222,12 @@ export type VyoraPrintAPI = {
     payload: import('@vyora/print-engine').PrintPayload<unknown>,
     options?: PrintToPDFOptions,
   ) => Promise<ArrayBuffer>;
+  saveTempPdfAndShare: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+    fileName: string,
+    options?: PrintToPDFOptions,
+  ) => Promise<{ success: boolean; filePath?: string; error?: string }>;
   exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
   getAvailablePrinters: () => Promise<import('electron').PrinterInfo[]>;
 };
@@ -274,6 +280,28 @@ export type VyoraAccountingAPI = {
   ) => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').FinancialOverviewChartResponseDto[]>
   >;
+  createSettlement: (
+    input: import('@vyora/types').CreateSettlementInput,
+  ) => Promise<import('@vyora/types').ApiResponse<{ settlementId: string }>>;
+  editSettlement: (
+    settlementId: string,
+    input: import('@vyora/types').UpdateSettlementInput,
+  ) => Promise<import('@vyora/types').ApiResponse<{ settlementId: string }>>;
+  listSettlements: (
+    options: import('@vyora/types').ListSettlementsOptions,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').SettlementListDto>>;
+  getSettlementById: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').SettlementDto>>;
+  cancelSettlement: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<{ cancelledSettlementId: string }>>;
+  getOutstandingForSupplier: (
+    supplierId: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>>;
+  getOutstandingForCustomer: (
+    customerId: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>>;
   getVoucherById: (
     id: string,
   ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;

@@ -1,0 +1,59 @@
+'use client';
+
+import { PurchaseDto } from '@vyora/types';
+import { Loader2 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import * as React from 'react';
+
+import { ExpenseForm } from '../_components/ExpenseForm';
+
+import { AppButton } from '@/components/ui/AppButton';
+
+export default function ViewExpensePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') as string;
+  const [data, setData] = React.useState<PurchaseDto | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function fetchExpense() {
+      try {
+        setLoading(true);
+        const res = await window.vyora.db.purchases.getById(id);
+        if (res.success && res.data) {
+          setData(res.data);
+        } else {
+          setError(res.error || 'Failed to load expense');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchExpense();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <p className="text-destructive font-medium">{error || 'Expense not found'}</p>
+        <AppButton variant="outline" onClick={() => router.push('/dashboard/expenses')}>
+          Back to List
+        </AppButton>
+      </div>
+    );
+  }
+
+  return <ExpenseForm initialData={data} forceReadOnly />;
+}

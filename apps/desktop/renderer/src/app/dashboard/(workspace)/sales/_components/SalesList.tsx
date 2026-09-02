@@ -1,16 +1,21 @@
 'use client';
 
 import { SalesInvoiceDto } from '@vyora/types';
+import { ExportFormat, ExportColumn, ExportRecord } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import { Plus, Edit2, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { DataTable, ColumnDef, AppSelect } from '@/components/shared';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { AppButton } from '@/components/ui/AppButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export function SalesList() {
   const router = useRouter();
@@ -19,6 +24,7 @@ export function SalesList() {
   const [data, setData] = React.useState<SalesInvoiceDto[]>([]);
   const [total, setTotal] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
+  const { exportData, isExporting } = useExport();
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -35,26 +41,13 @@ export function SalesList() {
         const res = await window.vyora.db.sales.list({
           limit,
           offset: (page - 1) * limit,
+          query: searchQuery.trim() || undefined,
+          status: filterStatus !== 'ALL' ? filterStatus : undefined,
         });
         if (res.success && res.data) {
-          // Client-side filtering as existing list API lacks search params
-          let filtered = res.data;
-
-          if (searchQuery.trim()) {
-            const lowerQ = searchQuery.toLowerCase();
-            filtered = filtered.filter(
-              (i) =>
-                i.invoiceNumber.toLowerCase().includes(lowerQ) ||
-                i.customerId.toLowerCase().includes(lowerQ),
-            );
-          }
-
-          if (filterStatus !== 'ALL') {
-            filtered = filtered.filter((i) => i.status === filterStatus);
-          }
-
-          setData(filtered);
-          setTotal(res.data.length); // Approximated for client filtering
+          const { data: records, total: totalRecords } = res.data;
+          setData(records);
+          setTotal(totalRecords);
         }
       } catch (error) {
         console.error('Failed to fetch sales invoices:', error);
@@ -65,6 +58,38 @@ export function SalesList() {
 
     fetchSales();
   }, [searchQuery, filterStatus, page]);
+
+  const handleExport = async (format: ExportFormat) => {
+    if (data.length === 0) {
+      toast.error('No data available to export');
+      return;
+    }
+
+    const columns: ExportColumn[] = [
+      { key: 'invoiceNumber', header: 'Invoice Number', type: 'string' },
+      { key: 'invoiceDate', header: 'Invoice Date', type: 'date' },
+      { key: 'customer', header: 'Customer', type: 'string' },
+      { key: 'grandTotal', header: 'Grand Total', type: 'currency' },
+      { key: 'status', header: 'Status', type: 'string' },
+    ];
+
+    const exportRecords: ExportRecord[] = data.map((invoice) => ({
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: new Date(invoice.invoiceDate),
+      customer: invoice.customerId,
+      grandTotal: invoice.grandTotal,
+      status: invoice.status,
+    }));
+
+    const filename = generateExportFilename('Sales_Register', format);
+
+    await exportData(format, filename, columns, exportRecords, {
+      title: 'Sales Register',
+      companyName: context?.company?.legalName,
+      searchQuery,
+      filterStatus,
+    });
+  };
 
   const columns: ColumnDef<SalesInvoiceDto>[] = [
     {
@@ -139,6 +164,7 @@ export function SalesList() {
         <SectionHeader
           title="Sales Invoices"
           description="Manage your sales invoices and billing."
+          actions={<AppExportDropdown onExport={handleExport} isExporting={isExporting} />}
         />
       </div>
 

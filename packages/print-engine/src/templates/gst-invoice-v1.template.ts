@@ -180,7 +180,14 @@ export const gstInvoiceTemplate = `
             </div>
             <div class="signature">
                 <div class="strong">For {{company.legalName}}</div>
-                <div style="margin-top: 50px;">Authorized Signatory</div>
+                {{#if companySignaturePath}}
+                  <div style="text-align: right; margin: 5px 0;">
+                    <img src="{{companySignaturePath}}" alt="Signature" style="max-height: 50px; max-width: 150px; object-fit: contain; margin: 0 0 0 auto; mix-blend-mode: multiply;" />
+                  </div>
+                {{else}}
+                  <div style="margin-top: 50px;"></div>
+                {{/if}}
+                <div>{{#if companySignatureDesignation}}{{companySignatureDesignation}}{{else}}Authorized Signatory{{/if}}</div>
             </div>
         </div>
     </div>

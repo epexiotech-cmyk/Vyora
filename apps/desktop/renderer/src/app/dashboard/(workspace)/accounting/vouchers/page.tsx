@@ -1,15 +1,20 @@
 'use client';
 
 import { VoucherListItemDto, VoucherFilterDto } from '@vyora/types';
+import { ExportFormat, ExportColumn } from '@vyora/types';
+import { getEndOfDay } from '@vyora/utils';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { AppDatePicker } from '@/components/shared/form/AppDatePicker';
 import { AppSelect } from '@/components/shared/form/AppSelect';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { AppInput } from '@/components/ui/AppInput';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export default function VoucherExplorer() {
   const router = useRouter();
@@ -43,6 +48,31 @@ export default function VoucherExplorer() {
     loadVouchers();
   }, [filters]);
 
+  const { exportData, isExporting } = useExport();
+
+  const handleExport = (format: ExportFormat) => {
+    const columns: ExportColumn[] = [
+      { key: 'date', header: 'Date', type: 'date' },
+      { key: 'voucherNumber', header: 'Voucher Number' },
+      { key: 'type', header: 'Type' },
+      { key: 'narration', header: 'Narration' },
+      { key: 'status', header: 'Status' },
+    ];
+
+    const rows = vouchers.map((v) => ({
+      date: typeof v.voucherDate === 'string' ? new Date(v.voucherDate) : v.voucherDate,
+      voucherNumber: v.voucherNumber,
+      type: v.voucherType,
+      narration: v.narration || '',
+      status: v.isCancelled ? 'Cancelled' : 'Active',
+    }));
+
+    exportData(format, generateExportFilename('vouchers', new Date()), columns, rows, {
+      title: 'Vouchers List',
+      filters: filters as Record<string, unknown>,
+    });
+  };
+
   const columns: ColumnDef<VoucherListItemDto>[] = [
     { key: 'voucherNumber', header: 'Voucher Number' },
     { key: 'voucherType', header: 'Type' },
@@ -57,7 +87,13 @@ export default function VoucherExplorer() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Voucher Explorer" description="Search and filter accounting vouchers" />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Voucher Explorer"
+          description="Search and filter accounting vouchers"
+        />
+        <AppExportDropdown onExport={handleExport} isExporting={isExporting} />
+      </div>
 
       <div className="flex items-center space-x-4">
         <AppInput
@@ -96,7 +132,7 @@ export default function VoucherExplorer() {
           onChange={(dateStr) =>
             setFilters((f) => ({
               ...f,
-              toDate: dateStr ? new Date(dateStr).toISOString() : undefined,
+              toDate: dateStr ? getEndOfDay(dateStr).toISOString() : undefined,
             }))
           }
         />

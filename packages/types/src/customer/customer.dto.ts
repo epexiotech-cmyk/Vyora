@@ -45,6 +45,7 @@ export interface CustomerProfileDto {
   creditDays: number;
   defaultPaymentAccountId?: string | null;
   defaultQrAccountId?: string | null;
+  defaultSignatureId?: string | null;
   shippingAddresses?: ShippingAddressDto[] | null;
   notes?: string | null;
   isActive: boolean;
@@ -125,6 +126,7 @@ export const createCustomerSchema = z.object({
   creditDays: z.coerce.number().int().min(0).default(0),
   defaultPaymentAccountId: z.string().uuid('Invalid Payment Account ID').optional().nullable(),
   defaultQrAccountId: z.string().uuid('Invalid QR Account ID').optional().nullable(),
+  defaultSignatureId: z.string().uuid('Invalid Signature ID').optional().nullable(),
   notes: z.string().optional().nullable(),
   shippingAddresses: z.array(shippingAddressSchema).optional().nullable(),
   isActive: z.boolean().default(true),

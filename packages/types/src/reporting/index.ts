@@ -11,5 +11,6 @@ export * from './bank-book';
 export * from './outstanding';
 export * from './stock';
 export * from './upi-book';
+export * from './pos-book';
 export * from './transfer-register';
 export * from './account-balance-summary';

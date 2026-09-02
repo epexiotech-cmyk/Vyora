@@ -7,6 +7,8 @@ export interface JournalEntryRow {
   voucherNumber: string;
   voucherDate: Date;
   voucherType: string;
+  referenceType?: string;
+  isCancelled?: boolean;
   ledgerId: string;
   ledgerName: string;
   debitAmount: number; // Paise

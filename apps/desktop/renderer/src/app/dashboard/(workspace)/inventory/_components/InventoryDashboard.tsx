@@ -5,8 +5,10 @@ import { AlertCircle } from 'lucide-react';
 import * as React from 'react';
 
 import { GlobalInventoryGrid } from './GlobalInventoryGrid';
+import { InventoryAlertArea } from './InventoryAlertArea';
 import { InventoryKpiCards } from './InventoryKpiCards';
 
+import { InventoryHealthStatus } from '../lib/inventory-health';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export function InventoryDashboard() {
@@ -15,7 +17,7 @@ export function InventoryDashboard() {
   const [error, setError] = React.useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [showNegativeOnly, setShowNegativeOnly] = React.useState(false);
+  const [statusFilter, setStatusFilter] = React.useState<InventoryHealthStatus | 'ALL'>('ALL');
 
   React.useEffect(() => {
     let mounted = true;
@@ -57,7 +59,7 @@ export function InventoryDashboard() {
     <div className="flex flex-col gap-6">
       <SectionHeader
         title="Global Inventory"
-        description="View real-time stock balances and valuation across the active financial year."
+        description="Monitor live stock levels, reorder alerts, and inventory valuation across the active financial year."
       />
 
       {error ? (
@@ -67,7 +69,9 @@ export function InventoryDashboard() {
         </div>
       ) : (
         <>
-          <InventoryKpiCards data={data} />
+          <InventoryKpiCards data={data} onFilterStatus={setStatusFilter} />
+
+          <InventoryAlertArea data={data} onFilterStatus={setStatusFilter} />
 
           <div className="mt-4">
             <GlobalInventoryGrid
@@ -75,8 +79,8 @@ export function InventoryDashboard() {
               isLoading={isLoading}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              showNegativeOnly={showNegativeOnly}
-              onToggleNegativeOnly={() => setShowNegativeOnly((prev) => !prev)}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
             />
           </div>
         </>

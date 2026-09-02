@@ -20,6 +20,9 @@ export interface ExportColumn {
 export interface ExportMetadata {
   title?: string;
   subtitle?: string;
+  companyName?: string;
+  companyAddress?: string;
+  asOfDate?: Date | string;
   generatedBy?: string;
   generatedAt?: Date;
   version?: string;
@@ -34,6 +37,7 @@ export interface BaseExportRequest {
   title?: string;
   columns?: ExportColumn[];
   metadata?: ExportMetadata;
+  totals?: ExportRecord;
 }
 
 export type ExportRecord = Record<string, unknown>;

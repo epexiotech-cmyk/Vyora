@@ -1,22 +1,31 @@
 'use client';
 
 import { PurchaseListDto } from '@vyora/types';
+import { ExportFormat, ExportColumn, ExportRecord } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import { Plus, Search, Filter, Edit2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { AppButton } from '@/components/ui/AppButton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
-export function PurchaseList() {
+interface PurchaseListProps {
+  documentType?: 'PURCHASE' | 'EXPENSE';
+}
+
+export function PurchaseList({ documentType = 'PURCHASE' }: PurchaseListProps = {}) {
   const router = useRouter();
   const { context } = useCompanyContext();
 
   const [data, setData] = React.useState<PurchaseListDto>({ data: [], total: 0 });
   const [isLoading, setIsLoading] = React.useState(true);
+  const { exportData, isExporting } = useExport();
 
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -29,14 +38,15 @@ export function PurchaseList() {
   const limit = 20;
 
   const handleDelete = async (id: string, code: string) => {
-    if (window.confirm(`Are you sure you want to delete purchase "${code}"?`)) {
+    const typeLabel = documentType === 'EXPENSE' ? 'expense' : 'purchase';
+    if (window.confirm(`Are you sure you want to delete ${typeLabel} "${code}"?`)) {
       try {
         const res = await window.vyora.db.purchases.delete(id);
         if (res.success) {
-          alert('Purchase deleted successfully.');
+          alert(`${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} deleted successfully.`);
           setRefreshTrigger((prev) => prev + 1);
         } else {
-          alert(res.error || 'Failed to delete purchase.');
+          alert(res.error || `Failed to delete ${typeLabel}.`);
         }
       } catch {
         alert('An unexpected error occurred while deleting.');
@@ -53,6 +63,7 @@ export function PurchaseList() {
       try {
         const res = await window.vyora.db.purchases.search({
           query: debouncedSearch,
+          documentType,
           status: statusValue,
           limit,
           offset: page * limit,
@@ -68,7 +79,50 @@ export function PurchaseList() {
     };
 
     fetchPurchases();
-  }, [debouncedSearch, filterStatus, page, refreshTrigger]);
+  }, [debouncedSearch, filterStatus, page, refreshTrigger, documentType]);
+
+  const handleExport = async (format: ExportFormat) => {
+    if (data.data.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const columns: ExportColumn[] = [
+      { key: 'purchaseNumber', header: 'Code', type: 'string' },
+      { key: 'purchaseDate', header: 'Date', type: 'date' },
+      {
+        key: 'supplierName',
+        header: documentType === 'EXPENSE' ? 'Payee' : 'Supplier',
+        type: 'string',
+      },
+      {
+        key: 'supplierInvoiceNumber',
+        header: documentType === 'EXPENSE' ? 'Reference No' : 'Supplier Bill No',
+        type: 'string',
+      },
+      { key: 'grandTotal', header: 'Grand Total', type: 'currency' },
+      { key: 'status', header: 'Status', type: 'string' },
+    ];
+
+    const exportRecords: ExportRecord[] = data.data.map((item) => ({
+      purchaseNumber: item.purchaseNumber,
+      purchaseDate: new Date(item.purchaseDate),
+      supplierName: item.supplierName,
+      supplierInvoiceNumber: item.supplierInvoiceNumber || '-',
+      grandTotal: item.grandTotal,
+      status: item.status,
+    }));
+
+    const title = documentType === 'EXPENSE' ? 'Expense Register' : 'Purchase Register';
+    const filename = generateExportFilename(title.replace(' ', '_'), format);
+
+    await exportData(format, filename, columns, exportRecords, {
+      title,
+      companyName: context?.company?.legalName,
+      searchQuery: debouncedSearch,
+      filterStatus,
+    });
+  };
 
   const totalPages = Math.ceil(data.total / limit);
 
@@ -82,7 +136,11 @@ export function PurchaseList() {
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search purchases by code, bill no..."
+              placeholder={
+                documentType === 'EXPENSE'
+                  ? 'Search expenses by code, ref no...'
+                  : 'Search purchases by code, bill no...'
+              }
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -113,12 +171,17 @@ export function PurchaseList() {
 
         {/* Actions */}
         <div className="flex w-full items-center gap-2 md:w-auto">
+          <AppExportDropdown onExport={handleExport} isExporting={isExporting} />
           <AppButton
             data-testid="create-purchase-btn"
-            onClick={() => router.push('/dashboard/purchases/new')}
+            onClick={() =>
+              router.push(
+                documentType === 'EXPENSE' ? '/dashboard/expenses/new' : '/dashboard/purchases/new',
+              )
+            }
           >
             <Plus className="mr-2 h-4 w-4" />
-            New Purchase
+            {documentType === 'EXPENSE' ? 'New Expense' : 'New Purchase'}
           </AppButton>
         </div>
       </div>
@@ -130,8 +193,12 @@ export function PurchaseList() {
             <thead className="bg-muted/50 border-border/50 text-muted-foreground border-b uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Code / Date</th>
-                <th className="px-4 py-3 font-medium">Supplier</th>
-                <th className="px-4 py-3 font-medium">Supplier Bill No</th>
+                <th className="px-4 py-3 font-medium">
+                  {documentType === 'EXPENSE' ? 'Payee' : 'Supplier'}
+                </th>
+                <th className="px-4 py-3 font-medium">
+                  {documentType === 'EXPENSE' ? 'Reference No' : 'Supplier Bill No'}
+                </th>
                 <th className="px-4 py-3 text-right font-medium">Grand Total</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
@@ -143,7 +210,9 @@ export function PurchaseList() {
                   <td colSpan={6} className="py-8 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"></div>
-                      <span className="text-muted-foreground text-sm">Loading purchases...</span>
+                      <span className="text-muted-foreground text-sm">
+                        Loading {documentType === 'EXPENSE' ? 'expenses' : 'purchases'}...
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -151,8 +220,8 @@ export function PurchaseList() {
                 <tr>
                   <td colSpan={6} className="text-muted-foreground py-8 text-center">
                     {searchQuery
-                      ? 'No purchases found matching your search.'
-                      : 'No purchases found. Create one to get started.'}
+                      ? `No ${documentType === 'EXPENSE' ? 'expenses' : 'purchases'} found matching your search.`
+                      : `No ${documentType === 'EXPENSE' ? 'expenses' : 'purchases'} found. Create one to get started.`}
                   </td>
                 </tr>
               ) : (
@@ -196,10 +265,14 @@ export function PurchaseList() {
                         {purchase.status !== 'DRAFT' && (
                           <button
                             onClick={() =>
-                              router.push(`/dashboard/purchases/view?id=${purchase.id}`)
+                              router.push(
+                                documentType === 'EXPENSE'
+                                  ? `/dashboard/expenses/edit?id=${purchase.id}`
+                                  : `/dashboard/purchases/edit?id=${purchase.id}`,
+                              )
                             }
                             className="text-muted-foreground hover:text-foreground p-1 transition-colors"
-                            title="View Details"
+                            title={documentType === 'EXPENSE' ? 'View / Edit' : 'View Details'}
                           >
                             <Search className="h-4 w-4" />
                           </button>
@@ -207,7 +280,11 @@ export function PurchaseList() {
                         {purchase.status === 'DRAFT' && (
                           <button
                             onClick={() =>
-                              router.push(`/dashboard/purchases/edit?id=${purchase.id}`)
+                              router.push(
+                                documentType === 'EXPENSE'
+                                  ? `/dashboard/expenses/edit?id=${purchase.id}`
+                                  : `/dashboard/purchases/edit?id=${purchase.id}`,
+                              )
                             }
                             className="text-muted-foreground hover:text-primary p-1 transition-colors"
                             title="Edit"

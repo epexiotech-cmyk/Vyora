@@ -2,7 +2,9 @@ import { ExportFormat } from '@vyora/types';
 
 import { CsvExporter } from './CsvExporter';
 import { JsonExporter } from './JsonExporter';
+import { PdfExporter } from './PdfExporter';
 import { IExporter } from './types';
+import { XlsxExporter } from './XlsxExporter';
 
 class ExporterRegistryClass {
   private exporters = new Map<ExportFormat, IExporter>();
@@ -34,3 +36,5 @@ export const exporterRegistry = new ExporterRegistryClass();
 // Auto-register built-in exporters
 exporterRegistry.register(new CsvExporter());
 exporterRegistry.register(new JsonExporter());
+exporterRegistry.register(new XlsxExporter());
+exporterRegistry.register(new PdfExporter());

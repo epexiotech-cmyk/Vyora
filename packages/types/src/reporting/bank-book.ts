@@ -6,6 +6,8 @@ export interface BankBookVoucherDto {
   voucherNumber: string;
   voucherDate: Date;
   voucherType: string;
+  referenceType?: string;
+  isCancelled?: boolean;
   entries: JournalEntryRow[];
   runningBalance: MonetaryBalance;
 }

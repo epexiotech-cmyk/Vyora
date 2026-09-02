@@ -8,14 +8,18 @@ import * as React from 'react';
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { ColumnDef, DataTable } from '@/components/shared/table/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { getInventoryHealthStatus, InventoryHealthStatus } from '../lib/inventory-health';
+import { cn } from '@/lib/utils';
 
 export interface GlobalInventoryGridProps {
   data: GlobalInventoryRowDto[];
   isLoading: boolean;
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  showNegativeOnly: boolean;
-  onToggleNegativeOnly: () => void;
+  showNegativeOnly?: boolean;
+  onToggleNegativeOnly?: () => void;
+  statusFilter?: InventoryHealthStatus | 'ALL';
+  onStatusFilterChange?: (status: InventoryHealthStatus | 'ALL') => void;
 }
 
 export function GlobalInventoryGrid({
@@ -25,6 +29,8 @@ export function GlobalInventoryGrid({
   onSearchChange,
   showNegativeOnly,
   onToggleNegativeOnly,
+  statusFilter = 'ALL',
+  onStatusFilterChange,
 }: GlobalInventoryGridProps) {
   const router = useRouter();
   const { context } = useCompanyContext();
@@ -48,11 +54,30 @@ export function GlobalInventoryGrid({
     {
       key: 'currentQty',
       header: 'Current Qty',
+      cell: (item) => {
+        const status = getInventoryHealthStatus(item.currentQty, item.reorderLevel);
+        return (
+          <div className="flex flex-col">
+            <span
+              className={cn(
+                "font-medium",
+                status === 'NEGATIVE' ? 'text-destructive font-semibold' : 
+                status === 'LOW' ? 'text-warning font-semibold' : 
+                'text-foreground'
+              )}
+            >
+              {item.currentQty}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'reorderLevel',
+      header: 'Reorder Level',
       cell: (item) => (
-        <span
-          className={item.currentQty < 0 ? 'text-destructive font-semibold' : 'text-foreground'}
-        >
-          {item.currentQty}
+        <span className="text-muted-foreground">
+          {item.reorderLevel}
         </span>
       ),
     },
@@ -78,13 +103,11 @@ export function GlobalInventoryGrid({
       key: 'status',
       header: 'Status',
       cell: (item) => {
-        if (item.currentQty > 0) {
-          return <StatusBadge variant="success">In Stock</StatusBadge>;
-        }
-        if (item.currentQty < 0) {
-          return <StatusBadge variant="destructive">Negative Stock</StatusBadge>;
-        }
-        return <StatusBadge variant="warning">Zero Stock</StatusBadge>;
+        const status = getInventoryHealthStatus(item.currentQty, item.reorderLevel);
+        if (status === 'NEGATIVE') return <StatusBadge variant="destructive">Negative Stock</StatusBadge>;
+        if (status === 'LOW') return <StatusBadge variant="warning">Low Stock</StatusBadge>;
+        if (status === 'ZERO') return <StatusBadge variant="secondary">Zero Stock</StatusBadge>;
+        return <StatusBadge variant="success">In Stock</StatusBadge>;
       },
     },
   ];
@@ -95,6 +118,8 @@ export function GlobalInventoryGrid({
 
     if (showNegativeOnly) {
       result = result.filter((row) => row.currentQty < 0);
+    } else if (statusFilter !== 'ALL') {
+      result = result.filter((row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === statusFilter);
     }
 
     if (searchQuery) {
@@ -107,7 +132,7 @@ export function GlobalInventoryGrid({
     }
 
     return result;
-  }, [data, searchQuery, showNegativeOnly]);
+  }, [data, searchQuery, showNegativeOnly, statusFilter]);
 
   return (
     <DataTable
@@ -116,21 +141,41 @@ export function GlobalInventoryGrid({
       keyExtractor={(item) => item.productId}
       isLoading={isLoading}
       onRowClick={(item) => router.push(`/dashboard/inventory/view?productId=${item.productId}`)}
+      rowClassName={(item) => {
+        const status = getInventoryHealthStatus(item.currentQty, item.reorderLevel);
+        if (status === 'NEGATIVE') return 'bg-destructive/5 hover:bg-destructive/10';
+        if (status === 'LOW') return 'bg-warning/5 hover:bg-warning/10';
+        return '';
+      }}
       toolbar={{
         searchQuery,
         onSearchChange,
         placeholder: 'Search by product name or SKU...',
         actions: (
-          <div className="flex items-center space-x-2">
-            <label className="flex cursor-pointer items-center space-x-2 text-sm">
-              <input
-                type="checkbox"
-                className="text-primary focus:ring-primary rounded border-gray-300"
-                checked={showNegativeOnly}
-                onChange={onToggleNegativeOnly}
-              />
-              <span>Negative Stock Only</span>
-            </label>
+          <div className="flex items-center space-x-4">
+            {onStatusFilterChange ? (
+              <select
+                className="text-sm rounded-md border border-input bg-background px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={statusFilter}
+                onChange={(e) => onStatusFilterChange(e.target.value as InventoryHealthStatus | 'ALL')}
+              >
+                <option value="ALL">All Status</option>
+                <option value="NEGATIVE">Negative Stock</option>
+                <option value="LOW">Low Stock</option>
+                <option value="ZERO">Zero Stock</option>
+                <option value="IN_STOCK">In Stock</option>
+              </select>
+            ) : onToggleNegativeOnly && showNegativeOnly !== undefined ? (
+              <label className="flex cursor-pointer items-center space-x-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="text-primary focus:ring-primary rounded border-gray-300"
+                  checked={showNegativeOnly}
+                  onChange={onToggleNegativeOnly}
+                />
+                <span>Negative Stock Only</span>
+              </label>
+            ) : null}
           </div>
         ),
       }}

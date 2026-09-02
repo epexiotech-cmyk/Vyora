@@ -1,6 +1,7 @@
 'use client';
 
 import { GeneralLedgerStatement, MonetaryBalance } from '@vyora/types';
+import { getEndOfDay } from '@vyora/utils';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -39,7 +40,7 @@ export default function GeneralLedgerPage() {
     }
 
     const start = filters.startDate ? new Date(filters.startDate) : undefined;
-    const end = filters.endDate ? new Date(filters.endDate) : undefined;
+    const end = filters.endDate ? getEndOfDay(filters.endDate) : undefined;
 
     fetchGeneralLedger(start, end);
   }, [filters.startDate, filters.endDate, fetchGeneralLedger]);
