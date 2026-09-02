@@ -29,3 +29,31 @@ the module (for instance, using `npm rebuild` or `npm install`).
     at bindings (D:\Epexio Project\Vyora\node_modules\.pnpm\bindings@1.5.0\node_modules\bindings\bindings.js:112:48)
     at new Database (D:\Epexio Project\Vyora\node_modules\.pnpm\better-sqlite3-multiple-ciphers@12.10.0\node_modules\better-sqlite3-multiple-ciphers\lib\database.js:48:64)
     at SQLCipherAdapter.connect (D:\Epexio Project\Vyora\apps\desktop\electron\src\main\database\adapters\SQLCipherAdapter.ts:22:29)
+[2026-08-18 16:17:01.505] [error] Uncaught Exception: {
+  createIssue: '[function] function () { [native code] }',
+  error: "TypeError: Cannot read properties of undefined (reading 'getPath')\n" +
+    '    at CompanyStorageService.getEncryptedDatabasePath (D:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\main\\security\\CompanyStorageService.ts:28:30)\n' +
+    '    at CompanyStorageService.getCompanyDatabasePath (D:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\main\\security\\CompanyStorageService.ts:34:29)\n' +
+    '    at new DatabaseService (D:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\services\\database\\DatabaseService.ts:26:58)\n' +
+    '    at <anonymous> (D:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\services\\database\\DatabaseService.ts:128:26)\n' +
+    '    at Object.<anonymous> (D:\\Epexio Project\\Vyora\\apps\\desktop\\electron\\src\\services\\database\\DatabaseService.ts:128:30)\n' +
+    '    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n' +
+    '    at Object.transformer (D:\\Epexio Project\\Vyora\\node_modules\\.pnpm\\tsx@4.22.3\\node_modules\\tsx\\dist\\register-BOkp8V6j.cjs:9:3176)\n' +
+    '    at Module.load (node:internal/modules/cjs/loader:1533:32)\n' +
+    '    at Module._load (node:internal/modules/cjs/loader:1335:12)\n' +
+    '    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)',
+  errorName: 'Unhandled',
+  processType: 'browser',
+  versions: { app: '@vyora/desktop 1.0.0', os: 'Windows NT 10.0.26200' }
+}
+[2026-08-18 16:17:01.509] [error] Unhandled TypeError: Cannot read properties of undefined (reading 'getPath')
+    at CompanyStorageService.getEncryptedDatabasePath (D:\Epexio Project\Vyora\apps\desktop\electron\src\main\security\CompanyStorageService.ts:28:30)
+    at CompanyStorageService.getCompanyDatabasePath (D:\Epexio Project\Vyora\apps\desktop\electron\src\main\security\CompanyStorageService.ts:34:29)
+    at new DatabaseService (D:\Epexio Project\Vyora\apps\desktop\electron\src\services\database\DatabaseService.ts:26:58)
+    at <anonymous> (D:\Epexio Project\Vyora\apps\desktop\electron\src\services\database\DatabaseService.ts:128:26)
+    at Object.<anonymous> (D:\Epexio Project\Vyora\apps\desktop\electron\src\services\database\DatabaseService.ts:128:30)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object.transformer (D:\Epexio Project\Vyora\node_modules\.pnpm\tsx@4.22.3\node_modules\tsx\dist\register-BOkp8V6j.cjs:9:3176)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)

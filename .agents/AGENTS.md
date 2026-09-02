@@ -1,10 +1,12 @@
 # Project Rules
 
 ## Formatting
+
 - Never execute global formatting commands (e.g. `pnpm format`, `eslint . --fix`).
 - Only format or lint modified files, or use targeted formatting for specific files.
 
 ## Accounting Terminology & Phase Namespaces
+
 1. **Accounting Phases are a separate namespace** from the Legacy / Master Development Blueprint phases.
 2. Never confuse Accounting Phase X with Master Blueprint Phase X. (e.g. Master Blueprint Phase 5 is Sales; Accounting Phase 5 is Customer Default Account Mapping).
 3. Accounting Phase 3 = Internal Transfer Engine.

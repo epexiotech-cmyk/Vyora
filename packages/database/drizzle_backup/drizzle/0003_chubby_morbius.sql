@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `active_financial_year_idx` ON `financial_years` (`company_id`) WHERE "financial_years"."is_active" = 1;
