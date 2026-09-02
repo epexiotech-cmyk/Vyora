@@ -13,6 +13,9 @@ import { z } from 'zod';
 
 import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
+import { FormSelect } from '@/components/forms/FormSelect';
+
+import { BalanceImpactMessage } from '../../../accounting/_components/BalanceImpactMessage';
 
 export type PaymentAccountFormPayload = (CreatePaymentAccountInput | UpdatePaymentAccountInput) & {
   openingBalanceAmount?: number;
@@ -72,6 +75,8 @@ export function PaymentAccountForm({
   });
 
   const accountType = useWatch({ control: methods.control, name: 'accountType' });
+  const openingBalanceAmount = useWatch({ control: methods.control, name: 'openingBalanceAmount' });
+  const openingBalanceType = useWatch({ control: methods.control, name: 'openingBalanceType' });
   const showOpeningBalance = ['BANK', 'CASH', 'UPI', 'POS'].includes(accountType || '');
 
   const handleFormSubmit = (data: PaymentAccountFormPayload) => {
@@ -85,17 +90,11 @@ export function PaymentAccountForm({
     <FormProvider {...methods}>
       <form id={formId} onSubmit={methods.handleSubmit(handleFormSubmit)} className="space-y-4">
         <AppField label="Account Type" name="accountType">
-          <select
-            className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:opacity-50"
-            {...methods.register('accountType')}
+          <FormSelect
+            name="accountType"
             disabled={isEditing}
-          >
-            {PaymentAccountTypeEnum.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+            options={PaymentAccountTypeEnum.map((type) => ({ label: type, value: type }))}
+          />
         </AppField>
 
         <AppField label="Display Name" name="displayName">
@@ -147,19 +146,24 @@ export function PaymentAccountForm({
               </AppField>
 
               <AppField label="Balance Type" name="openingBalanceType">
-                <select
-                  className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:opacity-50"
-                  {...methods.register('openingBalanceType')}
-                >
-                  <option value="Dr">Debit</option>
-                  <option value="Cr">Credit</option>
-                </select>
+                <FormSelect
+                  name="openingBalanceType"
+                  options={[
+                    { label: 'Debit', value: 'Dr' },
+                    { label: 'Credit', value: 'Cr' },
+                  ]}
+                />
               </AppField>
             </div>
 
             <AppField label="Date" name="openingBalanceDate">
               <FormInput name="openingBalanceDate" type="date" />
             </AppField>
+
+            <BalanceImpactMessage
+              amount={Number(openingBalanceAmount) || 0}
+              balanceType={openingBalanceType as 'Dr' | 'Cr' | undefined}
+            />
           </div>
         )}
 

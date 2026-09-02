@@ -8,6 +8,7 @@ const external = [
   'better-sqlite3-multiple-ciphers',
   'keytar',
   'argon2',
+  'pdfmake',
 ];
 
 export default defineConfig({

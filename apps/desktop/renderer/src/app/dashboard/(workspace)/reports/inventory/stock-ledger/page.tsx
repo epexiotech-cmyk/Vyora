@@ -1,13 +1,17 @@
 'use client';
 
 import { StockLedgerDto, StockLedgerRowDto, ProductDto, UnitDto } from '@vyora/types';
+import { ExportFormat, ExportColumn, ExportRecord } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker, DataTable, ColumnDef, TablePagination } from '@/components/shared';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export default function StockLedgerPage() {
   const { context: companyContext } = useCompanyContext();
@@ -24,6 +28,8 @@ export default function StockLedgerPage() {
 
   const [page, setPage] = useState(1);
   const pageSize = 50;
+
+  const { exportData, isExporting } = useExport();
 
   useEffect(() => {
     let mounted = true;
@@ -146,11 +152,62 @@ export default function StockLedgerPage() {
     return data.rows.slice(start, start + pageSize);
   }, [data, page, pageSize]);
 
+  const handleExport = async (format: ExportFormat) => {
+    if (!data || !data.rows || data.rows.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const exportColumns: ExportColumn[] = [
+      { key: 'movementDate', header: 'Date', type: 'date' },
+      { key: 'voucherType', header: 'Voucher Type', type: 'string' },
+      { key: 'voucherNo', header: 'Voucher No', type: 'string' },
+      { key: 'movementType', header: 'Movement Type', type: 'string' },
+      { key: 'qtyIn', header: 'Qty In', type: 'number' },
+      { key: 'qtyOut', header: 'Qty Out', type: 'number' },
+      { key: 'balanceQty', header: 'Balance Qty', type: 'number' },
+      { key: 'rate', header: 'Rate', type: 'currency' },
+      { key: 'remarks', header: 'Remarks', type: 'string' },
+    ];
+
+    const exportRecords: ExportRecord[] = data.rows.map((row) => ({
+      movementDate: new Date(row.movementDate),
+      voucherType: row.voucherType,
+      voucherNo: row.voucherNo,
+      movementType: row.movementType,
+      qtyIn: row.qtyIn > 0 ? row.qtyIn : '',
+      qtyOut: row.qtyOut > 0 ? row.qtyOut : '',
+      balanceQty: row.balanceQty,
+      rate: row.ratePaise ? row.ratePaise / 100 : '',
+      remarks: row.remarks || '',
+    }));
+
+    const product = products.find((p) => p.id === productId);
+    const filename = generateExportFilename('Stock_Ledger', format);
+
+    await exportData(
+      format,
+      filename,
+      exportColumns,
+      exportRecords,
+      {
+        title: 'Stock Ledger',
+        companyName: companyContext?.company?.legalName,
+        subtitle: `Product: ${product?.name || 'Unknown'}\nFrom: ${fromDate || 'Start'} To: ${toDate || 'End'}`,
+      },
+      {
+        'Opening Quantity': data.openingQuantity,
+        'Closing Quantity': data.closingQuantity,
+      },
+    );
+  };
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Stock Ledger"
         description="View detailed stock movements for a specific product"
+        actions={<AppExportDropdown onExport={handleExport} isExporting={isExporting} />}
       />
 
       <div className="bg-muted/20 flex items-end space-x-4 rounded border p-4">

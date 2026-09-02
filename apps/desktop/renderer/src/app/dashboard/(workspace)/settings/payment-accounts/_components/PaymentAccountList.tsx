@@ -1,6 +1,7 @@
 'use client';
 
 import { PaymentAccountDto } from '@vyora/types';
+import { moneyToPaise } from '@vyora/utils';
 import { Plus } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -45,7 +46,7 @@ export function PaymentAccountList() {
       const obData =
         openingBalanceAmount !== undefined && openingBalanceAmount !== null
           ? {
-              amount: openingBalanceAmount,
+              amount: moneyToPaise(openingBalanceAmount),
               type: openingBalanceType || 'Dr',
               date: openingBalanceDate ? new Date(openingBalanceDate) : new Date(),
               notes: formData.notes || undefined,

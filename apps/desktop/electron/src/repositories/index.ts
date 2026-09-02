@@ -13,3 +13,4 @@ export * from './UnitRepository';
 export * from './TaxRepository';
 export * from './DocumentNumberingRepository';
 export * from './PaymentAccountRepository';
+export * from './SettlementRepository';

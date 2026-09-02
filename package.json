@@ -52,5 +52,36 @@
       "better-sqlite3",
       "bcrypt"
     ]
-  }
+  },
+  "description": "��#\u0000 \u0000V\u0000y\u0000o\u0000r\u0000a\u0000 \u0000 \u0000",
+  "main": ".eslintrc.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "dependencies": {
+    "eslint-config-next": "^16.2.6",
+    "eslint-import-resolver-node": "^0.3.10",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-module-utils": "^2.12.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-scope": "^7.2.2",
+    "eslint-visitor-keys": "^3.4.3",
+    "prettier-linter-helpers": "^1.0.1",
+    "typescript-eslint": "^8.60.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epexiotech-cmyk/Vyora.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/epexiotech-cmyk/Vyora/issues"
+  },
+  "homepage": "https://github.com/epexiotech-cmyk/Vyora#readme"
 }

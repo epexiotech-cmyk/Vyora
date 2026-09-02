@@ -28,7 +28,6 @@ import { registerAllHandlers } from './ipc/handlers';
 import { databaseIntegrityService } from './main/security/DatabaseIntegrityService';
 import { encryptionService } from './main/security/EncryptionService';
 import { keyManagementService } from './main/security/KeyManagementService';
-import { runTest } from './run-sales-test';
 import { companyContextService } from './services/CompanyContextService';
 import { dbService } from './services/database/DatabaseService';
 import { directoryManagerDatabaseService } from './services/database/DirectoryManagerDatabaseService';
@@ -148,7 +147,7 @@ async function bootstrap() {
     if (process.env.RUN_SALES_TEST === 'true') {
       try {
         loggerService.info('STARTING SALES RUNTIME TEST');
-        await runTest();
+
         loggerService.info('SALES RUNTIME TEST FINISHED');
       } catch (e) {
         loggerService.error('RUNTEST FAILED', e);

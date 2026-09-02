@@ -7,8 +7,6 @@ import {
   TransactionExecutor,
 } from '../repositories';
 
-import { StockValidationError } from './SalesInvoiceService';
-
 export class InventoryEngine {
   private stockMovementRepo = new StockMovementRepository();
   private balanceRepo = new InventoryBalanceRepository();
@@ -121,18 +119,12 @@ export class InventoryEngine {
     }
 
     const executeLogic = async (innerTx: DbTransaction) => {
-      const { wac, totalQty } = await this.getWacForProduct(
+      const { wac } = await this.getWacForProduct(
         data.companyId,
         data.financialYearId,
         data.productId,
         innerTx,
       );
-
-      if (totalQty < data.quantityOut) {
-        throw new StockValidationError([
-          `Insufficient stock for product ${data.productId}. Available: ${totalQty}, Requested: ${data.quantityOut}`,
-        ]);
-      }
 
       const payload: CreateStockMovementInput = {
         ...data,
@@ -566,18 +558,12 @@ export class InventoryEngine {
       throw new Error('Outbound quantity must be > 0');
     }
 
-    const { wac, totalQty } = this.getWacForProductSync(
+    const { wac } = this.getWacForProductSync(
       data.companyId,
       data.financialYearId,
       data.productId,
       tx,
     );
-
-    if (totalQty < data.quantityOut) {
-      throw new StockValidationError([
-        `Insufficient stock for product ${data.productId}. Available: ${totalQty}, Requested: ${data.quantityOut}`,
-      ]);
-    }
 
     const payload: CreateStockMovementInput = {
       ...data,

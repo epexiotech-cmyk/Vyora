@@ -184,7 +184,7 @@ export class PaymentAccountOpeningBalanceService {
   public reverseOpeningBalance(
     paymentAccountId: string,
     providedTx?: DbTransaction,
-  ): { reversalVoucherId: string } {
+  ): { cancelledVoucherId: string } {
     const execute = (tx: DbTransaction) => {
       const companyId = companyContextService.getActiveCompany();
       if (!companyId) throw new Error('No active company found');
@@ -216,38 +216,9 @@ export class PaymentAccountOpeningBalanceService {
         throw new Error('No active opening balance voucher found to reverse.');
       }
 
-      const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
-        companyId,
-        DocumentType.JOURNAL_VOUCHER,
-        fy.id,
-        tx,
-      );
+      journalRepository.cancelVoucher(originalVoucher.id, tx);
 
-      const reversalVoucher: InsertVoucher = {
-        id: randomUUID(),
-        companyId,
-        financialYearId: fy.id,
-        voucherType: 'Journal',
-        voucherNumber: generatedVoucherNumber,
-        voucherDate: new Date(),
-        sourceModule: 'PaymentAccountOpeningBalanceService',
-        referenceType: 'PAYMENT_ACCOUNT_OPENING',
-        referenceId: originalVoucher.id,
-        narration: `Reversal of Opening Balance ${originalVoucher.voucherNumber}`,
-        isCancelled: false,
-        isFrozen: false,
-        syncVersion: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const createdReversal = journalRepository.cancelVoucher(
-        originalVoucher.id,
-        reversalVoucher,
-        tx,
-      );
-
-      return { reversalVoucherId: createdReversal.id };
+      return { cancelledVoucherId: originalVoucher.id };
     };
 
     return providedTx ? execute(providedTx) : dbService.getDb().transaction(execute);

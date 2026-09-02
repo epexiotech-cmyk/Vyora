@@ -16,6 +16,7 @@ export interface AppModalProps {
   isLoading?: boolean;
   hideActions?: boolean;
   className?: string;
+  modalClassName?: string;
 }
 
 export function AppModal({
@@ -30,12 +31,18 @@ export function AppModal({
   isLoading = false,
   hideActions = false,
   className,
+  modalClassName,
 }: AppModalProps) {
   if (!isOpen) return null;
 
   return (
     <div className="bg-background/80 fixed inset-0 z-50 backdrop-blur-sm">
-      <div className="bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border p-6 shadow-lg sm:rounded-lg">
+      <div
+        className={cn(
+          'bg-background fixed top-[50%] left-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border p-6 shadow-lg sm:rounded-lg',
+          modalClassName || 'max-w-lg',
+        )}
+      >
         <div className="flex flex-col space-y-1.5 text-center sm:text-left">
           <div className="flex items-center justify-between">
             <h2 className="text-lg leading-none font-semibold tracking-tight">{title}</h2>

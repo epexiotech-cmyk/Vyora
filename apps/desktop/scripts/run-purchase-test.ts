@@ -214,6 +214,7 @@ async function runTest() {
   let purchaseId: string;
   try {
     purchaseId = await purchaseService.create({
+      documentType: 'PURCHASE',
       financialYearId,
       supplierId,
       isReverseCharge: false,

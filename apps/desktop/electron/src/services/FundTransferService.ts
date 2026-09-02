@@ -127,7 +127,7 @@ export class FundTransferService {
   public async reverseTransfer(
     fundTransferId: string,
     providedTx?: DbTransaction,
-  ): Promise<{ reversalVoucherId: string }> {
+  ): Promise<{ cancelledVoucherId: string }> {
     const execute = async (tx: DbTransaction) => {
       const companyId = companyContextService.getActiveCompany();
       if (!companyId) throw new Error('No active company context');

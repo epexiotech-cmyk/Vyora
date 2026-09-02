@@ -42,6 +42,7 @@ function mapToDto(entity: Customer): CustomerProfileDto {
     creditDays: entity.creditDays,
     defaultPaymentAccountId: entity.defaultPaymentAccountId,
     defaultQrAccountId: entity.defaultQrAccountId,
+    defaultSignatureId: entity.defaultSignatureId,
     notes: entity.notes,
     isActive: entity.isActive,
     syncVersion: entity.syncVersion,

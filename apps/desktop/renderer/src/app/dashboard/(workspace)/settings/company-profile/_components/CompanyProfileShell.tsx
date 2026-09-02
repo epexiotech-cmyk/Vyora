@@ -18,6 +18,7 @@ import * as React from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 
 import { CompanyLogoUpload } from './CompanyLogoUpload';
+import { CompanySignatureUpload } from './CompanySignatureUpload';
 
 import { AppField } from '@/components/forms/AppField';
 import { FormCheckbox } from '@/components/forms/FormCheckbox';
@@ -73,6 +74,7 @@ export function CompanyProfileShell() {
   const [companyId, setCompanyId] = React.useState<string | null>(null);
   const [isTradeNameSameAsLegalName, setIsTradeNameSameAsLegalName] = React.useState(false);
   const [currencies, setCurrencies] = React.useState<{ value: string; label: string }[]>([]);
+  const [upiOptions, setUpiOptions] = React.useState<{ value: string; label: string }[]>([]);
   const { refreshContext } = useCompanyContext();
   const router = useRouter();
 
@@ -194,6 +196,26 @@ export function CompanyProfileShell() {
             }
           } catch (e) {
             console.error('Failed to load currencies', e);
+          }
+
+          // Load UPI accounts
+          try {
+            const upiAccounts = await window.vyora.paymentAccounts.search({
+              companyId: activeRes.data,
+              accountType: 'UPI',
+              isActive: true,
+            });
+            setUpiOptions([
+              { value: '', label: 'Select UPI ID' },
+              ...upiAccounts
+                .filter((a) => a.upiId)
+                .map((a) => ({
+                  value: a.upiId!,
+                  label: `${a.upiId!} (${a.displayName})`,
+                })),
+            ]);
+          } catch (e) {
+            console.error('Failed to load UPI accounts', e);
           }
 
           const profileRes = await window.vyora.company.getProfile(activeRes.data);
@@ -348,6 +370,7 @@ export function CompanyProfileShell() {
             id="company-profile-form"
           >
             <CompanyLogoUpload />
+            <CompanySignatureUpload />
 
             {/* Business Information */}
             <AppCard className="p-6 shadow-sm">
@@ -540,7 +563,7 @@ export function CompanyProfileShell() {
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <AppField name="defaultUpiId" label="Default UPI ID">
-                  <FormInput name="defaultUpiId" type="text" placeholder="company@bank" />
+                  <FormSelect name="defaultUpiId" options={upiOptions} />
                   <p className="text-muted-foreground mt-1 text-xs">
                     This UPI ID will be used to generate the QR code on your invoices.
                   </p>

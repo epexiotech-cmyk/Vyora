@@ -17,6 +17,7 @@ import { generalLedgerService } from '../../services/GeneralLedgerService';
 import { inventoryReportService } from '../../services/InventoryReportService';
 import { ledgerStatementService } from '../../services/LedgerStatementService';
 import { outstandingReportService } from '../../services/OutstandingReportService';
+import { posBookService } from '../../services/PosBookService';
 import { profitLossService } from '../../services/ProfitLossService';
 import { transferRegisterService } from '../../services/TransferRegisterService';
 import { trialBalanceService } from '../../services/TrialBalanceService';
@@ -215,6 +216,37 @@ export function registerReportsHandlers() {
       }
 
       return await upiBookService.getUpiBook({
+        companyId,
+        financialYearId: financialYear.id,
+        ledgerId: args.ledgerId,
+        startDate: args.startDate,
+        endDate: args.endDate,
+        voucherType: args.voucherType as import('@vyora/database').VoucherType | undefined,
+        searchQuery: args.searchQuery,
+      });
+    },
+  );
+
+  ipcMain.handle(
+    'reports:getPosBook',
+    async (
+      _event,
+      args: {
+        ledgerId: string;
+        startDate?: Date;
+        endDate?: Date;
+        voucherType?: string;
+        searchQuery?: string;
+      },
+    ) => {
+      const companyId = companyContextService.getActiveCompany();
+      const financialYear = financialYearContextService.getActiveFinancialYear();
+
+      if (!companyId || !financialYear) {
+        throw new Error('Cannot generate POS Book: Missing company or financial year context');
+      }
+
+      return await posBookService.getPosBook({
         companyId,
         financialYearId: financialYear.id,
         ledgerId: args.ledgerId,

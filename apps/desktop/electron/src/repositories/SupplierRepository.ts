@@ -41,6 +41,7 @@ function mapToDto(entity: Supplier): SupplierProfileDto {
     creditDays: entity.creditDays,
     notes: entity.notes,
     isActive: entity.isActive,
+    isSystem: entity.isSystem,
     syncVersion: entity.syncVersion,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
@@ -143,6 +144,26 @@ export class SupplierRepository extends BaseRepository {
     return mapToDto(result as Supplier);
   }
 
+  public getSystemSupplierSync(
+    companyId: string,
+    tx: TransactionExecutor,
+  ): SupplierProfileDto | null {
+    const result = tx
+      .select()
+      .from(suppliers)
+      .where(
+        and(
+          eq(suppliers.companyId, companyId),
+          eq(suppliers.isSystem, true),
+          isNull(suppliers.deletedAt),
+        ),
+      )
+      .get();
+
+    if (!result) return null;
+    return mapToDto(result as Supplier);
+  }
+
   public getNextSupplierCodeSync(companyId: string, tx: TransactionExecutor): string {
     return documentNumberingService.generateNextNumberSync(
       companyId,
@@ -166,6 +187,7 @@ export class SupplierRepository extends BaseRepository {
       id,
       companyId,
       isActive: data.isActive ?? true,
+      isSystem: data.isSystem ?? false,
       syncVersion: 1,
       createdAt: now,
       updatedAt: now,
@@ -193,6 +215,7 @@ export class SupplierRepository extends BaseRepository {
       id,
       companyId,
       isActive: data.isActive ?? true,
+      isSystem: data.isSystem ?? false,
       syncVersion: 1,
       createdAt: now,
       updatedAt: now,

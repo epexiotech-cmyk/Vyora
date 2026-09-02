@@ -5,7 +5,9 @@ import { CompanyRepository, SettingsRepository } from '../repositories';
 
 import { dbService } from './database/DatabaseService';
 import { paymentAccountBootstrapService } from './database/PaymentAccountBootstrapService';
+import { systemExpensePresetSeeder } from './database/SystemExpensePresetSeeder';
 import { systemLedgerSeeder } from './database/SystemLedgerSeeder';
+import { systemSupplierSeeder } from './database/SystemSupplierSeeder';
 import { systemTaxSeeder } from './database/SystemTaxSeeder';
 import { systemUnitSeeder } from './database/SystemUnitSeeder';
 import { financialYearService } from './FinancialYearService';
@@ -106,6 +108,8 @@ export class CompanyBootstrapService {
 
       systemUnitSeeder.seedSystemUnits(company.id, tx);
       systemTaxSeeder.seedSystemTaxes(company.id, tx);
+      systemExpensePresetSeeder.seedExpensePresets(company.id, tx);
+      systemSupplierSeeder.getOrCreateMiscellaneousSupplierSync(company.id, tx);
 
       return company.id;
     });

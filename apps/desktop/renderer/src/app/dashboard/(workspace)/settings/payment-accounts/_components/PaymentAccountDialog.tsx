@@ -1,4 +1,5 @@
 import { PaymentAccountDto, VoucherDetailDto } from '@vyora/types';
+import { paiseToMoney } from '@vyora/utils';
 import * as React from 'react';
 
 import { PaymentAccountForm, PaymentAccountFormPayload } from './PaymentAccountForm';
@@ -42,8 +43,9 @@ export function PaymentAccountDialog({
           if (!ignore && res) {
             const accountEntry = res.entries?.find((e) => e.ledgerId === initialData.id);
             const type = (accountEntry?.debitAmount || 0) > 0 ? 'Dr' : 'Cr';
-            const amount =
+            const rawAmount =
               accountEntry?.debitAmount || accountEntry?.creditAmount || res.totalDebit || 0;
+            const amount = paiseToMoney(rawAmount);
 
             setInitialOpeningBalance({
               amount,

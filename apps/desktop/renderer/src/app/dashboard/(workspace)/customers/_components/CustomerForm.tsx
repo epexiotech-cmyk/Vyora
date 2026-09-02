@@ -35,6 +35,7 @@ import { FormInput } from '@/components/forms/FormInput';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { customerSchema, CustomerFormValues } from '@/lib/validations/customerSchema';
 
 interface CustomerFormProps {
@@ -53,19 +54,33 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
   const [customerType, setCustomerType] = React.useState<'INDIVIDUAL' | 'ENTITY'>('ENTITY');
 
   const [paymentAccountsList, setPaymentAccountsList] = React.useState<PaymentAccountDto[]>([]);
+  const { context } = useCompanyContext();
+  const signaturesList = React.useMemo(
+    () => context?.company?.signatures || [],
+    [context?.company?.signatures],
+  );
+
+  const bankAccounts = React.useMemo(
+    () => paymentAccountsList.filter((acc) => acc.accountType === 'BANK'),
+    [paymentAccountsList],
+  );
+  const upiAccounts = React.useMemo(
+    () => paymentAccountsList.filter((acc) => acc.accountType === 'UPI' || acc.qrEnabled),
+    [paymentAccountsList],
+  );
 
   React.useEffect(() => {
-    const fetchPaymentAccounts = async () => {
+    const fetchData = async () => {
       try {
         if (window.vyora?.paymentAccounts) {
           const res = await window.vyora.paymentAccounts.search({ isActive: true });
           setPaymentAccountsList(res);
         }
       } catch (err) {
-        console.warn('Failed to load payment accounts', err);
+        console.warn('Failed to load form dependencies', err);
       }
     };
-    fetchPaymentAccounts();
+    fetchData();
   }, []);
 
   const defaultData = initialData
@@ -93,6 +108,9 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
         openingType: null,
         creditLimit: 0,
         creditDays: 0,
+        defaultPaymentAccountId: null,
+        defaultQrAccountId: null,
+        defaultSignatureId: null,
         notes: '',
         isActive: true,
         shippingAddresses: [],
@@ -103,6 +121,24 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
     resolver: zodResolver(customerSchema) as unknown as Resolver<CustomerFormValues>,
     defaultValues: defaultData as unknown as CustomerFormValues,
   });
+
+  React.useEffect(() => {
+    if (bankAccounts.length === 1 && !methods.getValues('defaultPaymentAccountId')) {
+      methods.setValue('defaultPaymentAccountId', bankAccounts[0].id, { shouldDirty: true });
+    }
+  }, [bankAccounts, methods]);
+
+  React.useEffect(() => {
+    if (upiAccounts.length === 1 && !methods.getValues('defaultQrAccountId')) {
+      methods.setValue('defaultQrAccountId', upiAccounts[0].id, { shouldDirty: true });
+    }
+  }, [upiAccounts, methods]);
+
+  React.useEffect(() => {
+    if (signaturesList.length === 1 && !methods.getValues('defaultSignatureId')) {
+      methods.setValue('defaultSignatureId', signaturesList[0].id, { shouldDirty: true });
+    }
+  }, [signaturesList, methods]);
 
   const {
     fields: shippingFields,
@@ -118,6 +154,14 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
   const pincodeValue = useWatch({ control: methods.control, name: 'pincode' });
   const openingBalanceValue = useWatch({ control: methods.control, name: 'openingBalance' });
   const registrationType = useWatch({ control: methods.control, name: 'registrationType' });
+
+  // Watch for dynamic selects
+  const defaultPaymentAccountId = useWatch({
+    control: methods.control,
+    name: 'defaultPaymentAccountId',
+  });
+  const defaultQrAccountId = useWatch({ control: methods.control, name: 'defaultQrAccountId' });
+  const defaultSignatureId = useWatch({ control: methods.control, name: 'defaultSignatureId' });
   const hasValidGstin = isValidGstin(gstinValue);
 
   // Handle Opening Type disabled state
@@ -560,34 +604,48 @@ export function CustomerForm({ initialData, isEditMode = false }: CustomerFormPr
                   <FormInput name="creditDays" type="number" placeholder="0" />
                 </AppField>
               </div>
-              {/* Payment Defaults */}
+              {/* Invoice Defaults */}
               <div className="mt-6 border-t pt-6">
-                <h4 className="text-foreground mb-4 text-sm font-medium">
-                  Default Account Mapping (Phase 5)
-                </h4>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <h4 className="text-foreground mb-4 text-sm font-medium">Invoice Defaults</h4>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <AppField name="defaultPaymentAccountId" label="Default Payment Account">
                     <select
                       {...methods.register('defaultPaymentAccountId')}
+                      value={defaultPaymentAccountId || ''}
                       className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">-- None --</option>
-                      {paymentAccountsList.map((acc) => (
+                      {bankAccounts.map((acc) => (
                         <option key={acc.id} value={acc.id}>
                           {acc.displayName} - {acc.accountType}
                         </option>
                       ))}
                     </select>
                   </AppField>
-                  <AppField name="defaultQrAccountId" label="Default QR Account">
+                  <AppField name="defaultQrAccountId" label="Default UPI ID">
                     <select
                       {...methods.register('defaultQrAccountId')}
+                      value={defaultQrAccountId || ''}
                       className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">-- None --</option>
-                      {paymentAccountsList.map((acc) => (
+                      {upiAccounts.map((acc) => (
                         <option key={acc.id} value={acc.id}>
                           {acc.displayName} - {acc.accountType}
+                        </option>
+                      ))}
+                    </select>
+                  </AppField>
+                  <AppField name="defaultSignatureId" label="Default Signature">
+                    <select
+                      {...methods.register('defaultSignatureId')}
+                      value={defaultSignatureId || ''}
+                      className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">-- None --</option>
+                      {signaturesList.map((sig, index) => (
+                        <option key={sig.id} value={sig.id}>
+                          Signature {index + 1} - {sig.designation}
                         </option>
                       ))}
                     </select>

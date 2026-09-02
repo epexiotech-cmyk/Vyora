@@ -9,17 +9,20 @@ function cn(...inputs: ClassValue[]) {
 
 export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
+  valueAsNumber?: boolean;
 }
 
 export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>((props, ref) => {
-  const { className, type, name, ...rest } = props;
+  const { className, type, name, valueAsNumber, ...rest } = props;
   const {
     register,
     formState: { errors },
   } = useFormContext();
   const hasError = !!errors[name];
 
-  const registration = register(name);
+  const registration = register(name, {
+    setValueAs: valueAsNumber ? (v: string) => (v === '' ? undefined : Number(v)) : undefined,
+  });
 
   return (
     <input

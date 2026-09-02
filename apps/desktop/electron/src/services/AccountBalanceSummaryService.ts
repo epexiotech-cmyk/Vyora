@@ -56,6 +56,7 @@ export class AccountBalanceSummaryService {
         accountName: account.displayName,
         accountType: account.accountType,
         ledgerId: account.ledgerId,
+        isDefault: account.isDefault,
         openingBalance: {
           amount: openingAmount,
           type: dtoOpeningType,

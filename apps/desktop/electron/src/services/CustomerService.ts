@@ -6,7 +6,7 @@ import {
   CustomerListDto,
 } from '@vyora/types';
 
-import { CustomerRepository, PaymentAccountRepository } from '../repositories';
+import { CustomerRepository, PaymentAccountRepository, companyRepository } from '../repositories';
 
 import { companyContextService } from './CompanyContextService';
 import { partyLedgerIntegrationService } from './PartyLedgerIntegrationService';
@@ -32,6 +32,17 @@ export class CustomerService {
     }
   }
 
+  private async validateSignature(signatureId: string | null | undefined, companyId: string) {
+    if (!signatureId) return;
+
+    const signatures = await companyRepository.getSignatures(companyId);
+    const signature = signatures.find((s) => s.id === signatureId);
+
+    if (!signature) {
+      throw new Error(`The provided defaultSignatureId does not exist or belong to this company.`);
+    }
+  }
+
   public async searchCustomers(options: SearchCustomersOptions): Promise<CustomerListDto> {
     const companyId = companyContextService.getActiveCompany();
     if (!companyId) throw new Error('No active company context found');
@@ -54,6 +65,7 @@ export class CustomerService {
       'defaultPaymentAccountId',
     );
     await this.validatePaymentAccount(data.defaultQrAccountId, companyId, 'defaultQrAccountId');
+    await this.validateSignature(data.defaultSignatureId, companyId);
 
     return this.customerRepo.transaction((tx) => {
       const customerCode = this.customerRepo.getNextCustomerCodeSync(companyId, tx);
@@ -83,6 +95,7 @@ export class CustomerService {
       'defaultPaymentAccountId',
     );
     await this.validatePaymentAccount(data.defaultQrAccountId, companyId, 'defaultQrAccountId');
+    await this.validateSignature(data.defaultSignatureId, companyId);
 
     return await this.customerRepo.update(id, companyId, data);
   }

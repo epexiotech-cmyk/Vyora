@@ -91,6 +91,25 @@ export class FileSystemService {
       fs.unlinkSync(targetPath);
     }
   }
+
+  public getCompanySignaturePath(companyId: string, filename: string): string {
+    const dir = this.getCompanyLogoDirectory(companyId);
+    const safeFilename = path.basename(filename);
+    return path.join(dir, safeFilename);
+  }
+
+  public saveCompanySignature(companyId: string, filename: string, buffer: Buffer): string {
+    const destPath = this.getCompanySignaturePath(companyId, filename);
+    fs.writeFileSync(destPath, buffer);
+    return destPath;
+  }
+
+  public deleteCompanySignature(companyId: string, filename: string): void {
+    const targetPath = this.getCompanySignaturePath(companyId, filename);
+    if (fs.existsSync(targetPath)) {
+      fs.unlinkSync(targetPath);
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();

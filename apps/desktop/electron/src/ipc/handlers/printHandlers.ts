@@ -42,6 +42,19 @@ export function registerPrintHandlers() {
     },
   );
 
+  ipcMain.handle(
+    'print:saveTempPdfAndShare',
+    async (
+      _,
+      templateName: string,
+      payload: PrintPayload<unknown>,
+      fileName: string,
+      options?: PrintToPDFOptions,
+    ) => {
+      return await printService.saveTempPdfAndShare(templateName, payload, fileName, options);
+    },
+  );
+
   ipcMain.handle('print:exportPdf', async (_, html: string, options?: PrintToPDFOptions) => {
     return await printService.exportPdf(html, options);
   });

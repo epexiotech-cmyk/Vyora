@@ -4,6 +4,7 @@ import {
   SalesInvoiceDto,
   ListSalesInvoicesOptions,
   UpdateSalesInvoiceInput,
+  RecordPaymentInput,
 } from '@vyora/types';
 import { ipcMain } from 'electron';
 
@@ -71,6 +72,22 @@ export function registerSalesInvoiceHandlers() {
   );
 
   ipcMain.handle(
+    'sales:invoice:recordPayment',
+    async (
+      _event,
+      invoiceId: string,
+      payload: RecordPaymentInput,
+    ): Promise<ApiResponse<{ settlementId: string }>> => {
+      try {
+        const result = await salesInvoiceService.recordPayment(invoiceId, payload);
+        return { success: true, data: result };
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
     'sales:invoice:getById',
     async (_event, invoiceId: string): Promise<ApiResponse<SalesInvoiceDto>> => {
       try {
@@ -84,10 +101,16 @@ export function registerSalesInvoiceHandlers() {
 
   ipcMain.handle(
     'sales:invoice:list',
-    async (_event, options?: ListSalesInvoicesOptions): Promise<ApiResponse<SalesInvoiceDto[]>> => {
+    async (
+      _event,
+      options?: ListSalesInvoicesOptions,
+    ): Promise<ApiResponse<import('@vyora/types').SalesInvoiceListDto>> => {
       try {
         const result = await salesInvoiceService.listInvoices(options);
-        return { success: true, data: result as unknown as SalesInvoiceDto[] };
+        return {
+          success: true,
+          data: result as unknown as import('@vyora/types').SalesInvoiceListDto,
+        };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }

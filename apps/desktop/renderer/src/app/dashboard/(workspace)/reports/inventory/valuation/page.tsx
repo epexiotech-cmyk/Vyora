@@ -1,13 +1,17 @@
 'use client';
 
 import { StockSummaryDto, StockSummaryRowDto } from '@vyora/types';
+import { ExportFormat, ExportColumn, ExportRecord } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppDatePicker, DataTable, ColumnDef, TablePagination } from '@/components/shared';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export default function InventoryValuationPage() {
   const { context: companyContext } = useCompanyContext();
@@ -19,6 +23,8 @@ export default function InventoryValuationPage() {
 
   const [page, setPage] = useState(1);
   const pageSize = 50;
+
+  const { exportData, isExporting } = useExport();
 
   useEffect(() => {
     let mounted = true;
@@ -94,13 +100,56 @@ export default function InventoryValuationPage() {
     if (!data?.rows) return [];
     const start = (page - 1) * pageSize;
     return data.rows.slice(start, start + pageSize);
-  }, [data, page]);
+  }, [data, page, pageSize]);
+
+  const handleExport = async (format: ExportFormat) => {
+    if (!data || !data.rows || data.rows.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const exportColumns: ExportColumn[] = [
+      { key: 'productName', header: 'Product', type: 'string' },
+      { key: 'sku', header: 'SKU', type: 'string' },
+      { key: 'unitShortName', header: 'Unit', type: 'string' },
+      { key: 'closingQuantity', header: 'Closing Quantity', type: 'number' },
+      { key: 'wac', header: 'Weighted Average Cost', type: 'currency' },
+      { key: 'totalValue', header: 'Inventory Value', type: 'currency' },
+    ];
+
+    const exportRecords: ExportRecord[] = data.rows.map((row) => ({
+      productName: row.productName,
+      sku: row.sku || '',
+      unitShortName: row.unitShortName,
+      closingQuantity: row.closingQuantity,
+      wac: row.wacPaise ? row.wacPaise / 100 : 0,
+      totalValue: row.totalValuePaise ? row.totalValuePaise / 100 : 0,
+    }));
+
+    const filename = generateExportFilename('Inventory_Valuation', format);
+
+    await exportData(
+      format,
+      filename,
+      exportColumns,
+      exportRecords,
+      {
+        title: 'Inventory Valuation',
+        subtitle: asOfDate ? `As of: ${asOfDate}` : undefined,
+        companyName: companyContext?.company?.legalName,
+      },
+      {
+        'Grand Total Inventory Value': data.totalValuePaise ? data.totalValuePaise / 100 : 0,
+      },
+    );
+  };
 
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Inventory Valuation"
         description="View the weighted average cost valuation of current inventory."
+        actions={<AppExportDropdown onExport={handleExport} isExporting={isExporting} />}
       />
 
       <div className="bg-muted/20 flex items-end space-x-4 rounded border p-4">

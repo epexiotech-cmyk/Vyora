@@ -27,6 +27,7 @@ export * from './documentNumberingHandlers';
 export * from './paymentAccountHandlers';
 export * from './fundTransferHandlers';
 export * from './developerDatabaseHandlers';
+export * from './expensePresetHandlers';
 export * from './exportHandlers';
 
 import { DeveloperFeatures } from '../../main/DeveloperFeatures';
@@ -45,6 +46,7 @@ import { registerDeveloperDatabaseHandlers } from './developerDatabaseHandlers';
 import { registerDeveloperFeaturesHandlers } from './developerFeaturesHandlers';
 import { registerDevHandlers } from './devHandlers';
 import { registerDocumentNumberingHandlers } from './documentNumberingHandlers';
+import { registerExpensePresetHandlers } from './expensePresetHandlers';
 import { registerExportHandlers } from './exportHandlers';
 import { registerFinancialYearHandlers } from './financialYearHandlers';
 import { registerFundTransferHandlers } from './fundTransferHandlers';
@@ -99,6 +101,7 @@ export function registerAllHandlers() {
   registerPaymentAccountHandlers();
   registerFundTransferHandlers();
   registerExportHandlers();
+  registerExpensePresetHandlers();
 
   // Register unconditional developer features check
   registerDeveloperFeaturesHandlers();

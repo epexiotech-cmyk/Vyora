@@ -22,8 +22,13 @@ export class PurchaseRepository extends BaseRepository {
       const linesWithHeaderId = lines.map((line) => ({
         ...line,
         purchaseInvoiceId: payload.id,
+        unitId: line.unitId ?? null,
+        productId: line.productId ?? null,
+        expensePresetId: line.expensePresetId ?? null,
       }));
-      await executor.insert(purchase_invoice_items).values(linesWithHeaderId);
+      await executor
+        .insert(purchase_invoice_items)
+        .values(linesWithHeaderId as (typeof purchase_invoice_items.$inferInsert)[]);
     }
 
     return payload.id;
@@ -85,18 +90,26 @@ export class PurchaseRepository extends BaseRepository {
       for (const line of lines) {
         if (line.id && existingLineIds.includes(line.id)) {
           // Update
+          const { unitId, productId, expensePresetId, ...restLine } = line;
           await executor
             .update(purchase_invoice_items)
             .set({
-              ...line,
+              ...restLine,
+              unitId: unitId ?? null,
+              productId: productId ?? null,
+              expensePresetId: expensePresetId ?? null,
               updatedAt: new Date(),
               syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
             })
             .where(eq(purchase_invoice_items.id, line.id));
         } else {
           // Insert new line
+          const { unitId, productId, expensePresetId, ...restLine } = line;
           const newLine = {
-            ...line,
+            ...restLine,
+            unitId: unitId ?? null,
+            productId: productId ?? null,
+            expensePresetId: expensePresetId ?? null,
             id: randomUUID(),
             purchaseInvoiceId: id,
             createdAt: new Date(),
@@ -156,13 +169,14 @@ export class PurchaseRepository extends BaseRepository {
     companyId: string,
     options: SearchPurchasesOptions,
   ): Promise<PurchaseListDto> {
-    const { query, supplierId, status, isActive, limit = 20, offset = 0 } = options;
+    const { query, documentType, supplierId, status, isActive, limit = 20, offset = 0 } = options;
 
     const conditions = [
       eq(purchase_invoices.companyId, companyId),
       isNull(purchase_invoices.deletedAt),
     ];
 
+    if (documentType) conditions.push(eq(purchase_invoices.documentType, documentType));
     if (supplierId) conditions.push(eq(purchase_invoices.supplierId, supplierId));
     if (status) conditions.push(eq(purchase_invoices.status, status));
     if (isActive !== undefined) conditions.push(eq(purchase_invoices.isActive, isActive));
@@ -255,8 +269,13 @@ export class PurchaseRepository extends BaseRepository {
       const linesWithHeaderId = lines.map((line) => ({
         ...line,
         purchaseInvoiceId: payload.id,
+        unitId: line.unitId ?? null,
+        productId: line.productId ?? null,
+        expensePresetId: line.expensePresetId ?? null,
       }));
-      tx.insert(purchase_invoice_items).values(linesWithHeaderId).run();
+      tx.insert(purchase_invoice_items)
+        .values(linesWithHeaderId as (typeof purchase_invoice_items.$inferInsert)[])
+        .run();
     }
 
     return payload.id;
@@ -319,10 +338,15 @@ export class PurchaseRepository extends BaseRepository {
 
       for (const line of lines) {
         if (line.id && existingLineIds.includes(line.id)) {
+          // Update
+          const { unitId, productId, expensePresetId, ...restLine } = line;
           executor
             .update(purchase_invoice_items)
             .set({
-              ...line,
+              ...restLine,
+              unitId: unitId ?? null,
+              productId: productId ?? null,
+              expensePresetId: expensePresetId ?? null,
               updatedAt: new Date(),
               syncVersion: sql`${purchase_invoice_items.syncVersion} + 1`,
             })

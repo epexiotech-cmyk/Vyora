@@ -63,12 +63,26 @@ export function usePrintPreview(
     [templateId, payloadStr],
   );
 
+  const saveTempPdfAndShare = useCallback(
+    async (fileName: string, options?: PrintToPDFOptions) => {
+      if (!payloadStr) throw new Error('No payload provided');
+      return await window.vyora.print.saveTempPdfAndShare(
+        templateId,
+        JSON.parse(payloadStr),
+        fileName,
+        options,
+      );
+    },
+    [templateId, payloadStr],
+  );
+
   return {
     html,
     isLoading,
     error,
-    reload,
     print,
     printToPdf,
+    saveTempPdfAndShare,
+    reload,
   };
 }

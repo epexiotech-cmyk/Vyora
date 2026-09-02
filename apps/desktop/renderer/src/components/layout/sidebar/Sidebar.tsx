@@ -23,6 +23,9 @@ import {
   Building,
   Wrench,
   Database,
+  Wallet,
+  Banknote,
+  ReceiptText,
 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
@@ -83,6 +86,7 @@ export function Sidebar() {
         <SidebarGroup label="Operations">
           <SidebarItem icon={ShoppingCart} label="Sales" href="/dashboard/sales" />
           <SidebarItem icon={Package} label="Purchases" href="/dashboard/purchases" />
+          <SidebarItem icon={Receipt} label="Expenses" href="/dashboard/expenses" />
         </SidebarGroup>
 
         <SidebarGroup label="Inventory">
@@ -96,6 +100,30 @@ export function Sidebar() {
           activeMatches={['/dashboard/accounting']}
         >
           <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/dashboard/accounting" />
+          <SidebarAccordion
+            icon={Wallet}
+            label="Accounts & Transfers"
+            href="/dashboard/accounting/account-balance-summary"
+            activeMatches={[
+              '/dashboard/accounting/account-balance-summary',
+              '/dashboard/accounting/transfer-register',
+              '/dashboard/payments',
+              '/dashboard/receipts',
+            ]}
+          >
+            <SidebarItem icon={Banknote} label="Payments" href="/dashboard/payments" />
+            <SidebarItem icon={ReceiptText} label="Receipts" href="/dashboard/receipts" />
+            <SidebarItem
+              icon={ListTree}
+              label="Transfer Register"
+              href="/dashboard/accounting/transfer-register"
+            />
+            <SidebarItem
+              icon={BarChart3}
+              label="Account Balance Summary"
+              href="/dashboard/accounting/account-balance-summary"
+            />
+          </SidebarAccordion>
           <SidebarItem
             icon={ListTree}
             label="Chart of Accounts"
@@ -125,19 +153,6 @@ export function Sidebar() {
             icon={Building}
             label="Balance Sheet"
             href="/dashboard/accounting/balance-sheet"
-          />
-          <SidebarItem icon={FileText} label="Bank Book" href="/dashboard/accounting/bank-book" />
-          <SidebarItem icon={FileText} label="Cash Book" href="/dashboard/accounting/cash-book" />
-          <SidebarItem icon={FileText} label="UPI Book" href="/dashboard/accounting/upi-book" />
-          <SidebarItem
-            icon={ListTree}
-            label="Transfer Register"
-            href="/dashboard/accounting/transfer-register"
-          />
-          <SidebarItem
-            icon={BarChart3}
-            label="Account Balance Summary"
-            href="/dashboard/accounting/account-balance-summary"
           />
         </SidebarAccordion>
 
@@ -178,6 +193,11 @@ export function Sidebar() {
             icon={Settings}
             label="Payment Accounts"
             href="/dashboard/settings/payment-accounts"
+          />
+          <SidebarItem
+            icon={Settings}
+            label="Expense Types"
+            href="/dashboard/settings/expense-types"
           />
         </SidebarAccordion>
 

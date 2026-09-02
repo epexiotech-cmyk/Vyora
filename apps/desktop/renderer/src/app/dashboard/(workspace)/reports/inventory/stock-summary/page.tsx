@@ -1,13 +1,17 @@
 'use client';
 
 import { StockSummaryDto, StockSummaryRowDto } from '@vyora/types';
+import { ExportFormat, ExportColumn, ExportRecord } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 import { useEffect, useState, useMemo } from 'react';
 
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
+import { AppExportDropdown } from '@/components/shared/AppExportDropdown';
 import { DataTable, ColumnDef } from '@/components/shared/table/DataTable';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { useExport } from '@/hooks/useExport';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 export default function StockSummaryPage() {
   const { context: companyContext } = useCompanyContext();
@@ -16,6 +20,7 @@ export default function StockSummaryPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 50;
+  const { exportData, isExporting } = useExport();
 
   useEffect(() => {
     async function load() {
@@ -72,6 +77,47 @@ export default function StockSummaryPage() {
     return data.rows.slice(start, start + pageSize);
   }, [data, page]);
 
+  const handleExport = async (format: ExportFormat) => {
+    if (!data || !data.rows || data.rows.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const exportColumns: ExportColumn[] = [
+      { key: 'productName', header: 'Product', type: 'string' },
+      { key: 'sku', header: 'SKU', type: 'string' },
+      { key: 'unitShortName', header: 'Unit', type: 'string' },
+      { key: 'closingQuantity', header: 'Closing Quantity', type: 'number' },
+      { key: 'wac', header: 'WAC', type: 'currency' },
+      { key: 'totalValue', header: 'Inventory Value', type: 'currency' },
+    ];
+
+    const exportRecords: ExportRecord[] = data.rows.map((row) => ({
+      productName: row.productName,
+      sku: row.sku || '',
+      unitShortName: row.unitShortName,
+      closingQuantity: row.closingQuantity,
+      wac: row.wacPaise ? row.wacPaise / 100 : 0,
+      totalValue: row.totalValuePaise ? row.totalValuePaise / 100 : 0,
+    }));
+
+    const filename = generateExportFilename('Stock_Summary', format);
+
+    await exportData(
+      format,
+      filename,
+      exportColumns,
+      exportRecords,
+      {
+        title: 'Stock Summary',
+        companyName: companyContext?.company?.legalName,
+      },
+      {
+        'Total Inventory Value': data.totalValuePaise ? data.totalValuePaise / 100 : 0,
+      },
+    );
+  };
+
   if (error) {
     return (
       <div className="space-y-6">
@@ -88,6 +134,7 @@ export default function StockSummaryPage() {
       <SectionHeader
         title="Stock Summary"
         description="View consolidated stock balances and valuation for all items"
+        actions={<AppExportDropdown onExport={handleExport} isExporting={isExporting} />}
       />
 
       <div className="overflow-hidden rounded-md border">

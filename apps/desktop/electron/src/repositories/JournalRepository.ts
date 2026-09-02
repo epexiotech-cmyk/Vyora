@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto';
-
 import {
   vouchers,
   voucher_entries,
@@ -47,52 +45,23 @@ export class JournalRepository extends BaseRepository {
   }
 
   /**
-   * Generates a cancellation/reversal voucher that inverses the original entry.
-   * Does NOT delete the original.
+   * Voids the original voucher.
    */
-  public cancelVoucher(
-    originalVoucherId: string,
-    reversalVoucher: InsertVoucher,
-    tx: TransactionExecutor,
-  ): Voucher {
-    // 1. Fetch original entries
-    const originalEntries = tx
+  public cancelVoucher(originalVoucherId: string, tx: TransactionExecutor): void {
+    const originalVouchers = tx
       .select()
-      .from(voucher_entries)
-      .where(eq(voucher_entries.voucherId, originalVoucherId))
+      .from(vouchers)
+      .where(eq(vouchers.id, originalVoucherId))
       .all();
-    if (!originalEntries.length) {
-      throw new Error(
-        `Cannot cancel voucher: No entries found for voucher ID ${originalVoucherId}`,
-      );
+    if (!originalVouchers.length) {
+      throw new Error(`Cannot cancel voucher: Voucher ID ${originalVoucherId} not found`);
     }
 
-    // 2. Insert the reversal voucher header
-    reversalVoucher.reversalVoucherId = originalVoucherId; // link back
-    const createdReversalVoucher = tx.insert(vouchers).values(reversalVoucher).returning().get();
-
-    // 3. Insert inverse entries (swap debits and credits)
-    const reversalEntries: InsertVoucherEntry[] = originalEntries.map((entry, index) => ({
-      id: randomUUID(), // assume crypto.randomUUID is handled or passed if generated
-      voucherId: createdReversalVoucher.id,
-      lineNumber: index + 1,
-      ledgerId: entry.ledgerId,
-      debitAmount: entry.creditAmount, // Swapped
-      creditAmount: entry.debitAmount, // Swapped
-      entryDate: reversalVoucher.voucherDate as Date,
-      narration: `Reversal of ${originalVoucherId}`,
-      createdAt: new Date(),
-    }));
-
-    tx.insert(voucher_entries).values(reversalEntries).run();
-
-    // 4. Mark original as cancelled
+    // Mark original as cancelled
     tx.update(vouchers)
       .set({ isCancelled: true, updatedAt: new Date() })
       .where(eq(vouchers.id, originalVoucherId))
       .run();
-
-    return createdReversalVoucher;
   }
 
   public getVoucherById(voucherId: string): VoucherDetailDto {
@@ -195,7 +164,13 @@ export class JournalRepository extends BaseRepository {
       .from(voucher_entries)
       .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
       .innerJoin(ledgers, eq(voucher_entries.ledgerId, ledgers.id))
-      .where(and(eq(vouchers.companyId, companyId), eq(vouchers.financialYearId, financialYearId)))
+      .where(
+        and(
+          eq(vouchers.companyId, companyId),
+          eq(vouchers.financialYearId, financialYearId),
+          eq(vouchers.isCancelled, false),
+        ),
+      )
       .groupBy(voucher_entries.ledgerId)
       .all();
 
@@ -215,6 +190,7 @@ export class JournalRepository extends BaseRepository {
     let conditions = and(
       eq(vouchers.companyId, filter.companyId),
       eq(vouchers.financialYearId, filter.financialYearId),
+      eq(vouchers.isCancelled, false),
     );
 
     if (filter.ledgerId) {
@@ -250,6 +226,8 @@ export class JournalRepository extends BaseRepository {
         voucherNumber: vouchers.voucherNumber,
         voucherDate: vouchers.voucherDate,
         voucherType: vouchers.voucherType,
+        referenceType: vouchers.referenceType,
+        isCancelled: vouchers.isCancelled,
         ledgerId: voucher_entries.ledgerId,
         ledgerName: ledgers.name,
         debitAmount: voucher_entries.debitAmount,
@@ -324,6 +302,7 @@ export class JournalRepository extends BaseRepository {
     let movementConditions = and(
       eq(vouchers.companyId, companyId),
       eq(vouchers.financialYearId, financialYearId),
+      eq(vouchers.isCancelled, false),
     );
     if (asOfDate) {
       movementConditions = and(movementConditions, lte(voucher_entries.entryDate, asOfDate));
@@ -405,7 +384,8 @@ export class JournalRepository extends BaseRepository {
           eq(vouchers.companyId, companyId),
           eq(vouchers.financialYearId, financialYearId),
           eq(voucher_entries.ledgerId, ledgerId),
-          sql`${voucher_entries.entryDate} < ${fromDate}`,
+          eq(vouchers.isCancelled, false),
+          sql`${voucher_entries.entryDate} < ${fromDate.getTime()}`,
         ),
       )
       .get();
@@ -435,6 +415,7 @@ export class JournalRepository extends BaseRepository {
         and(
           eq(vouchers.companyId, companyId),
           eq(voucher_entries.ledgerId, ledgerId),
+          eq(vouchers.isCancelled, false),
           gte(voucher_entries.entryDate, fromDate),
           lte(voucher_entries.entryDate, toDate),
         ),
@@ -473,6 +454,7 @@ export class JournalRepository extends BaseRepository {
         and(
           eq(vouchers.companyId, companyId),
           eq(vouchers.financialYearId, financialYearId),
+          eq(vouchers.isCancelled, false),
           gte(vouchers.voucherDate, startDate),
           lte(vouchers.voucherDate, endDate),
         ),
@@ -590,7 +572,7 @@ export class JournalRepository extends BaseRepository {
         ledgerName: ledgers.name,
         debitAmount: voucher_entries.debitAmount,
         creditAmount: voucher_entries.creditAmount,
-        narration: voucher_entries.narration,
+        narration: vouchers.narration,
         entryId: voucher_entries.id,
       })
       .from(vouchers)

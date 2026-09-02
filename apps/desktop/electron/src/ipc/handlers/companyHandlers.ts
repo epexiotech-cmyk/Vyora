@@ -112,12 +112,9 @@ export function registerCompanyHandlers() {
       _,
       companyId: string,
       filename: string,
-      buffer: Buffer,
+      buffer: Buffer | ArrayBuffer,
     ): Promise<ApiResponse<CompanyProfileDto>> => {
       try {
-        if (buffer.length > 5 * 1024 * 1024) {
-          throw new Error('File size exceeds the maximum limit of 5MB.');
-        }
         const updatedProfile = await companyContextService.uploadLogo(companyId, filename, buffer);
         return { success: true, data: updatedProfile };
       } catch (error) {
@@ -135,6 +132,96 @@ export function registerCompanyHandlers() {
         return { success: true, data: updatedProfile };
       } catch (error) {
         console.error('Error deleting company logo:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:upload-signature',
+    async (
+      _,
+      companyId: string,
+      filename: string,
+      buffer: Buffer | ArrayBuffer,
+    ): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.uploadSignature(
+          companyId,
+          filename,
+          buffer,
+        );
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error uploading company signature:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:update-signature-designation',
+    async (
+      _,
+      companyId: string,
+      signatureId: string,
+      designation: string,
+    ): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.updateSignatureDesignation(
+          companyId,
+          signatureId,
+          designation,
+        );
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error updating signature designation:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:set-signature-default',
+    async (_, companyId: string, signatureId: string): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.setSignatureAsDefault(
+          companyId,
+          signatureId,
+        );
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error setting company signature as default:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'company:delete-signature-by-id',
+    async (_, companyId: string, signatureId: string): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.deleteSignatureById(
+          companyId,
+          signatureId,
+        );
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error deleting company signature:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
+
+  // Keep legacy handler just in case
+  ipcMain.handle(
+    'company:delete-signature',
+    async (_, companyId: string): Promise<ApiResponse<CompanyProfileDto>> => {
+      try {
+        const updatedProfile = await companyContextService.deleteSignature(companyId);
+        return { success: true, data: updatedProfile };
+      } catch (error) {
+        console.error('Error deleting company signature:', error);
         return { success: false, error: (error as Error).message };
       }
     },

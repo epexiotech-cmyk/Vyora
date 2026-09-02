@@ -9,7 +9,9 @@ Vyora is a robust desktop ERP application (Cattle insurance, accounting, invento
 To support this, the core `Workspace` layout is **Fluid by default**, meaning it expands to fill the entire horizontal space of the user's monitor, maximizing data visibility.
 
 ### Fluid Pages (Default)
+
 The majority of the ERP operates in a fluid, edge-to-edge layout:
+
 - Accounting
 - Inventory
 - Reports
@@ -18,7 +20,9 @@ The majority of the ERP operates in a fluid, edge-to-edge layout:
 - Dashboards
 
 ### Constrained Pages (Exceptions)
+
 Certain pages designed heavily around step-by-step input, onboarding, or configuration forms are artificially constrained to a maximum width (`max-w-[1600px]`) for readability and ergonomics.
+
 - Login & Authentication
 - Lock Screen
 - Setup & Onboarding

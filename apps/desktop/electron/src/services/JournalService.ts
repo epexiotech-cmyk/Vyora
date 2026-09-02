@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { InsertVoucher, InsertVoucherEntry } from '@vyora/database';
-import { ledgers, vouchers, voucher_entries } from '@vyora/database';
+import { ledgers, vouchers, voucher_entries, payment_accounts } from '@vyora/database';
 import {
   CreateVoucherInput,
   VoucherListItemDto,
@@ -14,7 +14,7 @@ import {
   FinancialOverviewChartResponseDto,
 } from '@vyora/types';
 import { DocumentType } from '@vyora/types';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
 
 import { DbTransaction, TransactionExecutor } from '../repositories/BaseRepository';
 import { journalRepository } from '../repositories/JournalRepository';
@@ -122,6 +122,143 @@ export class JournalService {
       voucherId,
       voucherNumber: input.voucherNumber,
     };
+  }
+
+  public postTransfer(
+    payload: {
+      fromPaymentAccountId: string;
+      toPaymentAccountId: string;
+      amount: number;
+      transferDate: Date;
+      narration?: string;
+    },
+    tx: DbTransaction,
+  ): { voucherId: string } {
+    const companyId = companyContextService.getActiveCompany();
+    if (!companyId) throw new Error('No active company found');
+
+    const fy = financialYearContextService.getActiveFinancialYear();
+    if (!fy) throw new Error('No active financial year context');
+
+    // 1. Resolve Ledger IDs from Payment Accounts synchronously
+    const fromAccount = tx
+      .select({
+        ledgerId: payment_accounts.ledgerId,
+        openingBalance: ledgers.openingBalance,
+        openingType: ledgers.openingType,
+      })
+      .from(payment_accounts)
+      .innerJoin(ledgers, eq(ledgers.id, payment_accounts.ledgerId))
+      .where(eq(payment_accounts.id, payload.fromPaymentAccountId))
+      .get();
+
+    const toAccount = tx
+      .select({ ledgerId: payment_accounts.ledgerId })
+      .from(payment_accounts)
+      .where(eq(payment_accounts.id, payload.toPaymentAccountId))
+      .get();
+
+    if (!fromAccount || !toAccount) {
+      throw new Error('Could not resolve payment accounts to ledgers.');
+    }
+
+    if (fromAccount.ledgerId === toAccount.ledgerId) {
+      throw new Error('Cannot transfer to the same ledger.');
+    }
+
+    // 2. Validate Available Balance
+    const baseValue =
+      (fromAccount.openingType === 'Dr' ? 1 : -1) * (fromAccount.openingBalance || 0);
+
+    const totals = tx
+      .select({
+        totalDebit: sql<number>`COALESCE(SUM(${voucher_entries.debitAmount}), 0)`.mapWith(Number),
+        totalCredit: sql<number>`COALESCE(SUM(${voucher_entries.creditAmount}), 0)`.mapWith(Number),
+      })
+      .from(voucher_entries)
+      .innerJoin(vouchers, eq(voucher_entries.voucherId, vouchers.id))
+      .where(
+        and(
+          eq(voucher_entries.ledgerId, fromAccount.ledgerId),
+          eq(vouchers.companyId, companyId),
+          eq(vouchers.financialYearId, fy.id),
+          eq(vouchers.isCancelled, false),
+        ),
+      )
+      .get();
+
+    const currentValue = baseValue + (totals?.totalDebit || 0) - (totals?.totalCredit || 0);
+
+    // Convert to minor units (paise) safely
+    const amountInPaise = payload.amount;
+
+    if (!Number.isInteger(amountInPaise)) {
+      throw new Error('ERR_VALIDATION: Transfer amount must be an integer (paise).');
+    }
+
+    if (currentValue < amountInPaise) {
+      const formatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+      const availableRs = currentValue / 100;
+      throw new Error(`Insufficient balance. Available balance: ${formatter.format(availableRs)}`);
+    }
+
+    const entries = [
+      {
+        ledgerId: toAccount.ledgerId,
+        debitAmount: amountInPaise,
+        creditAmount: 0,
+        narration: payload.narration,
+      },
+      {
+        ledgerId: fromAccount.ledgerId,
+        debitAmount: 0,
+        creditAmount: amountInPaise,
+        narration: payload.narration,
+      },
+    ];
+
+    const voucherNumber = documentNumberingService.generateNextNumberSync(
+      companyId,
+      DocumentType.CONTRA_VOUCHER,
+      fy.id,
+      tx,
+    );
+
+    const result = this.createVoucherSync(
+      companyId,
+      fy.id,
+      {
+        voucherType: 'Contra',
+        voucherNumber,
+        voucherDate: payload.transferDate,
+        sourceModule: 'ACCOUNTING',
+        referenceType: 'FUND_TRANSFER',
+        referenceId: null,
+        narration: payload.narration,
+        entries,
+      },
+      tx,
+    );
+
+    return { voucherId: result.voucherId };
+  }
+
+  public cancelTransferSync(voucherId: string, tx: DbTransaction): { cancelledVoucherId: string } {
+    const originalVouchers = tx.select().from(vouchers).where(eq(vouchers.id, voucherId)).all();
+
+    if (originalVouchers.length === 0) throw new Error('Voucher not found');
+    const originalVoucher = originalVouchers[0];
+
+    if (originalVoucher.isCancelled) throw new Error('Transfer is already cancelled');
+    if (
+      originalVoucher.voucherType !== 'Contra' ||
+      originalVoucher.referenceType !== 'FUND_TRANSFER'
+    ) {
+      throw new Error('Only Contra FUND_TRANSFER vouchers can be cancelled via cancelTransferSync');
+    }
+
+    journalRepository.cancelVoucher(voucherId, tx);
+    return { cancelledVoucherId: voucherId };
   }
 
   public async postSalesInvoice(
@@ -395,10 +532,176 @@ export class JournalService {
     return { voucherId };
   }
 
+  public postExpenseBillSync(
+    payload: {
+      companyId: string;
+      financialYearId: string;
+      invoiceId: string;
+      invoiceDate: Date;
+      supplierId?: string | null;
+      paymentAccountId?: string | null;
+      lines: {
+        expenseLedgerId: string;
+        amount: number;
+      }[];
+      totalCgst: number;
+      totalSgst: number;
+      totalIgst: number;
+      totalInvoiceAmount: number;
+      roundOffAmount: number;
+    },
+    tx: TransactionExecutor,
+  ): { voucherId: string } {
+    const inputCgst = systemLedgerResolver.getSystemLedgerByName('Input CGST', tx);
+    const inputSgst = systemLedgerResolver.getSystemLedgerByName('Input SGST', tx);
+    const inputIgst = systemLedgerResolver.getSystemLedgerByName('Input IGST', tx);
+    const roundOffLedger = systemLedgerResolver.getSystemLedgerByName('Round Off', tx);
+
+    // 1. Resolve Credit Ledger (Payment Account OR Supplier)
+    let creditLedgerId: string;
+
+    if (payload.paymentAccountId) {
+      // Immediate Payment (Cash Expense) -> Credit Payment Account
+      // Immediate Payment (Cash Expense) -> Credit Payment Account
+      const paymentAccount = tx
+        .select()
+        .from(payment_accounts)
+        .where(
+          and(
+            eq(payment_accounts.id, payload.paymentAccountId),
+            eq(payment_accounts.companyId, payload.companyId),
+          ),
+        )
+        .get();
+
+      if (!paymentAccount) {
+        throw new Error(`Payment account not found for ID ${payload.paymentAccountId}`);
+      }
+      creditLedgerId = paymentAccount.ledgerId;
+    } else if (payload.supplierId) {
+      // Credit Expense (Unpaid) -> Credit Supplier
+      const supplierLedger = tx
+        .select()
+        .from(ledgers)
+        .where(
+          and(
+            eq(ledgers.companyId, payload.companyId),
+            eq(ledgers.referenceType, 'SUPPLIER'),
+            eq(ledgers.referenceId, payload.supplierId),
+          ),
+        )
+        .get();
+
+      if (!supplierLedger) {
+        throw new Error(`Supplier ledger not found for supplier ID ${payload.supplierId}`);
+      }
+      creditLedgerId = supplierLedger.id;
+    } else {
+      throw new Error('Expense must have either a paymentAccountId or a supplierId');
+    }
+
+    // 2. Build Entries
+    const entries: {
+      ledgerId: string;
+      debitAmount: number;
+      creditAmount: number;
+      narration?: string;
+    }[] = [];
+
+    // Expense Debits (Line by line or aggregated)
+    for (const line of payload.lines) {
+      if (line.amount > 0) {
+        entries.push({
+          ledgerId: line.expenseLedgerId,
+          debitAmount: line.amount,
+          creditAmount: 0,
+          narration: `Expense for Bill ${payload.invoiceId}`,
+        });
+      }
+    }
+
+    // Input GST Debits
+    if (payload.totalCgst > 0) {
+      entries.push({
+        ledgerId: inputCgst.id,
+        debitAmount: payload.totalCgst,
+        creditAmount: 0,
+      });
+    }
+    if (payload.totalSgst > 0) {
+      entries.push({
+        ledgerId: inputSgst.id,
+        debitAmount: payload.totalSgst,
+        creditAmount: 0,
+      });
+    }
+    if (payload.totalIgst > 0) {
+      entries.push({
+        ledgerId: inputIgst.id,
+        debitAmount: payload.totalIgst,
+        creditAmount: 0,
+      });
+    }
+
+    // Credit Entry
+    entries.push({
+      ledgerId: creditLedgerId,
+      debitAmount: 0,
+      creditAmount: payload.totalInvoiceAmount,
+      narration: `Expense Bill ${payload.invoiceId}`,
+    });
+
+    // Round Off Entry
+    if (payload.roundOffAmount > 0) {
+      entries.push({
+        ledgerId: roundOffLedger.id,
+        debitAmount: Math.abs(payload.roundOffAmount),
+        creditAmount: 0,
+        narration: `Round off for ${payload.invoiceId}`,
+      });
+    } else if (payload.roundOffAmount < 0) {
+      entries.push({
+        ledgerId: roundOffLedger.id,
+        debitAmount: 0,
+        creditAmount: Math.abs(payload.roundOffAmount),
+        narration: `Round off for ${payload.invoiceId}`,
+      });
+    }
+
+    // Generate Voucher Number
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
+      payload.companyId,
+      DocumentType.JOURNAL_VOUCHER,
+      payload.financialYearId,
+      tx,
+    );
+
+    // 3. Delegate to createVoucher
+    const voucherInput: CreateVoucherInput = {
+      voucherType: 'Purchase', // Even for expenses, voucherType might be Purchase, Journal or a new one. Let's keep it Purchase for now as it's a purchase bill under the hood. Or 'Journal'. Let's use 'Purchase'.
+      voucherNumber: generatedVoucherNumber,
+      voucherDate: payload.invoiceDate,
+      sourceModule: 'PurchaseService',
+      referenceType: 'PURCHASE_BILL',
+      referenceId: payload.invoiceId,
+      narration: `Expense Bill generated`,
+      entries,
+    };
+
+    const { voucherId } = this.createVoucherSync(
+      payload.companyId,
+      payload.financialYearId,
+      voucherInput,
+      tx,
+    );
+
+    return { voucherId };
+  }
+
   public async reverseSalesInvoice(
     invoiceId: string,
     tx: DbTransaction,
-  ): Promise<{ reversalVoucherId: string }> {
+  ): Promise<{ cancelledVoucherId: string }> {
     const companyId = companyContextService.getActiveCompany() as string;
 
     // 1. Locate original Sales voucher
@@ -427,66 +730,20 @@ export class JournalService {
       throw new Error(`Voucher ${originalVoucher.voucherNumber} is already cancelled`);
     }
 
-    // 2. Fetch original voucher entries
-    const originalEntries = tx
-      .select()
-      .from(voucher_entries)
-      .where(eq(voucher_entries.voucherId, originalVoucher.id))
-      .all();
-
-    if (originalEntries.length === 0) {
-      throw new Error(`No entries found for voucher ${originalVoucher.voucherNumber}`);
-    }
-
-    // 3. Build Reversal Entries (Swap Debits and Credits)
-    const reversalEntries = originalEntries.map((entry) => ({
-      ledgerId: entry.ledgerId,
-      debitAmount: entry.creditAmount, // Swap
-      creditAmount: entry.debitAmount, // Swap
-      narration: `Reversal for Sales Invoice ${invoiceId}`,
-    }));
-
-    // Generate Voucher Number
-    const fy = financialYearContextService.getActiveFinancialYear();
-    if (!fy) throw new Error('No active financial year context');
-
-    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
-      companyId,
-      DocumentType.JOURNAL_VOUCHER,
-      fy.id,
-      tx,
-    );
-
-    // 4. Create Reversal Voucher
-    const reversalInput: CreateVoucherInput = {
-      voucherType: 'Journal', // Reversals are usually journals
-      voucherNumber: generatedVoucherNumber,
-      voucherDate: new Date(), // Reversal happens today/now
-      sourceModule: 'SalesInvoiceService',
-      referenceType: 'SALES_INVOICE_CANCELLATION',
-      referenceId: invoiceId,
-      narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
-      entries: reversalEntries,
-    };
-
-    const { voucherId: reversalVoucherId } = await this.createVoucher(reversalInput, tx);
-
-    // 5. Optionally, mark original voucher as cancelled (if required by design, though prompt said "DO NOT mutate original voucher entries". Marking the header as cancelled is usually required to link them or just leaving it is fine as long as balances offset. Let's just update header isCancelled)
     tx.update(vouchers)
       .set({
         isCancelled: true,
-        reversalVoucherId,
         referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
       })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
-    return { reversalVoucherId };
+    return { cancelledVoucherId: originalVoucher.id };
   }
   public async reversePurchaseBill(
     purchaseId: string,
     tx: DbTransaction,
-  ): Promise<{ reversalVoucherId: string }> {
+  ): Promise<{ cancelledVoucherId: string }> {
     const companyId = companyContextService.getActiveCompany() as string;
 
     // 1. Locate original Purchase voucher
@@ -515,67 +772,21 @@ export class JournalService {
       throw new Error(`Voucher ${originalVoucher.voucherNumber} is already cancelled`);
     }
 
-    // 2. Fetch original voucher entries
-    const originalEntries = tx
-      .select()
-      .from(voucher_entries)
-      .where(eq(voucher_entries.voucherId, originalVoucher.id))
-      .all();
-
-    if (originalEntries.length === 0) {
-      throw new Error(`No entries found for voucher ${originalVoucher.voucherNumber}`);
-    }
-
-    // 3. Build Reversal Entries (Swap Debits and Credits)
-    const reversalEntries = originalEntries.map((entry) => ({
-      ledgerId: entry.ledgerId,
-      debitAmount: entry.creditAmount, // Swap
-      creditAmount: entry.debitAmount, // Swap
-      narration: `Reversal for Purchase Bill ${purchaseId}`,
-    }));
-
-    // Generate Voucher Number
-    const fy = financialYearContextService.getActiveFinancialYear();
-    if (!fy) throw new Error('No active financial year context');
-
-    const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
-      companyId,
-      DocumentType.JOURNAL_VOUCHER,
-      fy.id,
-      tx,
-    );
-
-    // 4. Create Reversal Voucher
-    const reversalInput: CreateVoucherInput = {
-      voucherType: 'Journal',
-      voucherNumber: generatedVoucherNumber,
-      voucherDate: new Date(),
-      sourceModule: 'PurchaseService',
-      referenceType: 'PURCHASE_BILL_CANCELLATION',
-      referenceId: purchaseId,
-      narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
-      entries: reversalEntries,
-    };
-
-    const { voucherId: reversalVoucherId } = await this.createVoucher(reversalInput, tx);
-
-    // 5. Mark original voucher as cancelled
     tx.update(vouchers)
       .set({
         isCancelled: true,
-        reversalVoucherId,
         referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
       })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
-    return { reversalVoucherId };
+    return { cancelledVoucherId: originalVoucher.id };
   }
 
   public async cancelVoucher(
     voucherId: string,
     options?: { allowSystemVoucherCancellation?: boolean },
-  ): Promise<{ reversalVoucherId: string }> {
+  ): Promise<{ cancelledVoucherId: string }> {
     const companyId = companyContextService.getActiveCompany() as string;
     const fy = financialYearContextService.getActiveFinancialYear();
     if (!fy) throw new Error('No active financial year context');
@@ -595,34 +806,8 @@ export class JournalService {
         throw new Error('Only manually created vouchers can be cancelled directly.');
       }
 
-      const generatedVoucherNumber = await documentNumberingService.generateNextNumberSync(
-        companyId,
-        DocumentType.JOURNAL_VOUCHER,
-        fy.id,
-        tx,
-      );
-
-      const reversalVoucher = {
-        id: randomUUID(),
-        companyId,
-        branchId: originalVoucher.branchId,
-        financialYearId: fy.id,
-        voucherType: 'Journal' as const,
-        voucherNumber: generatedVoucherNumber,
-        voucherDate: new Date(),
-        sourceModule: 'JournalService',
-        referenceType: 'MANUAL' as const,
-        referenceId: originalVoucher.id,
-        narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
-        isCancelled: false,
-        isFrozen: false,
-        syncVersion: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const createdReversal = journalRepository.cancelVoucher(voucherId, reversalVoucher, tx);
-      return { reversalVoucherId: createdReversal.id };
+      journalRepository.cancelVoucher(voucherId, tx);
+      return { cancelledVoucherId: voucherId };
     });
   }
 
@@ -765,13 +950,16 @@ export class JournalService {
       .get();
     if (ledger) ledgerName = ledger.name;
 
-    let closingBalance = result.openingBalance;
-    let closingType = result.openingType;
-    if (result.rows.length > 0) {
-      const lastRow = result.rows[result.rows.length - 1];
-      closingBalance = lastRow.balance;
-      closingType = lastRow.balanceType;
+    let currentNet = (result.openingType === 'Dr' ? 1 : -1) * result.openingBalance;
+
+    for (const row of result.rows) {
+      currentNet += row.debitAmount - row.creditAmount;
+      row.balance = Math.abs(currentNet);
+      row.balanceType = currentNet >= 0 ? 'Dr' : 'Cr';
     }
+
+    const closingBalance = Math.abs(currentNet);
+    const closingType = currentNet >= 0 ? 'Dr' : 'Cr';
 
     return {
       ledgerId,
@@ -1194,7 +1382,7 @@ export class JournalService {
   public reversePurchaseBillSync(
     purchaseId: string,
     tx: TransactionExecutor,
-  ): { reversalVoucherId: string } {
+  ): { cancelledVoucherId: string } {
     const originalVouchers = tx
       .select()
       .from(vouchers)
@@ -1209,7 +1397,6 @@ export class JournalService {
     }
 
     const originalVoucher = originalVouchers[0];
-    const companyId = originalVoucher.companyId;
     const financialYearId = originalVoucher.financialYearId;
 
     if (!financialYearId) {
@@ -1220,60 +1407,15 @@ export class JournalService {
       throw new Error(`Voucher ${originalVoucher.voucherNumber} is already cancelled`);
     }
 
-    const originalEntries = tx
-      .select()
-      .from(voucher_entries)
-      .where(eq(voucher_entries.voucherId, originalVoucher.id))
-      .all();
-
-    if (originalEntries.length === 0) {
-      throw new Error(`No entries found for voucher ${originalVoucher.voucherNumber}`);
-    }
-
-    const reversalEntries = originalEntries.map(
-      (entry: { ledgerId: string; creditAmount: number; debitAmount: number }) => ({
-        ledgerId: entry.ledgerId,
-        debitAmount: entry.creditAmount,
-        creditAmount: entry.debitAmount,
-        narration: `Reversal for Purchase Bill ${purchaseId}`,
-      }),
-    );
-
-    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
-      companyId,
-      DocumentType.JOURNAL_VOUCHER,
-      financialYearId,
-      tx,
-    );
-
-    const reversalInput: CreateVoucherInput = {
-      voucherType: 'Journal',
-      voucherNumber: generatedVoucherNumber,
-      voucherDate: new Date(),
-      sourceModule: 'PurchaseService',
-      referenceType: 'PURCHASE_BILL_CANCELLATION',
-      referenceId: purchaseId,
-      narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
-      entries: reversalEntries,
-    };
-
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(
-      companyId,
-      financialYearId,
-      reversalInput,
-      tx,
-    );
-
     tx.update(vouchers)
       .set({
         isCancelled: true,
-        reversalVoucherId,
         referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
       })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
-    return { reversalVoucherId };
+    return { cancelledVoucherId: originalVoucher.id };
   }
 
   public postSalesInvoiceSync(
@@ -1409,7 +1551,7 @@ export class JournalService {
   public reverseSalesInvoiceSync(
     invoiceId: string,
     tx: TransactionExecutor,
-  ): { reversalVoucherId: string } {
+  ): { cancelledVoucherId: string } {
     // Find original voucher without relying on context service — search by invoiceId only
     const originalVouchers = tx
       .select()
@@ -1422,61 +1564,212 @@ export class JournalService {
     }
 
     const originalVoucher = originalVouchers[0];
-    // Derive companyId from the actual voucher record — not from the context singleton
-    const companyId = originalVoucher.companyId;
-
-    const originalEntries = tx
-      .select()
-      .from(voucher_entries)
-      .where(eq(voucher_entries.voucherId, originalVoucher.id))
-      .all();
-
-    const reversalEntries = originalEntries.map((entry) => ({
-      ledgerId: entry.ledgerId,
-      debitAmount: entry.creditAmount,
-      creditAmount: entry.debitAmount,
-      narration: `Reversal: ${entry.narration || ''}`,
-    }));
-
-    // Derive financialYearId from the original voucher record — not from the context singleton
-    const financialYearId = originalVoucher.financialYearId;
-    if (!financialYearId) throw new Error('Original voucher has no financial year ID');
-
-    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
-      companyId,
-      DocumentType.JOURNAL_VOUCHER,
-      financialYearId,
-      tx,
-    );
-
-    const reversalInput: CreateVoucherInput = {
-      voucherType: 'Journal',
-      voucherNumber: generatedVoucherNumber,
-      voucherDate: new Date(),
-      sourceModule: 'SalesInvoiceService',
-      referenceType: 'SALES_INVOICE_CANCELLATION',
-      referenceId: invoiceId,
-      narration: `Cancellation Reversal for ${originalVoucher.voucherNumber}`,
-      entries: reversalEntries,
-    };
-
-    const { voucherId: reversalVoucherId } = this.createVoucherSync(
-      companyId,
-      financialYearId,
-      reversalInput,
-      tx,
-    );
 
     tx.update(vouchers)
       .set({
         isCancelled: true,
-        reversalVoucherId,
         referenceId: `${originalVoucher.referenceId}-CANC-${Date.now()}`,
       })
       .where(eq(vouchers.id, originalVoucher.id))
       .run();
 
-    return { reversalVoucherId };
+    return { cancelledVoucherId: originalVoucher.id };
+  }
+
+  public postReceiptSync(
+    payload: {
+      companyId: string;
+      financialYearId: string;
+      settlementId: string;
+      settlementDate: Date;
+      partyId: string;
+      bankLedgerId: string;
+      amount: number;
+      narration?: string;
+    },
+    tx: TransactionExecutor,
+  ): { voucherId: string } {
+    const customerLedger = tx
+      .select()
+      .from(ledgers)
+      .where(
+        and(
+          eq(ledgers.companyId, payload.companyId),
+          eq(ledgers.referenceType, 'CUSTOMER'),
+          eq(ledgers.referenceId, payload.partyId),
+        ),
+      )
+      .get();
+
+    if (!customerLedger) {
+      throw new Error(`Customer ledger not found for customer ID ${payload.partyId}`);
+    }
+
+    const entries: {
+      ledgerId: string;
+      debitAmount: number;
+      creditAmount: number;
+      narration?: string;
+    }[] = [];
+
+    // Bank Debit
+    entries.push({
+      ledgerId: payload.bankLedgerId,
+      debitAmount: payload.amount,
+      creditAmount: 0,
+      narration: payload.narration || `Receipt for Settlement ${payload.settlementId}`,
+    });
+
+    // Customer Credit
+    entries.push({
+      ledgerId: customerLedger.id,
+      debitAmount: 0,
+      creditAmount: payload.amount,
+      narration: payload.narration || `Receipt for Settlement ${payload.settlementId}`,
+    });
+
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
+      payload.companyId,
+      DocumentType.RECEIPT_VOUCHER,
+      payload.financialYearId,
+      tx,
+    );
+
+    const voucherInput: CreateVoucherInput = {
+      voucherType: 'Receipt',
+      voucherNumber: generatedVoucherNumber,
+      voucherDate: payload.settlementDate,
+      sourceModule: 'SettlementService',
+      referenceType: 'RECEIPT',
+      referenceId: payload.settlementId,
+      narration: payload.narration || `Receipt generated for Settlement`,
+      entries,
+    };
+
+    const { voucherId } = this.createVoucherSync(
+      payload.companyId,
+      payload.financialYearId,
+      voucherInput,
+      tx,
+    );
+
+    return { voucherId };
+  }
+
+  public postPaymentSync(
+    payload: {
+      companyId: string;
+      financialYearId: string;
+      settlementId: string;
+      settlementDate: Date;
+      partyId: string;
+      bankLedgerId: string;
+      amount: number;
+      narration?: string;
+    },
+    tx: TransactionExecutor,
+  ): { voucherId: string } {
+    const supplierLedger = tx
+      .select()
+      .from(ledgers)
+      .where(
+        and(
+          eq(ledgers.companyId, payload.companyId),
+          eq(ledgers.referenceType, 'SUPPLIER'),
+          eq(ledgers.referenceId, payload.partyId),
+        ),
+      )
+      .get();
+
+    if (!supplierLedger) {
+      throw new Error(`Supplier ledger not found for supplier ID ${payload.partyId}`);
+    }
+
+    const entries: {
+      ledgerId: string;
+      debitAmount: number;
+      creditAmount: number;
+      narration?: string;
+    }[] = [];
+
+    // Supplier Debit
+    entries.push({
+      ledgerId: supplierLedger.id,
+      debitAmount: payload.amount,
+      creditAmount: 0,
+      narration: payload.narration || `Payment for Settlement ${payload.settlementId}`,
+    });
+
+    // Bank Credit
+    entries.push({
+      ledgerId: payload.bankLedgerId,
+      debitAmount: 0,
+      creditAmount: payload.amount,
+      narration: payload.narration || `Payment for Settlement ${payload.settlementId}`,
+    });
+
+    const generatedVoucherNumber = documentNumberingService.generateNextNumberSync(
+      payload.companyId,
+      DocumentType.PAYMENT_VOUCHER,
+      payload.financialYearId,
+      tx,
+    );
+
+    const voucherInput: CreateVoucherInput = {
+      voucherType: 'Payment',
+      voucherNumber: generatedVoucherNumber,
+      voucherDate: payload.settlementDate,
+      sourceModule: 'SettlementService',
+      referenceType: 'PAYMENT',
+      referenceId: payload.settlementId,
+      narration: payload.narration || `Payment generated for Settlement`,
+      entries,
+    };
+
+    const { voucherId } = this.createVoucherSync(
+      payload.companyId,
+      payload.financialYearId,
+      voucherInput,
+      tx,
+    );
+
+    return { voucherId };
+  }
+
+  public reverseSettlementVoucherSync(
+    settlementId: string,
+    tx: TransactionExecutor,
+  ): { cancelledVoucherId: string } {
+    const originalVouchers = tx
+      .select()
+      .from(vouchers)
+      .where(
+        and(
+          inArray(vouchers.referenceType, ['RECEIPT', 'PAYMENT']),
+          eq(vouchers.referenceId, settlementId),
+          eq(vouchers.isCancelled, false),
+        ),
+      )
+      .all();
+
+    if (originalVouchers.length === 0) {
+      throw new Error(`Active voucher not found for Settlement ${settlementId}`);
+    }
+    if (originalVouchers.length > 1) {
+      throw new Error(`Multiple active vouchers found for Settlement ${settlementId}`);
+    }
+
+    const originalVoucher = originalVouchers[0];
+
+    tx.update(vouchers)
+      .set({
+        isCancelled: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(vouchers.id, originalVoucher.id))
+      .run();
+
+    return { cancelledVoucherId: originalVoucher.id };
   }
 }
 

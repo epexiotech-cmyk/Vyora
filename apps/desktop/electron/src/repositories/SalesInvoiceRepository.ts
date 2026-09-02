@@ -8,8 +8,9 @@ import {
   ListSalesInvoicesOptions,
   UpdateSalesInvoiceInput,
   InvoiceStatus,
+  SalesInvoiceListDto,
 } from '@vyora/types';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 
 import { BaseRepository, DbTransaction, TransactionExecutor } from './BaseRepository';
 
@@ -195,32 +196,48 @@ export class SalesInvoiceRepository extends BaseRepository {
     return mapToDto(invoice, items);
   }
 
-  public async list(options?: ListSalesInvoicesOptions): Promise<SalesInvoiceDto[]> {
-    let query = this.db.select().from(sales_invoices).$dynamic();
-
+  public async list(options?: ListSalesInvoicesOptions): Promise<SalesInvoiceListDto> {
     const conditions = [];
-    if (options?.companyId) {
-      conditions.push(eq(sales_invoices.companyId, options.companyId));
-    }
-    if (options?.financialYearId) {
+    if (options?.companyId) conditions.push(eq(sales_invoices.companyId, options.companyId));
+    if (options?.financialYearId)
       conditions.push(eq(sales_invoices.financialYearId, options.financialYearId));
+    if (options?.status) conditions.push(eq(sales_invoices.status, options.status));
+    if (options?.customerId) conditions.push(eq(sales_invoices.customerId, options.customerId));
+    if (options?.query) {
+      const q = `%${options.query}%`;
+      // Search by invoiceNumber or customerId (which might be name in DB sometimes, but usually customer name is joined or not, but we mimic client side logic: invoiceNumber or customerId)
+      // The client side was doing: i.invoiceNumber.toLowerCase().includes(lowerQ) || i.customerId.toLowerCase().includes(lowerQ)
+      conditions.push(
+        sql`(${sales_invoices.invoiceNumber} LIKE ${q} OR ${sales_invoices.customerId} LIKE ${q})`,
+      );
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Get Total Count
+    const countQuery = this.db.select({ count: sql<number>`count(*)` }).from(sales_invoices);
+    if (whereClause) {
+      countQuery.where(whereClause);
+    }
+    const countResult = await countQuery.get();
+    const total = countResult?.count ?? 0;
+
+    let query = this.db.select().from(sales_invoices).$dynamic();
+    if (whereClause) {
+      query = query.where(whereClause);
     }
 
-    query = query.orderBy(desc(sales_invoices.invoiceDate));
+    // Keep ordering deterministic by adding id as secondary sort
+    query = query.orderBy(desc(sales_invoices.invoiceDate), desc(sales_invoices.id));
 
-    if (options?.limit !== undefined) {
-      query = query.limit(options.limit);
-    }
-    if (options?.offset !== undefined) {
-      query = query.offset(options.offset);
-    }
+    if (options?.limit !== undefined) query = query.limit(options.limit);
+    if (options?.offset !== undefined) query = query.offset(options.offset);
 
     const results = await query.all();
-    return results.map((row) => mapToDto(row));
+    return {
+      data: results.map((row) => mapToDto(row)),
+      total,
+    };
   }
 
   public async updateInvoice(

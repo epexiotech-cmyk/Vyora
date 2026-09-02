@@ -78,8 +78,27 @@ export const customerSchema = z.object({
   creditLimit: z.coerce.number().min(0).default(0),
   creditDays: z.coerce.number().int().min(0).default(0),
 
-  defaultPaymentAccountId: z.string().uuid('Invalid Payment Account ID').optional().nullable(),
-  defaultQrAccountId: z.string().uuid('Invalid QR Account ID').optional().nullable(),
+  defaultPaymentAccountId: z
+    .string()
+    .uuid('Invalid Payment Account ID')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)),
+  defaultQrAccountId: z
+    .string()
+    .uuid('Invalid QR Account ID')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)),
+  defaultSignatureId: z
+    .string()
+    .uuid('Invalid Signature ID')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? null : val)),
 
   notes: z.string().optional().nullable(),
   shippingAddresses: z.array(shippingAddressSchema).optional().nullable(),

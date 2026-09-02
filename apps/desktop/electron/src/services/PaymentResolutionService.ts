@@ -1,4 +1,5 @@
 import { DbTransaction } from '../repositories/BaseRepository';
+import { companyRepository } from '../repositories/CompanyRepository';
 import { customerRepository } from '../repositories/CustomerRepository';
 import { paymentAccountRepository } from '../repositories/PaymentAccountRepository';
 
@@ -35,7 +36,12 @@ export class PaymentResolutionService {
 
     if (customer?.defaultQrAccountId) {
       const account = await paymentAccountRepository.getById(customer.defaultQrAccountId);
-      if (account && account.companyId === companyId && account.isActive && account.qrEnabled) {
+      if (
+        account &&
+        account.companyId === companyId &&
+        account.isActive &&
+        (account.accountType === 'UPI' || account.qrEnabled)
+      ) {
         return account;
       }
     }
@@ -67,13 +73,38 @@ export class PaymentResolutionService {
 
     if (customer?.defaultQrAccountId) {
       const account = paymentAccountRepository.getByIdSync(customer.defaultQrAccountId, tx);
-      if (account && account.companyId === companyId && account.isActive && account.qrEnabled) {
+      if (
+        account &&
+        account.companyId === companyId &&
+        account.isActive &&
+        (account.accountType === 'UPI' || account.qrEnabled)
+      ) {
         return account;
       }
     }
 
     const companyDefaultQr = paymentAccountRepository.getDefaultQrAccountSync(companyId, tx);
     return companyDefaultQr;
+  }
+
+  public resolveSignatureDestinationSync(customerId: string, companyId: string, tx: DbTransaction) {
+    const customer = customerRepository.getByIdSync(customerId, companyId, tx);
+
+    if (customer?.defaultSignatureId) {
+      const signatures = companyRepository.getSignaturesSync(companyId, tx);
+      const signature = signatures.find((s) => s.id === customer.defaultSignatureId);
+      if (signature) {
+        return signature;
+      }
+    }
+
+    const signatures = companyRepository.getSignaturesSync(companyId, tx);
+    const defaultSignature = signatures.find((s) => s.isDefault);
+    if (defaultSignature) {
+      return defaultSignature;
+    }
+
+    return signatures.length > 0 ? signatures[0] : null;
   }
 }
 

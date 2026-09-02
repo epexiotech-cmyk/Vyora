@@ -79,6 +79,9 @@ export class DatabaseService {
 
         await migrationValidator.validatePreMigrations(this.adapter.getDb());
 
+        const { databaseBaselineService } = await import('./DatabaseBaselineService');
+        await databaseBaselineService.ensureBaseline(this.adapter.getDb(), this.migrationsFolder);
+
         migrate(this.adapter.getDb(), { migrationsFolder: this.migrationsFolder });
         loggerService.info(`[DatabaseService] Migrations applied successfully.`);
       } else {

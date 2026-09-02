@@ -10,6 +10,8 @@ import {
 import { SettingsRepository, CompanyRepository } from '../repositories';
 
 import { companyBootstrapService } from './CompanyBootstrapService';
+import { dbService } from './database/DatabaseService';
+import { systemExpensePresetSeeder } from './database/SystemExpensePresetSeeder';
 
 export class CompanyContextService {
   private settingsRepo = new SettingsRepository();
@@ -23,6 +25,9 @@ export class CompanyContextService {
       if (this.activeCompanyId !== id) {
         this.activeCompanyId = id;
         this.cachedContext = null;
+        this.reconcileExpensePresets(id).catch((err) => {
+          console.error(`Failed to reconcile expense presets for company ${id}`, err);
+        });
       }
       const company = await this.companyRepo.getById(id);
       return company as unknown as CompanyProfileDto | null;
@@ -36,8 +41,29 @@ export class CompanyContextService {
 
   public async setActiveCompany(companyId: string): Promise<void> {
     await this.settingsRepo.setAppSetting('active_company_id', companyId);
-    this.activeCompanyId = companyId;
-    this.cachedContext = null;
+    if (this.activeCompanyId !== companyId) {
+      this.activeCompanyId = companyId;
+      this.cachedContext = null;
+      this.reconcileExpensePresets(companyId).catch((err) => {
+        console.error(`Failed to reconcile expense presets for company ${companyId}`, err);
+      });
+    }
+  }
+
+  private async reconcileExpensePresets(companyId: string): Promise<void> {
+    const flagKey = `expense_presets_seeded_${companyId}`;
+    const seededFlag = await this.settingsRepo.getAppSetting(flagKey);
+
+    if (!seededFlag) {
+      try {
+        dbService.getDb().transaction((tx) => {
+          systemExpensePresetSeeder.seedExpensePresets(companyId, tx);
+          this.settingsRepo.setAppSettingSync(flagKey, 'true', tx);
+        });
+      } catch (err) {
+        console.error(`Transaction failed during expense presets reconciliation`, err);
+      }
+    }
   }
 
   // Phase 5.1.2A - Backend Implementation
@@ -265,6 +291,162 @@ export class CompanyContextService {
 
     const updatedProfile = await this.getProfile(companyId);
     return updatedProfile!;
+  }
+
+  public async uploadSignature(
+    companyId: string,
+    filename: string,
+    buffer: Buffer | ArrayBuffer | ArrayBufferView,
+  ): Promise<CompanyProfileDto> {
+    if (!filename || filename.trim() === '') {
+      throw new Error('Filename is required.');
+    }
+
+    let nodeBuffer: Buffer;
+
+    if (Buffer.isBuffer(buffer)) {
+      nodeBuffer = buffer;
+    } else if (buffer instanceof ArrayBuffer) {
+      nodeBuffer = Buffer.from(buffer);
+    } else if (ArrayBuffer.isView(buffer)) {
+      nodeBuffer = Buffer.from(buffer.buffer);
+    } else {
+      throw new Error('Invalid signature file data provided.');
+    }
+
+    if (nodeBuffer.length === 0) {
+      throw new Error('Invalid signature file data provided.');
+    }
+
+    if (nodeBuffer.length > 5 * 1024 * 1024) {
+      throw new Error('File size exceeds 5MB limit.');
+    }
+
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (!ext || !['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext)) {
+      throw new Error(
+        'Invalid signature file type. Only png, jpg, jpeg, webp, and svg are allowed.',
+      );
+    }
+
+    const { fileSystemService } = await import('./filesystem/FileSystemService');
+
+    const profile = await this.getProfile(companyId);
+    if (!profile) {
+      throw new Error(`Company profile with id ${companyId} not found.`);
+    }
+
+    const timestamp = Date.now();
+    const newFilename = `company-signature-${timestamp}.${ext}`;
+
+    try {
+      fileSystemService.saveCompanySignature(companyId, newFilename, nodeBuffer);
+    } catch (err) {
+      throw new Error(`Failed to save signature file: ${(err as Error).message}`);
+    }
+
+    const isFirstSignature = !profile.signatures || profile.signatures.length === 0;
+    const label = isFirstSignature
+      ? 'Default Signature'
+      : `Signature ${(profile.signatures?.length || 0) + 1}`;
+
+    try {
+      this.companyRepo.addSignatureSync(
+        companyId,
+        newFilename,
+        label,
+        'Authorized Signatory',
+        isFirstSignature,
+      );
+    } catch (err) {
+      fileSystemService.deleteCompanySignature(companyId, newFilename);
+      throw new Error(`Failed to update database: ${(err as Error).message}`);
+    }
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    const updatedProfile = await this.getProfile(companyId);
+    return updatedProfile!;
+  }
+
+  // Deprecated: used for legacy single signature deletion, redirected to delete all or handled safely
+  public async deleteSignature(companyId: string): Promise<CompanyProfileDto> {
+    // We shouldn't need this anymore, but keep for fallback
+    const profile = await this.getProfile(companyId);
+    if (!profile) throw new Error(`Company profile with id ${companyId} not found.`);
+
+    if (profile.signatures && profile.signatures.length > 0) {
+      for (const sig of profile.signatures) {
+        await this.deleteSignatureById(companyId, sig.id);
+      }
+    }
+
+    return (await this.getProfile(companyId))!;
+  }
+
+  public async setSignatureAsDefault(
+    companyId: string,
+    signatureId: string,
+  ): Promise<CompanyProfileDto> {
+    const profile = await this.getProfile(companyId);
+    if (!profile) throw new Error(`Company profile with id ${companyId} not found.`);
+
+    this.companyRepo.setSignatureDefaultSync(companyId, signatureId);
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    return (await this.getProfile(companyId))!;
+  }
+
+  public async updateSignatureDesignation(
+    companyId: string,
+    signatureId: string,
+    designation: string,
+  ): Promise<CompanyProfileDto> {
+    const profile = await this.getProfile(companyId);
+    if (!profile) throw new Error(`Company profile with id ${companyId} not found.`);
+
+    if (!designation || designation.trim() === '') {
+      designation = 'Authorized Signatory';
+    }
+
+    this.companyRepo.updateSignatureDesignationSync(companyId, signatureId, designation);
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    return (await this.getProfile(companyId))!;
+  }
+
+  public async deleteSignatureById(
+    companyId: string,
+    signatureId: string,
+  ): Promise<CompanyProfileDto> {
+    const profile = await this.getProfile(companyId);
+    if (!profile) throw new Error(`Company profile with id ${companyId} not found.`);
+
+    const target = profile.signatures?.find((s) => s.id === signatureId);
+    if (!target) throw new Error('Signature not found');
+
+    this.companyRepo.deleteSignatureSync(companyId, signatureId);
+
+    const { fileSystemService } = await import('./filesystem/FileSystemService');
+    try {
+      fileSystemService.deleteCompanySignature(companyId, target.filePath);
+    } catch (err) {
+      console.warn('Failed to delete signature from disk', err);
+    }
+
+    if (this.activeCompanyId === companyId) {
+      this.cachedContext = null;
+    }
+
+    return (await this.getProfile(companyId))!;
   }
 
   public async listCompanies(): Promise<import('@vyora/types').CompanyDto[]> {

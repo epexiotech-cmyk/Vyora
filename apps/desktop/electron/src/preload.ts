@@ -32,6 +32,7 @@ import type {
   SmartPincodeLookupResponse,
   CompanyProfileDto,
   UpdateCompanyProfileRequest,
+  RecordPaymentInput,
 } from '@vyora/types';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { PrintToPDFOptions, WebContentsPrintOptions } from 'electron';
@@ -101,10 +102,23 @@ const vyoraApi = {
         ipcRenderer.invoke('db:purchases:search', options),
       getById: (id: string) => ipcRenderer.invoke('db:purchases:getById', id),
       create: (data: CreatePurchaseInput) => ipcRenderer.invoke('db:purchases:create', data),
-      update: (data: UpdatePurchaseInput) => ipcRenderer.invoke('db:purchases:update', data),
+      update: (data: UpdatePurchaseInput, pin?: string) =>
+        ipcRenderer.invoke('db:purchases:update', data, pin),
       delete: (id: string) => ipcRenderer.invoke('db:purchases:delete', id),
       submit: (id: string) => ipcRenderer.invoke('db:purchases:submit', id),
       cancel: (id: string) => ipcRenderer.invoke('db:purchases:cancel', id),
+      recordPayment: (invoiceId: string, payload: RecordPaymentInput) =>
+        ipcRenderer.invoke('db:purchases:recordPayment', invoiceId, payload),
+    },
+    expensePresets: {
+      search: (options: import('@vyora/types').SearchExpensePresetsOptions) =>
+        ipcRenderer.invoke('expense-presets:search', options),
+      getById: (id: string) => ipcRenderer.invoke('expense-presets:getById', id),
+      create: (data: import('@vyora/types').CreateExpensePresetInput) =>
+        ipcRenderer.invoke('expense-presets:create', data),
+      update: (data: import('@vyora/types').UpdateExpensePresetInput) =>
+        ipcRenderer.invoke('expense-presets:update', data),
+      delete: (id: string) => ipcRenderer.invoke('expense-presets:delete', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
@@ -116,6 +130,8 @@ const vyoraApi = {
       getById: (invoiceId: string) => ipcRenderer.invoke('sales:invoice:getById', invoiceId),
       list: (options?: ListSalesInvoicesOptions) =>
         ipcRenderer.invoke('sales:invoice:list', options),
+      recordPayment: (invoiceId: string, payload: RecordPaymentInput) =>
+        ipcRenderer.invoke('sales:invoice:recordPayment', invoiceId, payload),
     },
   },
   settings: {
@@ -167,6 +183,20 @@ const vyoraApi = {
     uploadLogo: (id: string, filename: string, buffer: ArrayBuffer) =>
       ipcRenderer.invoke('company:upload-logo', id, filename, buffer),
     deleteLogo: (id: string) => ipcRenderer.invoke('company:delete-logo', id),
+    uploadSignature: (id: string, filename: string, buffer: ArrayBuffer) =>
+      ipcRenderer.invoke('company:upload-signature', id, filename, buffer),
+    deleteSignature: (id: string) => ipcRenderer.invoke('company:delete-signature', id),
+    setSignatureAsDefault: (companyId: string, signatureId: string) =>
+      ipcRenderer.invoke('company:set-signature-default', companyId, signatureId),
+    deleteSignatureById: (companyId: string, signatureId: string) =>
+      ipcRenderer.invoke('company:delete-signature-by-id', companyId, signatureId),
+    updateSignatureDesignation: (companyId: string, signatureId: string, designation: string) =>
+      ipcRenderer.invoke(
+        'company:update-signature-designation',
+        companyId,
+        signatureId,
+        designation,
+      ),
     list: () => ipcRenderer.invoke('company:list'),
     create: (payload: import('@vyora/types').CreateCompanyInput) =>
       ipcRenderer.invoke('company:create', payload),
@@ -198,6 +228,12 @@ const vyoraApi = {
       payload: import('@vyora/print-engine').PrintPayload<unknown>,
       options?: PrintToPDFOptions,
     ) => ipcRenderer.invoke('print:printToPdf', templateName, payload, options),
+    saveTempPdfAndShare: (
+      templateName: string,
+      payload: import('@vyora/print-engine').PrintPayload<unknown>,
+      fileName: string,
+      options?: PrintToPDFOptions,
+    ) => ipcRenderer.invoke('print:saveTempPdfAndShare', templateName, payload, fileName, options),
     exportPdf: (html: string, options?: PrintToPDFOptions) =>
       ipcRenderer.invoke('print:exportPdf', html, options),
     getAvailablePrinters: () => ipcRenderer.invoke('print:getAvailablePrinters'),
@@ -255,9 +291,25 @@ const vyoraApi = {
     getLedgerStatement: (ledgerId: string, fromDate: Date, toDate: Date) =>
       ipcRenderer.invoke('accounting:getLedgerStatement', ledgerId, fromDate, toDate),
     getDashboardMetrics: () => ipcRenderer.invoke('accounting:getDashboardMetrics'),
+    listSettlements: (options: import('@vyora/types').ListSettlementsOptions) =>
+      ipcRenderer.invoke('accounting:listSettlements', options),
+    getSettlementById: (id: string) => ipcRenderer.invoke('accounting:getSettlementById', id),
+    cancelSettlement: (id: string) => ipcRenderer.invoke('accounting:cancelSettlement', id),
+    createSettlement: (input: import('@vyora/types').CreateSettlementInput) =>
+      ipcRenderer.invoke('accounting:createSettlement', input),
+    editSettlement: (settlementId: string, input: import('@vyora/types').UpdateSettlementInput) =>
+      ipcRenderer.invoke('accounting:editSettlement', settlementId, input),
     getFinancialOverviewChart: (req: import('@vyora/types').FinancialOverviewChartRequestDto) =>
       ipcRenderer.invoke('accounting:getFinancialOverviewChart', req),
     getActiveLedgers: () => ipcRenderer.invoke('accounting:getActiveLedgers'),
+    getOutstandingForCustomer: (
+      customerId: string,
+    ): Promise<ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>> =>
+      ipcRenderer.invoke('accounting:getOutstandingForCustomer', customerId),
+    getOutstandingForSupplier: (
+      supplierId: string,
+    ): Promise<ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>> =>
+      ipcRenderer.invoke('accounting:getOutstandingForSupplier', supplierId),
     groups: {
       search: (options: SearchLedgerGroupsOptions) =>
         ipcRenderer.invoke('db:accounting:groups:search', options),
@@ -283,6 +335,22 @@ const vyoraApi = {
   journal: {
     postVoucher: (input: import('@vyora/types').CreateVoucherInput) =>
       ipcRenderer.invoke('journal:postVoucher', input),
+    postTransfer: (input: {
+      fromPaymentAccountId: string;
+      toPaymentAccountId: string;
+      amount: number;
+      transferDate: Date;
+      narration?: string;
+    }) => ipcRenderer.invoke('journal:postTransfer', input),
+    cancelTransfer: (id: string) => ipcRenderer.invoke('journal:cancelTransfer', id),
+    updateTransfer: (input: {
+      voucherId: string;
+      fromPaymentAccountId: string;
+      toPaymentAccountId: string;
+      amount: number;
+      transferDate: Date;
+      narration?: string;
+    }) => ipcRenderer.invoke('journal:updateTransfer', input),
     cancelVoucher: (id: string) => ipcRenderer.invoke('journal:cancelVoucher', id),
     reverseVoucher: (id: string) => ipcRenderer.invoke('journal:reverseVoucher', id),
   },
@@ -295,6 +363,8 @@ const vyoraApi = {
     getNegativeInventory: () => ipcRenderer.invoke('inventory:global:getNegative'),
   },
   reports: {
+    getAccountBalanceSummary: (asOfDate?: Date) =>
+      ipcRenderer.invoke('reports:getAccountBalanceSummary', { asOfDate }),
     getTrialBalance: (asOfDate?: Date) => ipcRenderer.invoke('reports:getTrialBalance', asOfDate),
     getGeneralLedger: (args: { startDate?: Date; endDate?: Date }) =>
       ipcRenderer.invoke('reports:getGeneralLedger', args),
@@ -318,8 +388,24 @@ const vyoraApi = {
       voucherType?: string;
       searchQuery?: string;
     }) => ipcRenderer.invoke('reports:getBankBook', args),
+    getUpiBook: (args: {
+      ledgerId: string;
+      startDate?: Date;
+      endDate?: Date;
+      voucherType?: string;
+      searchQuery?: string;
+    }) => ipcRenderer.invoke('reports:getUpiBook', args),
+    getPosBook: (args: {
+      ledgerId: string;
+      startDate?: Date;
+      endDate?: Date;
+      voucherType?: string;
+      searchQuery?: string;
+    }) => ipcRenderer.invoke('reports:getPosBook', args),
     getOutstandingSummary: (args: { reportType: 'CUSTOMER' | 'SUPPLIER'; asOfDate?: Date }) =>
       ipcRenderer.invoke('reports:getOutstandingSummary', args),
+    getTransferRegister: (args: { startDate?: Date; endDate?: Date }) =>
+      ipcRenderer.invoke('reports:getTransferRegister', args),
     getStockSummary: (args?: { asOfDate?: Date }) =>
       ipcRenderer.invoke('reports:getStockSummary', args),
     getStockLedger: (args: {
@@ -481,10 +567,23 @@ export type VyoraDatabaseAPI = {
     search: (options: SearchPurchasesOptions) => Promise<ApiResponse<PurchaseListDto>>;
     getById: (id: string) => Promise<ApiResponse<PurchaseDto | null>>;
     create: (data: CreatePurchaseInput) => Promise<ApiResponse<string>>;
-    update: (data: UpdatePurchaseInput) => Promise<ApiResponse<void>>;
+    update: (data: UpdatePurchaseInput, pin?: string) => Promise<ApiResponse<void>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
     submit: (id: string) => Promise<ApiResponse<void>>;
     cancel: (id: string) => Promise<ApiResponse<void>>;
+    recordPayment: (
+      invoiceId: string,
+      payload: RecordPaymentInput,
+    ) => Promise<ApiResponse<{ settlementId: string }>>;
+  };
+  expensePresets: {
+    search: (
+      options: import('@vyora/types').SearchExpensePresetsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').ExpensePresetListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').ExpensePresetDto | null>>;
+    create: (data: import('@vyora/types').CreateExpensePresetInput) => Promise<ApiResponse<string>>;
+    update: (data: import('@vyora/types').UpdateExpensePresetInput) => Promise<ApiResponse<void>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
   };
   sales: {
     createInvoice: (data: CreateSalesInvoiceInput) => Promise<ApiResponse<{ invoiceId: string }>>;
@@ -496,7 +595,13 @@ export type VyoraDatabaseAPI = {
     submitInvoice: (invoiceId: string) => Promise<ApiResponse<{ warnings: unknown[] }>>;
     cancelInvoice: (invoiceId: string) => Promise<ApiResponse<void>>;
     getById: (invoiceId: string) => Promise<ApiResponse<SalesInvoiceDto>>;
-    list: (options?: ListSalesInvoicesOptions) => Promise<ApiResponse<SalesInvoiceDto[]>>;
+    list: (
+      options?: ListSalesInvoicesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').SalesInvoiceListDto>>;
+    recordPayment: (
+      invoiceId: string,
+      payload: RecordPaymentInput,
+    ) => Promise<ApiResponse<{ settlementId: string }>>;
   };
 };
 
@@ -563,6 +668,19 @@ export type VyoraCompanyAPI = {
     buffer: ArrayBuffer,
   ) => Promise<ApiResponse<CompanyProfileDto>>;
   deleteLogo: (id: string) => Promise<ApiResponse<CompanyProfileDto>>;
+  uploadSignature: (
+    id: string,
+    filename: string,
+    buffer: ArrayBuffer,
+  ) => Promise<ApiResponse<CompanyProfileDto>>;
+  deleteSignature: (id: string) => Promise<ApiResponse<CompanyProfileDto>>;
+  setSignatureAsDefault?: (companyId: string, signatureId: string) => Promise<ApiResponse<void>>;
+  deleteSignatureById?: (companyId: string, signatureId: string) => Promise<ApiResponse<void>>;
+  updateSignatureDesignation?: (
+    companyId: string,
+    signatureId: string,
+    designation: string,
+  ) => Promise<ApiResponse<void>>;
   list: () => Promise<ApiResponse<import('@vyora/types').CompanyDto[]>>;
   create: (payload: import('@vyora/types').CreateCompanyInput) => Promise<ApiResponse<string>>;
   delete: (id: string) => Promise<ApiResponse<void>>;
@@ -599,6 +717,12 @@ export type VyoraPrintAPI = {
     payload: import('@vyora/print-engine').PrintPayload<unknown>,
     options?: PrintToPDFOptions,
   ) => Promise<ArrayBuffer>;
+  saveTempPdfAndShare: (
+    templateName: string,
+    payload: import('@vyora/print-engine').PrintPayload<unknown>,
+    fileName: string,
+    options?: PrintToPDFOptions,
+  ) => Promise<{ success: boolean; filePath?: string; error?: string }>;
   exportPdf: (html: string, options?: PrintToPDFOptions) => Promise<{ filePath: string }>;
   getAvailablePrinters: () => Promise<import('electron').PrinterInfo[]>;
 };
@@ -643,6 +767,12 @@ export type VyoraAccountingAPI = {
   ) => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').FinancialOverviewChartResponseDto[]>
   >;
+  getOutstandingForSupplier: (
+    supplierId: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>>;
+  getOutstandingForCustomer: (
+    customerId: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').OutstandingDocumentDto[]>>;
   getVoucherById: (
     id: string,
   ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').VoucherDetailDto>>;
@@ -663,6 +793,22 @@ export type VyoraAccountingAPI = {
   getActiveLedgers: () => Promise<
     import('@vyora/types').ApiResponse<import('@vyora/types').LedgerLookupDto[]>
   >;
+  listSettlements: (
+    options: import('@vyora/types').ListSettlementsOptions,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').SettlementListDto>>;
+  getSettlementById: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').SettlementDto>>;
+  cancelSettlement: (
+    id: string,
+  ) => Promise<import('@vyora/types').ApiResponse<{ cancelledSettlementId: string }>>;
+  createSettlement: (
+    input: import('@vyora/types').CreateSettlementInput,
+  ) => Promise<import('@vyora/types').ApiResponse<{ settlementId: string }>>;
+  editSettlement: (
+    settlementId: string,
+    input: import('@vyora/types').UpdateSettlementInput,
+  ) => Promise<import('@vyora/types').ApiResponse<{ settlementId: string }>>;
   groups: {
     search: (
       options: SearchLedgerGroupsOptions,
@@ -710,6 +856,22 @@ export type VyoraJournalAPI = {
   postVoucher: (
     input: import('@vyora/types').CreateVoucherInput,
   ) => Promise<ApiResponse<{ voucherId: string; voucherNumber: string }>>;
+  postTransfer: (input: {
+    fromPaymentAccountId: string;
+    toPaymentAccountId: string;
+    amount: number;
+    transferDate: Date;
+    narration?: string;
+  }) => Promise<ApiResponse<{ voucherId: string }>>;
+  cancelTransfer: (id: string) => Promise<ApiResponse<{ reversalVoucherId?: string }>>;
+  updateTransfer: (input: {
+    voucherId: string;
+    fromPaymentAccountId: string;
+    toPaymentAccountId: string;
+    amount: number;
+    transferDate: Date;
+    narration?: string;
+  }) => Promise<ApiResponse<{ voucherId: string }>>;
   cancelVoucher: (id: string) => Promise<ApiResponse<{ reversalVoucherId?: string }>>;
   reverseVoucher: (id: string) => Promise<ApiResponse<{ reversalVoucherId: string }>>;
 };
@@ -725,6 +887,9 @@ export type VyoraInventoryAPI = {
 };
 
 export type VyoraReportsAPI = {
+  getAccountBalanceSummary: (
+    asOfDate?: Date,
+  ) => Promise<import('@vyora/types').AccountBalanceSummaryDto>;
   getTrialBalance: (asOfDate?: Date) => Promise<import('@vyora/types').TrialBalanceReport>;
   getGeneralLedger: (args: {
     startDate?: Date;
@@ -750,10 +915,28 @@ export type VyoraReportsAPI = {
     voucherType?: string;
     searchQuery?: string;
   }) => Promise<import('@vyora/types').BankBookReportDto>;
+  getUpiBook: (args: {
+    ledgerId: string;
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').UpiBookReportDto>;
+  getPosBook: (args: {
+    ledgerId: string;
+    startDate?: Date;
+    endDate?: Date;
+    voucherType?: string;
+    searchQuery?: string;
+  }) => Promise<import('@vyora/types').PosBookReportDto>;
   getOutstandingSummary: (args: {
     reportType: 'CUSTOMER' | 'SUPPLIER';
     asOfDate?: Date;
   }) => Promise<import('@vyora/types').OutstandingSummaryDto>;
+  getTransferRegister: (args: {
+    startDate?: Date;
+    endDate?: Date;
+  }) => Promise<import('@vyora/types').TransferRegisterReportDto>;
   getStockSummary: (args?: {
     asOfDate?: Date;
   }) => Promise<import('@vyora/types').ApiResponse<import('@vyora/types').StockSummaryDto>>;

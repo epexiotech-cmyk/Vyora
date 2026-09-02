@@ -4,21 +4,25 @@ import {
   SalesInvoiceDto,
   ListSalesInvoicesOptions,
   DocumentType,
+  RecordPaymentInput,
 } from '@vyora/types';
 
 import {
   SalesInvoiceRepository,
   StockMovementRepository,
   ProductRepository,
+  companyRepository,
 } from '../repositories';
 import { DbTransaction } from '../repositories/BaseRepository';
 
 import { authService } from './AuthService';
+import { companyContextService } from './CompanyContextService';
 import { dbService } from './database/DatabaseService';
 import { documentNumberingService } from './DocumentNumberingService';
 import { inventoryEngine } from './InventoryEngine';
 import { journalService } from './JournalService';
 import { paymentResolutionService } from './PaymentResolutionService';
+import { settlementService } from './SettlementService';
 
 export class StockValidationError extends Error {
   public validations: unknown[] = [];
@@ -59,7 +63,9 @@ export class SalesInvoiceService {
     return this.salesInvoiceRepo.getById(invoiceId);
   }
 
-  public async listInvoices(options?: ListSalesInvoicesOptions): Promise<SalesInvoiceDto[]> {
+  public async listInvoices(
+    options?: ListSalesInvoicesOptions,
+  ): Promise<import('@vyora/types').SalesInvoiceListDto> {
     return this.salesInvoiceRepo.list(options);
   }
 
@@ -97,7 +103,7 @@ export class SalesInvoiceService {
     }
 
     dbService.getDb().transaction((tx) => {
-      if (existing.status === 'SUBMITTED') {
+      if (['SUBMITTED', 'PARTIALLY_PAID', 'PAID'].includes(existing.status)) {
         // Reverse inventory and journal before updating
         inventoryEngine.reverseSalesInvoiceSync(invoiceId, tx);
         journalService.reverseSalesInvoiceSync(invoiceId, tx);
@@ -109,7 +115,7 @@ export class SalesInvoiceService {
 
       this.salesInvoiceRepo.updateInvoiceSync(invoiceId, payload, tx);
 
-      if (existing.status === 'SUBMITTED') {
+      if (['SUBMITTED', 'PARTIALLY_PAID', 'PAID'].includes(existing.status)) {
         // Re-submit the updated invoice
         this.submitInvoiceInnerSync(invoiceId, tx, true); // true = skip document numbering
       }
@@ -230,7 +236,7 @@ export class SalesInvoiceService {
       if (!invoice) throw new Error('Invoice not found');
       if (invoice.status === 'CANCELLED') throw new Error('Invoice already cancelled');
 
-      if (invoice.status === 'SUBMITTED') {
+      if (['SUBMITTED', 'PARTIALLY_PAID', 'PAID'].includes(invoice.status)) {
         // Reverse inventory using the new generic cancellation method
         inventoryEngine.reverseSalesInvoiceSync(invoiceId, tx);
 
@@ -274,10 +280,57 @@ export class SalesInvoiceService {
       payload.upiIdSnapshot = qrAccount.upiId;
       payload.upiPayeeNameSnapshot = qrAccount.merchantName;
     } else {
+      const company = companyRepository.getByIdSync(companyId, tx);
       payload.qrAccountId = null;
-      payload.upiIdSnapshot = null;
-      payload.upiPayeeNameSnapshot = null;
+      payload.upiIdSnapshot = company?.defaultUpiId || null;
+      payload.upiPayeeNameSnapshot = company?.upiPayeeName || null;
     }
+
+    const signature = paymentResolutionService.resolveSignatureDestinationSync(
+      customerId,
+      companyId,
+      tx,
+    );
+    if (signature) {
+      payload.signatureId = signature.id;
+    } else {
+      payload.signatureId = null;
+    }
+  }
+
+  public async recordPayment(
+    invoiceId: string,
+    payload: RecordPaymentInput,
+  ): Promise<{ settlementId: string }> {
+    const companyId = companyContextService.getActiveCompany();
+    if (!companyId) throw new Error('No active company found');
+
+    const invoice = await this.salesInvoiceRepo.getById(invoiceId);
+    if (!invoice) throw new Error(`Invoice not found: ${invoiceId}`);
+
+    if (invoice.status === 'DRAFT' || invoice.status === 'CANCELLED') {
+      throw new Error(`Cannot record payment for invoice in ${invoice.status} status.`);
+    }
+
+    // Delegate to settlement service which handles everything in one transaction
+    return settlementService.createSettlement({
+      settlementDate: payload.paymentDate,
+      partyType: 'CUSTOMER',
+      partyId: invoice.customerId,
+      amount: payload.amount,
+      paymentMode: payload.paymentMode,
+      paymentAccountId: payload.paymentAccountId,
+      referenceNumber: payload.referenceNumber,
+      referenceDate: payload.referenceDate,
+      notes: payload.notes,
+      allocations: [
+        {
+          documentType: 'SALES_INVOICE',
+          documentId: invoiceId,
+          allocatedAmount: payload.amount,
+        },
+      ],
+    });
   }
 }
 

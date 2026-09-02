@@ -5,6 +5,7 @@ import {
   PurchaseDto,
   PurchaseListDto,
   ApiResponse,
+  RecordPaymentInput,
 } from '@vyora/types';
 import { ipcMain } from 'electron';
 
@@ -25,9 +26,9 @@ export function registerPurchaseHandlers() {
 
   ipcMain.handle(
     'db:purchases:update',
-    async (_, payload: UpdatePurchaseInput): Promise<ApiResponse<void>> => {
+    async (_, payload: UpdatePurchaseInput, pin?: string): Promise<ApiResponse<void>> => {
       try {
-        await purchaseService.updateDraft(payload);
+        await purchaseService.updateDraft(payload, pin);
         return { success: true, data: undefined };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
@@ -50,6 +51,22 @@ export function registerPurchaseHandlers() {
       try {
         const data = await purchaseService.getById(id);
         return { success: true, data };
+      } catch (err: unknown) {
+        return { success: false, error: (err as Error).message };
+      }
+    },
+  );
+
+  ipcMain.handle(
+    'db:purchases:recordPayment',
+    async (
+      _event,
+      invoiceId: string,
+      payload: RecordPaymentInput,
+    ): Promise<ApiResponse<{ settlementId: string }>> => {
+      try {
+        const result = await purchaseService.recordPayment(invoiceId, payload);
+        return { success: true, data: result };
       } catch (err: unknown) {
         return { success: false, error: (err as Error).message };
       }

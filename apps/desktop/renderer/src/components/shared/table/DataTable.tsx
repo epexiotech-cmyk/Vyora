@@ -24,6 +24,7 @@ export interface DataTableProps<T> {
   pagination?: TablePaginationProps;
   className?: string;
   rowTestIdExtractor?: (item: T) => string;
+  rowClassName?: (item: T) => string;
 }
 
 export function DataTable<T>({
@@ -37,6 +38,7 @@ export function DataTable<T>({
   pagination,
   className,
   rowTestIdExtractor,
+  rowClassName,
 }: DataTableProps<T>) {
   return (
     <div className={cn('space-y-4', className)}>
@@ -80,6 +82,7 @@ export function DataTable<T>({
                   className={cn(
                     'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
                     onRowClick && 'cursor-pointer',
+                    rowClassName && rowClassName(item)
                   )}
                   onClick={() => onRowClick?.(item)}
                 >

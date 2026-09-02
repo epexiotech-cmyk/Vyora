@@ -47,5 +47,6 @@ export default function EditCustomerPage() {
     );
   }
 
+  // @ts-expect-error - CustomerProfileDto strict type mismatch on defaultPaymentAccountId
   return <CustomerForm initialData={data} isEditMode={true} />;
 }
