@@ -110,6 +110,83 @@ const vyoraApi = {
       recordPayment: (invoiceId: string, payload: RecordPaymentInput) =>
         ipcRenderer.invoke('db:purchases:recordPayment', invoiceId, payload),
     },
+    employeeTypes: {
+      search: (options: import('@vyora/types').SearchEmployeeTypesOptions) =>
+        ipcRenderer.invoke('db:employeeTypes:search', options),
+      getAll: () => ipcRenderer.invoke('db:employeeTypes:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:employeeTypes:getById', id),
+      create: (data: import('@vyora/types').CreateEmployeeTypeInput) =>
+        ipcRenderer.invoke('db:employeeTypes:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeTypeInput) =>
+        ipcRenderer.invoke('db:employeeTypes:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:employeeTypes:delete', id),
+    },
+    departments: {
+      search: (options: import('@vyora/types').SearchDepartmentsOptions) =>
+        ipcRenderer.invoke('db:departments:search', options),
+      getAll: () => ipcRenderer.invoke('db:departments:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:departments:getById', id),
+      create: (data: import('@vyora/types').CreateDepartmentInput) =>
+        ipcRenderer.invoke('db:departments:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateDepartmentInput) =>
+        ipcRenderer.invoke('db:departments:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:departments:delete', id),
+    },
+    designations: {
+      search: (options: import('@vyora/types').SearchDesignationsOptions) =>
+        ipcRenderer.invoke('db:designations:search', options),
+      getAll: () => ipcRenderer.invoke('db:designations:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:designations:getById', id),
+      create: (data: import('@vyora/types').CreateDesignationInput) =>
+        ipcRenderer.invoke('db:designations:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateDesignationInput) =>
+        ipcRenderer.invoke('db:designations:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:designations:delete', id),
+    },
+    workLocations: {
+      search: (options: import('@vyora/types').SearchWorkLocationsOptions) =>
+        ipcRenderer.invoke('db:workLocations:search', options),
+      getAll: () => ipcRenderer.invoke('db:workLocations:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:workLocations:getById', id),
+      create: (data: import('@vyora/types').CreateWorkLocationInput) =>
+        ipcRenderer.invoke('db:workLocations:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateWorkLocationInput) =>
+        ipcRenderer.invoke('db:workLocations:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:workLocations:delete', id),
+    },
+    employeeExpenseTypes: {
+      search: (options: import('@vyora/types').SearchEmployeeExpenseTypesOptions) =>
+        ipcRenderer.invoke('db:employeeExpenseTypes:search', options),
+      getAll: () => ipcRenderer.invoke('db:employeeExpenseTypes:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('db:employeeExpenseTypes:getById', id),
+      create: (data: import('@vyora/types').CreateEmployeeExpenseTypeInput) =>
+        ipcRenderer.invoke('db:employeeExpenseTypes:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeExpenseTypeInput) =>
+        ipcRenderer.invoke('db:employeeExpenseTypes:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('db:employeeExpenseTypes:delete', id),
+    },
+    leaveTypes: {
+      search: (options: import('@vyora/types').SearchLeaveTypesOptions) =>
+        ipcRenderer.invoke('leaveTypes:search', options),
+      getAll: () => ipcRenderer.invoke('leaveTypes:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('leaveTypes:getById', id),
+      create: (data: import('@vyora/types').CreateLeaveTypeInput) =>
+        ipcRenderer.invoke('leaveTypes:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateLeaveTypeInput) =>
+        ipcRenderer.invoke('leaveTypes:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('leaveTypes:deactivate', id),
+    },
+    holidays: {
+      search: (options: import('@vyora/types').SearchHolidaysOptions) =>
+        ipcRenderer.invoke('holidays:search', options),
+      getAll: () => ipcRenderer.invoke('holidays:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('holidays:getById', id),
+      create: (data: import('@vyora/types').CreateHolidayInput) =>
+        ipcRenderer.invoke('holidays:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateHolidayInput) =>
+        ipcRenderer.invoke('holidays:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('holidays:deactivate', id),
+    },
     expensePresets: {
       search: (options: import('@vyora/types').SearchExpensePresetsOptions) =>
         ipcRenderer.invoke('expense-presets:search', options),
@@ -119,6 +196,42 @@ const vyoraApi = {
       update: (data: import('@vyora/types').UpdateExpensePresetInput) =>
         ipcRenderer.invoke('expense-presets:update', data),
       delete: (id: string) => ipcRenderer.invoke('expense-presets:delete', id),
+    },
+    employees: {
+      search: (options: import('@vyora/types').SearchEmployeesOptions) =>
+        ipcRenderer.invoke('employee:search', options),
+      getById: (id: string) => ipcRenderer.invoke('employee:getById', id),
+      create: (data: import('@vyora/types').CreateEmployeeInput) =>
+        ipcRenderer.invoke('employee:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeInput) =>
+        ipcRenderer.invoke('employee:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('employee:deactivate', id),
+    },
+    employeeBankDetails: {
+      getByEmployeeId: (employeeId: string) =>
+        ipcRenderer.invoke('employeeBankDetails:getByEmployeeId', employeeId),
+      getById: (id: string) => ipcRenderer.invoke('employeeBankDetails:getById', id),
+      create: (employeeId: string, data: import('@vyora/types').CreateEmployeeBankDetailInput) =>
+        ipcRenderer.invoke('employeeBankDetails:create', employeeId, data),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeBankDetailInput) =>
+        ipcRenderer.invoke('employeeBankDetails:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('employeeBankDetails:deactivate', id),
+    },
+    employeeDocuments: {
+      getByEmployeeId: (employeeId: string) =>
+        ipcRenderer.invoke('employeeDocument:getByEmployeeId', employeeId),
+      getById: (id: string) => ipcRenderer.invoke('employeeDocument:getById', id),
+      create: (employeeId: string, data: import('@vyora/types').CreateEmployeeDocumentInput) =>
+        ipcRenderer.invoke('employeeDocument:create', employeeId, data),
+      upload: (
+        employeeId: string,
+        data: Omit<import('@vyora/types').CreateEmployeeDocumentInput, 'filePath'>,
+        filename: string,
+        buffer: ArrayBuffer | Uint8Array,
+      ) => ipcRenderer.invoke('employeeDocument:upload', employeeId, data, filename, buffer),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeDocumentInput) =>
+        ipcRenderer.invoke('employeeDocument:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('employeeDocument:deactivate', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
@@ -576,6 +689,113 @@ export type VyoraDatabaseAPI = {
       payload: RecordPaymentInput,
     ) => Promise<ApiResponse<{ settlementId: string }>>;
   };
+  employeeTypes: {
+    search: (
+      options: import('@vyora/types').SearchEmployeeTypesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeTypeListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').EmployeeTypeDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').EmployeeTypeDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateEmployeeTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeTypeDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeTypeDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  departments: {
+    search: (
+      options: import('@vyora/types').SearchDepartmentsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').DepartmentListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').DepartmentDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').DepartmentDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateDepartmentInput,
+    ) => Promise<ApiResponse<import('@vyora/types').DepartmentDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateDepartmentInput,
+    ) => Promise<ApiResponse<import('@vyora/types').DepartmentDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  designations: {
+    search: (
+      options: import('@vyora/types').SearchDesignationsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').DesignationListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').DesignationDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').DesignationDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateDesignationInput,
+    ) => Promise<ApiResponse<import('@vyora/types').DesignationDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateDesignationInput,
+    ) => Promise<ApiResponse<import('@vyora/types').DesignationDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  workLocations: {
+    search: (
+      options: import('@vyora/types').SearchWorkLocationsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').WorkLocationListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').WorkLocationDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').WorkLocationDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateWorkLocationInput,
+    ) => Promise<ApiResponse<import('@vyora/types').WorkLocationDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateWorkLocationInput,
+    ) => Promise<ApiResponse<import('@vyora/types').WorkLocationDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  employeeExpenseTypes: {
+    search: (
+      options: import('@vyora/types').SearchEmployeeExpenseTypesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeExpenseTypeListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').EmployeeExpenseTypeDto[]>>;
+    getById: (
+      id: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeExpenseTypeDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateEmployeeExpenseTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeExpenseTypeDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeExpenseTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeExpenseTypeDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  leaveTypes: {
+    search: (
+      options: import('@vyora/types').SearchLeaveTypesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveTypeListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').LeaveTypeDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').LeaveTypeDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateLeaveTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveTypeDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateLeaveTypeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveTypeDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  holidays: {
+    search: (
+      options: import('@vyora/types').SearchHolidaysOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').HolidayListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').HolidayDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').HolidayDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateHolidayInput,
+    ) => Promise<ApiResponse<import('@vyora/types').HolidayDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateHolidayInput,
+    ) => Promise<ApiResponse<import('@vyora/types').HolidayDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
   expensePresets: {
     search: (
       options: import('@vyora/types').SearchExpensePresetsOptions,
@@ -602,6 +822,59 @@ export type VyoraDatabaseAPI = {
       invoiceId: string,
       payload: RecordPaymentInput,
     ) => Promise<ApiResponse<{ settlementId: string }>>;
+  };
+  employees: {
+    search: (
+      options: import('@vyora/types').SearchEmployeesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').EmployeeDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateEmployeeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+  };
+  employeeBankDetails: {
+    getByEmployeeId: (
+      employeeId: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeBankDetailDto[]>>;
+    getById: (
+      id: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeBankDetailDto | null>>;
+    create: (
+      employeeId: string,
+      data: import('@vyora/types').CreateEmployeeBankDetailInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeBankDetailDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeBankDetailInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeBankDetailDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+  };
+  employeeDocuments: {
+    getByEmployeeId: (
+      employeeId: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDocumentDto[]>>;
+    getById: (
+      id: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDocumentDto | null>>;
+    upload: (
+      employeeId: string,
+      data: Omit<import('@vyora/types').CreateEmployeeDocumentInput, 'documentPath'>,
+      filename: string,
+      buffer: ArrayBuffer,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDocumentDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeDocumentInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeDocumentDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+    download: (
+      id: string,
+    ) => Promise<ApiResponse<{ buffer: ArrayBuffer; filename: string; mimeType: string }>>;
   };
 };
 

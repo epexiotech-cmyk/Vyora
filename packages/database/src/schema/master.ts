@@ -281,3 +281,159 @@ export const expense_presets = sqliteTable(
 
 export type ExpensePreset = typeof expense_presets.$inferSelect;
 export type InsertExpensePreset = typeof expense_presets.$inferInsert;
+
+// ============================================================================
+// HR / Employee Masters
+// ============================================================================
+
+export const employee_types = sqliteTable(
+  'employee_types',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isSystem: integer('is_system', { mode: 'boolean' }).default(false).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_employee_types_company_name').on(table.companyId, table.name)],
+);
+
+export const departments = sqliteTable(
+  'departments',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_departments_company_name').on(table.companyId, table.name)],
+);
+
+export const designations = sqliteTable(
+  'designations',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_designations_company_name').on(table.companyId, table.name)],
+);
+
+export const work_locations = sqliteTable(
+  'work_locations',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    address: text('address'),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_work_locations_company_name').on(table.companyId, table.name)],
+);
+
+export const employee_expense_types = sqliteTable(
+  'employee_expense_types',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    ledgerId: text('ledger_id')
+      .references(() => ledgers.id)
+      .notNull(),
+    defaultTaxGroupId: text('default_tax_group_id').references(() => tax_groups.id),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isSystem: integer('is_system', { mode: 'boolean' }).default(false).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    uniqueIndex('idx_employee_expense_types_company_name').on(table.companyId, table.name),
+  ],
+);
+
+export const leave_types = sqliteTable(
+  'leave_types',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    isPaid: integer('is_paid', { mode: 'boolean' }).default(true).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isSystem: integer('is_system', { mode: 'boolean' }).default(false).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_leave_types_company_name').on(table.companyId, table.name)],
+);
+
+export const holidays = sqliteTable(
+  'holidays',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    name: text('name').notNull(),
+    date: integer('date', { mode: 'timestamp' }).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [uniqueIndex('idx_holidays_company_date').on(table.companyId, table.date)],
+);
+
+export type EmployeeType = typeof employee_types.$inferSelect;
+export type InsertEmployeeType = typeof employee_types.$inferInsert;
+
+export type Department = typeof departments.$inferSelect;
+export type InsertDepartment = typeof departments.$inferInsert;
+
+export type Designation = typeof designations.$inferSelect;
+export type InsertDesignation = typeof designations.$inferInsert;
+
+export type WorkLocation = typeof work_locations.$inferSelect;
+export type InsertWorkLocation = typeof work_locations.$inferInsert;
+
+export type EmployeeExpenseType = typeof employee_expense_types.$inferSelect;
+export type InsertEmployeeExpenseType = typeof employee_expense_types.$inferInsert;
+
+export type LeaveType = typeof leave_types.$inferSelect;
+export type InsertLeaveType = typeof leave_types.$inferInsert;
+
+export type Holiday = typeof holidays.$inferSelect;
+export type InsertHoliday = typeof holidays.$inferInsert;

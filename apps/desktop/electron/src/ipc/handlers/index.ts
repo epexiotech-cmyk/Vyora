@@ -29,7 +29,13 @@ export * from './fundTransferHandlers';
 export * from './developerDatabaseHandlers';
 export * from './expensePresetHandlers';
 export * from './exportHandlers';
-
+export * from './employeeTypeHandlers';
+export * from './departmentHandlers';
+export * from './designationHandlers';
+export * from './workLocationHandlers';
+export * from './employeeExpenseTypeHandlers';
+export * from './leaveTypeHandlers';
+export * from './holidayHandlers';
 import { DeveloperFeatures } from '../../main/DeveloperFeatures';
 
 import { registerAccountingHandlers } from './accountingHandlers';
@@ -42,17 +48,26 @@ import { registerCompanyHandlers } from './companyHandlers';
 import { registerCountryHandlers } from './countryHandlers';
 import { registerCurrencyHandlers } from './currencyHandlers';
 import { registerCustomerHandlers } from './customerHandlers';
+import { registerDepartmentHandlers } from './departmentHandlers';
+import { registerDesignationHandlers } from './designationHandlers';
 import { registerDeveloperDatabaseHandlers } from './developerDatabaseHandlers';
 import { registerDeveloperFeaturesHandlers } from './developerFeaturesHandlers';
 import { registerDevHandlers } from './devHandlers';
 import { registerDocumentNumberingHandlers } from './documentNumberingHandlers';
+import { registerEmployeeBankDetailsHandlers } from './employeeBankDetailsHandlers';
+import { registerEmployeeDocumentHandlers } from './employeeDocumentHandlers';
+import { registerEmployeeExpenseTypeHandlers } from './employeeExpenseTypeHandlers';
+import { registerEmployeeHandlers } from './employeeHandlers';
+import { registerEmployeeTypeHandlers } from './employeeTypeHandlers';
 import { registerExpensePresetHandlers } from './expensePresetHandlers';
 import { registerExportHandlers } from './exportHandlers';
 import { registerFinancialYearHandlers } from './financialYearHandlers';
 import { registerFundTransferHandlers } from './fundTransferHandlers';
+import { registerHolidayHandlers } from './holidayHandlers';
 import { registerHsnHandlers } from './hsnHandlers';
 import { registerInventoryHandlers } from './inventoryHandlers';
 import { registerJournalHandlers } from './journalHandlers';
+import { registerLeaveTypeHandlers } from './leaveTypeHandlers';
 import { registerPaymentAccountHandlers } from './paymentAccountHandlers';
 import { registerPincodeHandlers } from './pincodeHandlers';
 import { registerPrintHandlers } from './printHandlers';
@@ -67,6 +82,7 @@ import { registerSystemHandlers } from './systemHandlers';
 import { registerTaxHandlers } from './taxHandlers';
 import { registerUnitHandlers } from './unitHandlers';
 import { registerUqcHandlers } from './uqcHandlers';
+import { registerWorkLocationHandlers } from './workLocationHandlers';
 
 export function registerAllHandlers() {
   registerAuthHandlers();
@@ -102,6 +118,16 @@ export function registerAllHandlers() {
   registerFundTransferHandlers();
   registerExportHandlers();
   registerExpensePresetHandlers();
+  registerEmployeeTypeHandlers();
+  registerDepartmentHandlers();
+  registerDesignationHandlers();
+  registerWorkLocationHandlers();
+  registerEmployeeExpenseTypeHandlers();
+  registerEmployeeHandlers();
+  registerEmployeeBankDetailsHandlers();
+  registerEmployeeDocumentHandlers();
+  registerLeaveTypeHandlers();
+  registerHolidayHandlers();
 
   // Register unconditional developer features check
   registerDeveloperFeaturesHandlers();

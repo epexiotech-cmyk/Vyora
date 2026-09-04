@@ -14,3 +14,7 @@ export * from './TaxRepository';
 export * from './DocumentNumberingRepository';
 export * from './PaymentAccountRepository';
 export * from './SettlementRepository';
+
+export * from './EmployeeRepository';
+export * from './EmployeeBankDetailsRepository';
+export * from './EmployeeDocumentRepository';

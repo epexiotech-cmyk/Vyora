@@ -88,6 +88,101 @@ export default function SettingsPage() {
           </AppCard>
         </Link>
       </div>
+
+      <div className="mt-8">
+        <SectionHeader
+          title="HR & Employee Masters"
+          description="Configure employment types, departments, and employee-related master data."
+        />
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Link href="/dashboard/settings/employee-types">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Employee Types</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Manage types of employment like Permanent, Contract, etc.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/departments">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Departments</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">Manage organizational departments.</p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/designations">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Designations</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">Manage job titles and designations.</p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/work-locations">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Work Locations</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Manage branch offices and work locations.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/employee-expense-types">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Employee Expense Types</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Manage categories for employee expenses and ledger mapping.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/leave-types">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Leave Types</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Manage categories for employee leaves (Sick, Casual, etc.).
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/holidays">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Holidays</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Manage company holidays and observances.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

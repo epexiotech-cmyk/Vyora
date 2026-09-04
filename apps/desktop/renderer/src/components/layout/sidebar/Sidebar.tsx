@@ -168,6 +168,10 @@ export function Sidebar() {
           <SidebarItem icon={PackageOpen} label="Services" href="/dashboard/services" />
           <SidebarItem icon={Scale} label="Units" href="/dashboard/units" />
         </SidebarGroup>
+
+        <SidebarGroup label="Human Resources">
+          <SidebarItem icon={Users} label="Employee Database" href="/dashboard/employees" />
+        </SidebarGroup>
       </div>
 
       <div className="mt-auto border-t p-2">
@@ -198,6 +202,27 @@ export function Sidebar() {
             icon={Settings}
             label="Expense Types"
             href="/dashboard/settings/expense-types"
+          />
+          <SidebarItem
+            icon={Users}
+            label="Employee Types"
+            href="/dashboard/settings/employee-types"
+          />
+          <SidebarItem icon={Building} label="Departments" href="/dashboard/settings/departments" />
+          <SidebarItem
+            icon={FileText}
+            label="Designations"
+            href="/dashboard/settings/designations"
+          />
+          <SidebarItem
+            icon={Box}
+            label="Work Locations"
+            href="/dashboard/settings/work-locations"
+          />
+          <SidebarItem
+            icon={Receipt}
+            label="Employee Expense Types"
+            href="/dashboard/settings/employee-expense-types"
           />
         </SidebarAccordion>
 

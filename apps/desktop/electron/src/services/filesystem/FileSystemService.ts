@@ -110,6 +110,38 @@ export class FileSystemService {
       fs.unlinkSync(targetPath);
     }
   }
+
+  public getEmployeeDocumentDirectory(companyId: string, employeeId: string): string {
+    const dir = path.join(this.dirs.attachments, 'companies', companyId, 'employees', employeeId);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+  }
+
+  public getEmployeeDocumentPath(companyId: string, employeeId: string, filename: string): string {
+    const dir = this.getEmployeeDocumentDirectory(companyId, employeeId);
+    const safeFilename = path.basename(filename);
+    return path.join(dir, safeFilename);
+  }
+
+  public saveEmployeeDocument(
+    companyId: string,
+    employeeId: string,
+    filename: string,
+    buffer: Buffer,
+  ): string {
+    const destPath = this.getEmployeeDocumentPath(companyId, employeeId, filename);
+    fs.writeFileSync(destPath, buffer);
+    return destPath;
+  }
+
+  public deleteEmployeeDocument(companyId: string, employeeId: string, filename: string): void {
+    const targetPath = this.getEmployeeDocumentPath(companyId, employeeId, filename);
+    if (fs.existsSync(targetPath)) {
+      fs.unlinkSync(targetPath);
+    }
+  }
 }
 
 export const fileSystemService = new FileSystemService();

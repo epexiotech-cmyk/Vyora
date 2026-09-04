@@ -10,3 +10,4 @@ export * from './utils/password';
 export * from './seed';
 export * from './schema/accounting';
 export * from './schema/paymentAccounts';
+export * from './schema/employee';

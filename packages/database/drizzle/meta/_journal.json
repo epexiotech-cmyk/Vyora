@@ -8,6 +8,34 @@
       "when": 1787725799501,
       "tag": "0000_late_mathemanic",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788327973885,
+      "tag": "0001_crazy_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788432119266,
+      "tag": "0002_cloudy_felicia_hardy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788438036034,
+      "tag": "0003_worried_midnight",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788501615516,
+      "tag": "0004_parallel_rawhide_kid",
+      "breakpoints": true
     }
   ]
 }
