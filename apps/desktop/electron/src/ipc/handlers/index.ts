@@ -58,6 +58,7 @@ import { registerEmployeeBankDetailsHandlers } from './employeeBankDetailsHandle
 import { registerEmployeeDocumentHandlers } from './employeeDocumentHandlers';
 import { registerEmployeeExpenseTypeHandlers } from './employeeExpenseTypeHandlers';
 import { registerEmployeeHandlers } from './employeeHandlers';
+import { registerEmployeeLeaveBalanceHandlers } from './employeeLeaveBalanceHandlers';
 import { registerEmployeeTypeHandlers } from './employeeTypeHandlers';
 import { registerExpensePresetHandlers } from './expensePresetHandlers';
 import { registerExportHandlers } from './exportHandlers';
@@ -84,7 +85,7 @@ import { registerUnitHandlers } from './unitHandlers';
 import { registerUqcHandlers } from './uqcHandlers';
 import { registerWorkLocationHandlers } from './workLocationHandlers';
 
-export function registerAllHandlers() {
+export function registerAllHandlers(): void {
   registerAuthHandlers();
   registerSystemHandlers();
   registerBootstrapHandlers();
@@ -128,6 +129,7 @@ export function registerAllHandlers() {
   registerEmployeeDocumentHandlers();
   registerLeaveTypeHandlers();
   registerHolidayHandlers();
+  registerEmployeeLeaveBalanceHandlers();
 
   // Register unconditional developer features check
   registerDeveloperFeaturesHandlers();

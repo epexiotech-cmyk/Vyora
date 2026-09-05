@@ -32,3 +32,6 @@ export * from './master/employeeExpenseType.dto';
 export * from './master/employee.dto';
 export * from './master/leaveType.dto';
 export * from './master/holiday.dto';
+
+
+export * from './master/employeeLeaveBalance.dto';

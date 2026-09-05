@@ -1,7 +1,7 @@
-import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-import { employee_types, departments, designations, work_locations } from './master';
-import { companies } from './system';
+import { employee_types, departments, designations, work_locations, leave_types } from './master';
+import { companies, financial_years } from './system';
 
 export const employees = sqliteTable(
   'employees',
@@ -129,6 +129,49 @@ export const employee_documents = sqliteTable(
 
 export type Employee = typeof employees.$inferSelect;
 export type InsertEmployee = typeof employees.$inferInsert;
+
+export const employee_leave_balances = sqliteTable(
+  'employee_leave_balances',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    employeeId: text('employee_id')
+      .references(() => employees.id)
+      .notNull(),
+    leaveTypeId: text('leave_type_id')
+      .references(() => leave_types.id)
+      .notNull(),
+    financialYearId: text('financial_year_id')
+      .references(() => financial_years.id)
+      .notNull(),
+
+    openingBalance: real('opening_balance').default(0).notNull(),
+    carriedForward: real('carried_forward').default(0).notNull(),
+    allotted: real('allotted').default(0).notNull(),
+    used: real('used').default(0).notNull(),
+    pending: real('pending').default(0).notNull(),
+
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    uniqueIndex('idx_employee_leave_balances_unique').on(
+      table.companyId,
+      table.employeeId,
+      table.leaveTypeId,
+      table.financialYearId,
+    ),
+    index('idx_employee_leave_balances_employee').on(table.companyId, table.employeeId),
+    index('idx_employee_leave_balances_fy').on(table.companyId, table.financialYearId),
+  ],
+);
+
+export type EmployeeLeaveBalance = typeof employee_leave_balances.$inferSelect;
+export type InsertEmployeeLeaveBalance = typeof employee_leave_balances.$inferInsert;
 
 export type EmployeeBankDetail = typeof employee_bank_details.$inferSelect;
 export type InsertEmployeeBankDetail = typeof employee_bank_details.$inferInsert;

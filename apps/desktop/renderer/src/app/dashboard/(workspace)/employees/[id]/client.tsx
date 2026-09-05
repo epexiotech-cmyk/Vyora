@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { EmployeeLeaveBalances } from './_components/EmployeeLeaveBalances';
 
 export default function ViewEmployeePage({ params }: { params: { id: string } }) {
   const [data, setData] = React.useState<EmployeeDto | null>(null);
@@ -370,6 +371,8 @@ export default function ViewEmployeePage({ params }: { params: { id: string } })
                 </div>
               )}
             </AppCard>
+
+            <EmployeeLeaveBalances employeeId={params.id} />
           </div>
         </div>
       </div>

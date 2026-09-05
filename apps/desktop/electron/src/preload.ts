@@ -187,6 +187,16 @@ const vyoraApi = {
         ipcRenderer.invoke('holidays:update', id, data),
       delete: (id: string) => ipcRenderer.invoke('holidays:deactivate', id),
     },
+    employeeLeaveBalances: {
+      search: (options: import('@vyora/types').SearchEmployeeLeaveBalancesOptions) =>
+        ipcRenderer.invoke('employee-leave-balances:search', options),
+      getById: (id: string) => ipcRenderer.invoke('employee-leave-balances:getById', id),
+      create: (data: import('@vyora/types').CreateEmployeeLeaveBalanceInput) =>
+        ipcRenderer.invoke('employee-leave-balances:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateEmployeeLeaveBalanceInput) =>
+        ipcRenderer.invoke('employee-leave-balances:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('employee-leave-balances:delete', id),
+    },
     expensePresets: {
       search: (options: import('@vyora/types').SearchExpensePresetsOptions) =>
         ipcRenderer.invoke('expense-presets:search', options),
@@ -794,6 +804,22 @@ export type VyoraDatabaseAPI = {
       id: string,
       data: import('@vyora/types').UpdateHolidayInput,
     ) => Promise<ApiResponse<import('@vyora/types').HolidayDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  employeeLeaveBalances: {
+    search: (
+      options: import('@vyora/types').SearchEmployeeLeaveBalancesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeLeaveBalanceListDto>>;
+    getById: (
+      id: string,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeLeaveBalanceDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateEmployeeLeaveBalanceInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeLeaveBalanceDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateEmployeeLeaveBalanceInput,
+    ) => Promise<ApiResponse<import('@vyora/types').EmployeeLeaveBalanceDto>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
   };
   expensePresets: {
