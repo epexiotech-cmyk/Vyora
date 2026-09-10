@@ -209,4 +209,36 @@ export class EmployeeLeaveBalanceRepository extends BaseRepository {
       )
       .run();
   }
+
+  public async incrementBalance(
+    id: string,
+    companyId: string,
+    deltas: { pendingDelta: number; usedDelta: number },
+    tx?: import('./BaseRepository').TransactionExecutor,
+  ): Promise<void> {
+    const db = tx || this.db;
+    const { pendingDelta, usedDelta } = deltas;
+
+    const result = await db
+      .update(employee_leave_balances)
+      .set({
+        pending: sql`${employee_leave_balances.pending} + ${pendingDelta}`,
+        used: sql`${employee_leave_balances.used} + ${usedDelta}`,
+        updatedAt: new Date(),
+        syncVersion: sql`${employee_leave_balances.syncVersion} + 1`,
+      })
+      .where(
+        and(
+          eq(employee_leave_balances.id, id),
+          eq(employee_leave_balances.companyId, companyId),
+          sql`${employee_leave_balances.pending} + ${pendingDelta} >= 0`,
+          sql`${employee_leave_balances.used} + ${usedDelta} >= 0`,
+        ),
+      )
+      .run();
+
+    if (result.changes === 0) {
+      throw new Error('Insufficient leave balance or balance not found.');
+    }
+  }
 }

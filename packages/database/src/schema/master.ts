@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import { ledgers } from './accounting';
-import { companies, states } from './system';
+import { companies, states, financial_years } from './system';
 
 export const taxes = sqliteTable('taxes', {
   id: text('id').primaryKey(),
@@ -437,3 +437,107 @@ export type InsertLeaveType = typeof leave_types.$inferInsert;
 
 export type Holiday = typeof holidays.$inferSelect;
 export type InsertHoliday = typeof holidays.$inferInsert;
+
+export const leave_policies = sqliteTable(
+  'leave_policies',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    leaveTypeId: text('leave_type_id')
+      .references(() => leave_types.id)
+      .notNull(),
+    employeeTypeId: text('employee_type_id')
+      .references(() => employee_types.id)
+      .notNull(),
+    financialYearId: text('financial_year_id')
+      .references(() => financial_years.id)
+      .notNull(),
+    annualEntitlement: real('annual_entitlement').default(0).notNull(),
+    maxCarryForward: real('max_carry_forward').default(0).notNull(),
+    isEncashable: integer('is_encashable', { mode: 'boolean' }).default(false).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    uniqueIndex('idx_leave_policies_unique').on(
+      table.companyId,
+      table.leaveTypeId,
+      table.employeeTypeId,
+      table.financialYearId,
+    ),
+  ],
+);
+
+export const weekly_off_policies = sqliteTable(
+  'weekly_off_policies',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    employeeTypeId: text('employee_type_id')
+      .references(() => employee_types.id)
+      .notNull(),
+    dayOfWeek: integer('day_of_week').notNull(), // 0 = Sunday, 6 = Saturday
+    isHalfDay: integer('is_half_day', { mode: 'boolean' }).default(false).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    uniqueIndex('idx_weekly_off_policies_unique').on(
+      table.companyId,
+      table.employeeTypeId,
+      table.dayOfWeek,
+    ),
+  ],
+);
+
+export type LeavePolicy = typeof leave_policies.$inferSelect;
+export type InsertLeavePolicy = typeof leave_policies.$inferInsert;
+
+export type WeeklyOffPolicy = typeof weekly_off_policies.$inferSelect;
+export type InsertWeeklyOffPolicy = typeof weekly_off_policies.$inferInsert;
+
+export const salary_components = sqliteTable(
+  'salary_components',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    code: text('code').notNull(),
+    name: text('name').notNull(),
+    category: text('category', { enum: ['Earning', 'Deduction'] }).notNull(),
+    calculationType: text('calculation_type', { enum: ['Fixed', 'Percentage'] }).notNull(),
+    calculationBase: text('calculation_base'),
+    baseComponentId: text('base_component_id').references(
+      (): import('drizzle-orm/sqlite-core').AnySQLiteColumn => salary_components.id,
+    ),
+    defaultAmount: integer('default_amount').default(0).notNull(),
+    defaultPercentage: real('default_percentage'),
+    displayOrder: integer('display_order').default(0).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    isBasic: integer('is_basic', { mode: 'boolean' }).default(false).notNull(),
+    isProrated: integer('is_prorated', { mode: 'boolean' }).default(true).notNull(),
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    index('idx_salary_components_company_id').on(table.companyId),
+    uniqueIndex('idx_salary_components_code').on(table.companyId, table.code),
+    index('idx_salary_components_display_order').on(table.companyId, table.displayOrder),
+  ],
+);
+
+export type SalaryComponent = typeof salary_components.$inferSelect;
+export type InsertSalaryComponent = typeof salary_components.$inferInsert;

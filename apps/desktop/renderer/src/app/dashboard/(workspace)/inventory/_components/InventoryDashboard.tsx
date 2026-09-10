@@ -4,11 +4,12 @@ import { GlobalInventoryRowDto } from '@vyora/types';
 import { AlertCircle } from 'lucide-react';
 import * as React from 'react';
 
+import { InventoryHealthStatus } from '../lib/inventory-health';
+
 import { GlobalInventoryGrid } from './GlobalInventoryGrid';
 import { InventoryAlertArea } from './InventoryAlertArea';
 import { InventoryKpiCards } from './InventoryKpiCards';
 
-import { InventoryHealthStatus } from '../lib/inventory-health';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 export function InventoryDashboard() {

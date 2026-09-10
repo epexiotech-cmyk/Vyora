@@ -1,10 +1,13 @@
 export type InventoryHealthStatus = 'NEGATIVE' | 'ZERO' | 'LOW' | 'IN_STOCK';
 
-export function getInventoryHealthStatus(currentQty: number, reorderLevel: number): InventoryHealthStatus {
+export function getInventoryHealthStatus(
+  currentQty: number,
+  reorderLevel: number,
+): InventoryHealthStatus {
   if (currentQty < 0) {
     return 'NEGATIVE';
   }
-  
+
   if (currentQty === 0) {
     return 'ZERO';
   }

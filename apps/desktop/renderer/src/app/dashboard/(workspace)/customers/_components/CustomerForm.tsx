@@ -32,10 +32,10 @@ import { AppFormPhoneInput } from '@/components/forms/AppFormPhoneInput';
 import { AppGstinInput } from '@/components/forms/AppGstinInput';
 import { AppPanInput } from '@/components/forms/AppPanInput';
 import { FormInput } from '@/components/forms/FormInput';
+import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { customerSchema, CustomerFormValues } from '@/lib/validations/customerSchema';
 
 interface CustomerFormProps {

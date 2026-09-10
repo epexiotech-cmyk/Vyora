@@ -4,9 +4,10 @@ import { GlobalInventoryRowDto } from '@vyora/types';
 import { formatMoney } from '@vyora/utils';
 import * as React from 'react';
 
+import { getInventoryHealthStatus, InventoryHealthStatus } from '../lib/inventory-health';
+
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { AppCard, AppCardContent, AppCardHeader, AppCardTitle } from '@/components/ui/AppCard';
-import { getInventoryHealthStatus, InventoryHealthStatus } from '../lib/inventory-health';
 
 export interface InventoryKpiCardsProps {
   data: GlobalInventoryRowDto[];
@@ -16,9 +17,15 @@ export interface InventoryKpiCardsProps {
 export function InventoryKpiCards({ data, onFilterStatus }: InventoryKpiCardsProps) {
   const { context } = useCompanyContext();
   const totalProducts = data.length;
-  const itemsInStock = data.filter((row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'IN_STOCK').length;
-  const negativeStockItems = data.filter((row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'NEGATIVE').length;
-  const lowStockItems = data.filter((row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'LOW').length;
+  const itemsInStock = data.filter(
+    (row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'IN_STOCK',
+  ).length;
+  const negativeStockItems = data.filter(
+    (row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'NEGATIVE',
+  ).length;
+  const lowStockItems = data.filter(
+    (row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === 'LOW',
+  ).length;
   const totalInventoryValue = data.reduce((sum, row) => sum + row.currentValuePaise, 0);
 
   return (
@@ -41,8 +48,10 @@ export function InventoryKpiCards({ data, onFilterStatus }: InventoryKpiCardsPro
         </AppCardContent>
       </AppCard>
 
-      <AppCard 
-        className={lowStockItems > 0 ? "cursor-pointer hover:border-warning/50 transition-colors" : ""}
+      <AppCard
+        className={
+          lowStockItems > 0 ? 'hover:border-warning/50 cursor-pointer transition-colors' : ''
+        }
         onClick={() => lowStockItems > 0 && onFilterStatus('LOW')}
       >
         <AppCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -53,8 +62,12 @@ export function InventoryKpiCards({ data, onFilterStatus }: InventoryKpiCardsPro
         </AppCardContent>
       </AppCard>
 
-      <AppCard 
-        className={negativeStockItems > 0 ? "cursor-pointer hover:border-destructive/50 transition-colors" : ""}
+      <AppCard
+        className={
+          negativeStockItems > 0
+            ? 'hover:border-destructive/50 cursor-pointer transition-colors'
+            : ''
+        }
         onClick={() => negativeStockItems > 0 && onFilterStatus('NEGATIVE')}
       >
         <AppCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -36,10 +36,13 @@ export * from './workLocationHandlers';
 export * from './employeeExpenseTypeHandlers';
 export * from './leaveTypeHandlers';
 export * from './holidayHandlers';
+export * from './payrollPeriodHandlers';
+export * from './payrollResultHandlers';
 import { DeveloperFeatures } from '../../main/DeveloperFeatures';
 
 import { registerAccountingHandlers } from './accountingHandlers';
 import { registerAppSettingsHandlers } from './appSettingsHandlers';
+import { registerAttendanceHandlers } from './attendanceHandlers';
 import { registerAuthHandlers } from './authHandlers';
 import { registerBootstrapHandlers } from './bootstrapHandlers';
 import { registerCalculationHandlers } from './calculationHandlers';
@@ -59,6 +62,7 @@ import { registerEmployeeDocumentHandlers } from './employeeDocumentHandlers';
 import { registerEmployeeExpenseTypeHandlers } from './employeeExpenseTypeHandlers';
 import { registerEmployeeHandlers } from './employeeHandlers';
 import { registerEmployeeLeaveBalanceHandlers } from './employeeLeaveBalanceHandlers';
+import { registerEmployeeSalaryStructureHandlers } from './employeeSalaryStructureHandlers';
 import { registerEmployeeTypeHandlers } from './employeeTypeHandlers';
 import { registerExpensePresetHandlers } from './expensePresetHandlers';
 import { registerExportHandlers } from './exportHandlers';
@@ -68,14 +72,20 @@ import { registerHolidayHandlers } from './holidayHandlers';
 import { registerHsnHandlers } from './hsnHandlers';
 import { registerInventoryHandlers } from './inventoryHandlers';
 import { registerJournalHandlers } from './journalHandlers';
+import { registerLeavePolicyHandlers } from './leavePolicyHandlers';
+import { registerLeaveRequestHandlers } from './leaveRequestHandlers';
 import { registerLeaveTypeHandlers } from './leaveTypeHandlers';
 import { registerPaymentAccountHandlers } from './paymentAccountHandlers';
+import { registerPayrollExportHandlers } from './payrollExportHandlers';
+import { registerPayrollPeriodHandlers } from './payrollPeriodHandlers';
+import { registerPayrollResultHandlers } from './payrollResultHandlers';
 import { registerPincodeHandlers } from './pincodeHandlers';
 import { registerPrintHandlers } from './printHandlers';
 import { registerProductHandlers } from './productHandlers';
 import { registerPurchaseHandlers } from './purchaseHandlers';
 import { registerReportsHandlers } from './reportsHandlers';
 import { registerSacHandlers } from './sacHandlers';
+import { registerSalaryComponentHandlers } from './salaryComponentHandlers';
 import { registerSalesInvoiceHandlers } from './salesHandlers';
 import { registerStateHandlers } from './stateHandlers';
 import { registerSupplierHandlers } from './supplierHandlers';
@@ -83,6 +93,7 @@ import { registerSystemHandlers } from './systemHandlers';
 import { registerTaxHandlers } from './taxHandlers';
 import { registerUnitHandlers } from './unitHandlers';
 import { registerUqcHandlers } from './uqcHandlers';
+import { registerWeeklyOffPolicyHandlers } from './weeklyOffPolicyHandlers';
 import { registerWorkLocationHandlers } from './workLocationHandlers';
 
 export function registerAllHandlers(): void {
@@ -130,6 +141,15 @@ export function registerAllHandlers(): void {
   registerLeaveTypeHandlers();
   registerHolidayHandlers();
   registerEmployeeLeaveBalanceHandlers();
+  registerLeavePolicyHandlers();
+  registerLeaveRequestHandlers();
+  registerAttendanceHandlers();
+  registerPayrollExportHandlers();
+  registerPayrollPeriodHandlers();
+  registerPayrollResultHandlers();
+  registerWeeklyOffPolicyHandlers();
+  registerSalaryComponentHandlers();
+  registerEmployeeSalaryStructureHandlers();
 
   // Register unconditional developer features check
   registerDeveloperFeaturesHandlers();

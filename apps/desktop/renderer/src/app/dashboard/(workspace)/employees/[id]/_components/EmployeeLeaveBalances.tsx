@@ -67,6 +67,16 @@ export function EmployeeLeaveBalances({ employeeId }: EmployeeLeaveBalancesProps
     return () => clearTimeout(timer);
   }, [loadData]);
 
+  React.useEffect(() => {
+    const handleRefresh = () => {
+      void loadData();
+    };
+    window.addEventListener('vyora:refreshLeaveBalances', handleRefresh);
+    return () => {
+      window.removeEventListener('vyora:refreshLeaveBalances', handleRefresh);
+    };
+  }, [loadData]);
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this leave balance?')) return;
     try {

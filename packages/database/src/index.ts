@@ -11,3 +11,4 @@ export * from './seed';
 export * from './schema/accounting';
 export * from './schema/paymentAccounts';
 export * from './schema/employee';
+export * from './schema/payroll';

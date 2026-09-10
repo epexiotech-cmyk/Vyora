@@ -5,10 +5,11 @@ import { formatMoney } from '@vyora/utils';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
+import { getInventoryHealthStatus, InventoryHealthStatus } from '../lib/inventory-health';
+
 import { useCompanyContext } from '@/components/providers/CompanyContextProvider';
 import { ColumnDef, DataTable } from '@/components/shared/table/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { getInventoryHealthStatus, InventoryHealthStatus } from '../lib/inventory-health';
 import { cn } from '@/lib/utils';
 
 export interface GlobalInventoryGridProps {
@@ -60,10 +61,12 @@ export function GlobalInventoryGrid({
           <div className="flex flex-col">
             <span
               className={cn(
-                "font-medium",
-                status === 'NEGATIVE' ? 'text-destructive font-semibold' : 
-                status === 'LOW' ? 'text-warning font-semibold' : 
-                'text-foreground'
+                'font-medium',
+                status === 'NEGATIVE'
+                  ? 'text-destructive font-semibold'
+                  : status === 'LOW'
+                    ? 'text-warning font-semibold'
+                    : 'text-foreground',
               )}
             >
               {item.currentQty}
@@ -75,11 +78,7 @@ export function GlobalInventoryGrid({
     {
       key: 'reorderLevel',
       header: 'Reorder Level',
-      cell: (item) => (
-        <span className="text-muted-foreground">
-          {item.reorderLevel}
-        </span>
-      ),
+      cell: (item) => <span className="text-muted-foreground">{item.reorderLevel}</span>,
     },
     {
       key: 'currentWacPaise',
@@ -104,7 +103,8 @@ export function GlobalInventoryGrid({
       header: 'Status',
       cell: (item) => {
         const status = getInventoryHealthStatus(item.currentQty, item.reorderLevel);
-        if (status === 'NEGATIVE') return <StatusBadge variant="destructive">Negative Stock</StatusBadge>;
+        if (status === 'NEGATIVE')
+          return <StatusBadge variant="destructive">Negative Stock</StatusBadge>;
         if (status === 'LOW') return <StatusBadge variant="warning">Low Stock</StatusBadge>;
         if (status === 'ZERO') return <StatusBadge variant="secondary">Zero Stock</StatusBadge>;
         return <StatusBadge variant="success">In Stock</StatusBadge>;
@@ -119,7 +119,9 @@ export function GlobalInventoryGrid({
     if (showNegativeOnly) {
       result = result.filter((row) => row.currentQty < 0);
     } else if (statusFilter !== 'ALL') {
-      result = result.filter((row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === statusFilter);
+      result = result.filter(
+        (row) => getInventoryHealthStatus(row.currentQty, row.reorderLevel) === statusFilter,
+      );
     }
 
     if (searchQuery) {
@@ -155,9 +157,11 @@ export function GlobalInventoryGrid({
           <div className="flex items-center space-x-4">
             {onStatusFilterChange ? (
               <select
-                className="text-sm rounded-md border border-input bg-background px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="border-input bg-background focus:ring-primary rounded-md border px-3 py-1.5 text-sm focus:ring-2 focus:outline-none"
                 value={statusFilter}
-                onChange={(e) => onStatusFilterChange(e.target.value as InventoryHealthStatus | 'ALL')}
+                onChange={(e) =>
+                  onStatusFilterChange(e.target.value as InventoryHealthStatus | 'ALL')
+                }
               >
                 <option value="ALL">All Status</option>
                 <option value="NEGATIVE">Negative Stock</option>

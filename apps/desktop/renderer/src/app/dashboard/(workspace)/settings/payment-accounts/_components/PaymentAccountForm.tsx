@@ -11,11 +11,11 @@ import * as React from 'react';
 import { useForm, FormProvider, useWatch, Resolver } from 'react-hook-form';
 import { z } from 'zod';
 
+import { BalanceImpactMessage } from '../../../accounting/_components/BalanceImpactMessage';
+
 import { AppField } from '@/components/forms/AppField';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect } from '@/components/forms/FormSelect';
-
-import { BalanceImpactMessage } from '../../../accounting/_components/BalanceImpactMessage';
 
 export type PaymentAccountFormPayload = (CreatePaymentAccountInput | UpdatePaymentAccountInput) & {
   openingBalanceAmount?: number;

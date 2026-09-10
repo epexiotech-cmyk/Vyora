@@ -187,6 +187,28 @@ const vyoraApi = {
         ipcRenderer.invoke('holidays:update', id, data),
       delete: (id: string) => ipcRenderer.invoke('holidays:deactivate', id),
     },
+    leavePolicies: {
+      search: (options: import('@vyora/types').SearchLeavePoliciesOptions) =>
+        ipcRenderer.invoke('leavePolicies:search', options),
+      getAll: () => ipcRenderer.invoke('leavePolicies:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('leavePolicies:getById', id),
+      create: (data: import('@vyora/types').CreateLeavePolicyInput) =>
+        ipcRenderer.invoke('leavePolicies:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateLeavePolicyInput) =>
+        ipcRenderer.invoke('leavePolicies:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('leavePolicies:deactivate', id),
+    },
+    weeklyOffPolicies: {
+      search: (options: import('@vyora/types').SearchWeeklyOffPoliciesOptions) =>
+        ipcRenderer.invoke('weeklyOffPolicies:search', options),
+      getAll: () => ipcRenderer.invoke('weeklyOffPolicies:getAll'),
+      getById: (id: string) => ipcRenderer.invoke('weeklyOffPolicies:getById', id),
+      create: (data: import('@vyora/types').CreateWeeklyOffPolicyInput) =>
+        ipcRenderer.invoke('weeklyOffPolicies:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateWeeklyOffPolicyInput) =>
+        ipcRenderer.invoke('weeklyOffPolicies:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('weeklyOffPolicies:deactivate', id),
+    },
     employeeLeaveBalances: {
       search: (options: import('@vyora/types').SearchEmployeeLeaveBalancesOptions) =>
         ipcRenderer.invoke('employee-leave-balances:search', options),
@@ -196,6 +218,22 @@ const vyoraApi = {
       update: (id: string, data: import('@vyora/types').UpdateEmployeeLeaveBalanceInput) =>
         ipcRenderer.invoke('employee-leave-balances:update', id, data),
       delete: (id: string) => ipcRenderer.invoke('employee-leave-balances:delete', id),
+    },
+    leaveRequests: {
+      search: (options: import('@vyora/types').SearchLeaveRequestsOptions) =>
+        ipcRenderer.invoke('leave-requests:search', options),
+      getById: (id: string) => ipcRenderer.invoke('leave-requests:getById', id),
+      create: (data: import('@vyora/types').CreateLeaveRequestInput) =>
+        ipcRenderer.invoke('leave-requests:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateLeaveRequestInput) =>
+        ipcRenderer.invoke('leave-requests:update', id, data),
+      delete: (id: string) => ipcRenderer.invoke('leave-requests:delete', id),
+      approve: (id: string, data: import('@vyora/types').ApproveLeaveRequestInput) =>
+        ipcRenderer.invoke('leave-requests:approve', id, data),
+      reject: (id: string, data: import('@vyora/types').RejectLeaveRequestInput) =>
+        ipcRenderer.invoke('leave-requests:reject', id, data),
+      cancel: (id: string, data: import('@vyora/types').CancelLeaveRequestInput) =>
+        ipcRenderer.invoke('leave-requests:cancel', id, data),
     },
     expensePresets: {
       search: (options: import('@vyora/types').SearchExpensePresetsOptions) =>
@@ -242,6 +280,44 @@ const vyoraApi = {
       update: (id: string, data: import('@vyora/types').UpdateEmployeeDocumentInput) =>
         ipcRenderer.invoke('employeeDocument:update', id, data),
       deactivate: (id: string) => ipcRenderer.invoke('employeeDocument:deactivate', id),
+    },
+    attendance: {
+      search: (options: import('@vyora/types').SearchAttendanceOptions) =>
+        ipcRenderer.invoke('attendance:search', options),
+      getById: (id: string) => ipcRenderer.invoke('attendance:getById', id),
+      mark: (data: import('@vyora/types').MarkAttendanceInput) =>
+        ipcRenderer.invoke('attendance:mark', data),
+      clear: (data: import('@vyora/types').ClearAttendanceInput) =>
+        ipcRenderer.invoke('attendance:clear', data),
+    },
+    payrollExport: {
+      generate: (options: import('@vyora/types').PayrollExportOptions) =>
+        ipcRenderer.invoke('payroll-export:generate', options),
+    },
+    salaryComponents: {
+      search: (options: import('@vyora/types').SearchSalaryComponentsOptions) =>
+        ipcRenderer.invoke('salary-components:search', options),
+      getById: (id: string) => ipcRenderer.invoke('salary-components:getById', id),
+      create: (data: import('@vyora/types').CreateSalaryComponentInput) =>
+        ipcRenderer.invoke('salary-components:create', data),
+      update: (id: string, data: import('@vyora/types').UpdateSalaryComponentInput) =>
+        ipcRenderer.invoke('salary-components:update', id, data),
+      deactivate: (id: string) => ipcRenderer.invoke('salary-components:deactivate', id),
+    },
+    employeeSalaryStructures: {
+      getByEmployeeId: (employeeId: string) =>
+        ipcRenderer.invoke('employee-salary-structures:getByEmployeeId', employeeId),
+      getById: (id: string) => ipcRenderer.invoke('employee-salary-structures:getById', id),
+      create: (data: import('@vyora/types').CreateSalaryStructureInput) =>
+        ipcRenderer.invoke('employee-salary-structures:create', data),
+    },
+    payrollPeriods: {
+      list: () => ipcRenderer.invoke('payroll-periods:list'),
+      get: (id: string) => ipcRenderer.invoke('payroll-periods:get', id),
+      create: (data: import('@vyora/types').CreatePayrollPeriodDto) =>
+        ipcRenderer.invoke('payroll-periods:create', data),
+      lock: (id: string) => ipcRenderer.invoke('payroll-periods:lock', id),
+      unlock: (id: string) => ipcRenderer.invoke('payroll-periods:unlock', id),
     },
     sales: {
       createInvoice: (data: CreateSalesInvoiceInput) =>
@@ -615,6 +691,14 @@ const vyoraApi = {
     getRelations: (tableName: string, row: Record<string, unknown>) =>
       ipcRenderer.invoke('developer:database:getRelations', tableName, row),
   },
+  payrollSnapshot: {
+    createForPeriod: (command: import('@vyora/types').CreatePayrollSnapshotCommandDto) =>
+      ipcRenderer.invoke('payrollSnapshot:createForPeriod', command),
+  },
+  payrollCalculation: {
+    calculatePayrollResult: (id: string) => ipcRenderer.invoke('payrollResult:calculate', id),
+    calculatePeriod: (id: string) => ipcRenderer.invoke('payrollPeriod:calculate', id),
+  },
 };
 
 contextBridge.exposeInMainWorld('vyora', vyoraApi);
@@ -806,6 +890,36 @@ export type VyoraDatabaseAPI = {
     ) => Promise<ApiResponse<import('@vyora/types').HolidayDto>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
   };
+  leavePolicies: {
+    search: (
+      options: import('@vyora/types').SearchLeavePoliciesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').LeavePolicyListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').LeavePolicyDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').LeavePolicyDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateLeavePolicyInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeavePolicyDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateLeavePolicyInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeavePolicyDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  weeklyOffPolicies: {
+    search: (
+      options: import('@vyora/types').SearchWeeklyOffPoliciesOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').WeeklyOffPolicyListDto>>;
+    getAll: () => Promise<ApiResponse<import('@vyora/types').WeeklyOffPolicyDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').WeeklyOffPolicyDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateWeeklyOffPolicyInput,
+    ) => Promise<ApiResponse<import('@vyora/types').WeeklyOffPolicyDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateWeeklyOffPolicyInput,
+    ) => Promise<ApiResponse<import('@vyora/types').WeeklyOffPolicyDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+  };
   employeeLeaveBalances: {
     search: (
       options: import('@vyora/types').SearchEmployeeLeaveBalancesOptions,
@@ -821,6 +935,84 @@ export type VyoraDatabaseAPI = {
       data: import('@vyora/types').UpdateEmployeeLeaveBalanceInput,
     ) => Promise<ApiResponse<import('@vyora/types').EmployeeLeaveBalanceDto>>;
     delete: (id: string) => Promise<ApiResponse<void>>;
+  };
+  leaveRequests: {
+    search: (
+      options: import('@vyora/types').SearchLeaveRequestsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveRequestListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').LeaveRequestDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateLeaveRequestInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveRequestDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateLeaveRequestInput,
+    ) => Promise<ApiResponse<import('@vyora/types').LeaveRequestDto>>;
+    delete: (id: string) => Promise<ApiResponse<void>>;
+    approve: (
+      id: string,
+      data: import('@vyora/types').ApproveLeaveRequestInput,
+    ) => Promise<ApiResponse<void>>;
+    reject: (
+      id: string,
+      data: import('@vyora/types').RejectLeaveRequestInput,
+    ) => Promise<ApiResponse<void>>;
+    cancel: (
+      id: string,
+      data: import('@vyora/types').CancelLeaveRequestInput,
+    ) => Promise<ApiResponse<void>>;
+  };
+  attendance: {
+    search: (
+      options: import('@vyora/types').SearchAttendanceOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').AttendanceListDto>>;
+    getById: (
+      id: string,
+    ) => Promise<ApiResponse<import('@vyora/types').AttendanceRecordDto | null>>;
+    mark: (
+      data: import('@vyora/types').MarkAttendanceInput,
+    ) => Promise<ApiResponse<import('@vyora/types').AttendanceRecordDto>>;
+    clear: (data: import('@vyora/types').ClearAttendanceInput) => Promise<ApiResponse<void>>;
+    aggregate: (
+      options: import('@vyora/types').AggregateAttendanceOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').AttendanceAggregationResult>>;
+  };
+  payrollExport: {
+    generate: (
+      options: import('@vyora/types').PayrollExportOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').PayrollExportResult>>;
+  };
+  salaryComponents: {
+    search: (
+      options: import('@vyora/types').SearchSalaryComponentsOptions,
+    ) => Promise<ApiResponse<import('@vyora/types').SalaryComponentListDto>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').SalaryComponentDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateSalaryComponentInput,
+    ) => Promise<ApiResponse<import('@vyora/types').SalaryComponentDto>>;
+    update: (
+      id: string,
+      data: import('@vyora/types').UpdateSalaryComponentInput,
+    ) => Promise<ApiResponse<import('@vyora/types').SalaryComponentDto>>;
+    deactivate: (id: string) => Promise<ApiResponse<void>>;
+  };
+  employeeSalaryStructures: {
+    getByEmployeeId: (
+      employeeId: string,
+    ) => Promise<ApiResponse<import('@vyora/types').SalaryStructureDto[]>>;
+    getById: (id: string) => Promise<ApiResponse<import('@vyora/types').SalaryStructureDto | null>>;
+    create: (
+      data: import('@vyora/types').CreateSalaryStructureInput,
+    ) => Promise<ApiResponse<import('@vyora/types').SalaryStructureDto>>;
+  };
+  payrollPeriods: {
+    list: () => Promise<import('@vyora/types').PayrollPeriod[]>;
+    get: (id: string) => Promise<import('@vyora/types').PayrollPeriod>;
+    create: (
+      data: import('@vyora/types').CreatePayrollPeriodDto,
+    ) => Promise<import('@vyora/types').PayrollPeriod>;
+    lock: (id: string) => Promise<import('@vyora/types').PayrollPeriod>;
+    unlock: (id: string) => Promise<import('@vyora/types').PayrollPeriod>;
   };
   expensePresets: {
     search: (
@@ -1380,6 +1572,19 @@ declare global {
       developerDatabase: VyoraDeveloperDatabaseAPI;
       paymentAccounts: VyoraPaymentAccountAPI;
       fundTransfers: VyoraFundTransferAPI;
+      payrollSnapshot: VyoraPayrollSnapshotAPI;
+      payrollCalculation: VyoraPayrollCalculationAPI;
     };
   }
 }
+
+export type VyoraPayrollSnapshotAPI = {
+  createForPeriod: (
+    command: import('@vyora/types').CreatePayrollSnapshotCommandDto,
+  ) => Promise<import('@vyora/types').ApiResponse<void>>;
+};
+
+export type VyoraPayrollCalculationAPI = {
+  calculatePayrollResult: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+  calculatePeriod: (id: string) => Promise<import('@vyora/types').ApiResponse<void>>;
+};

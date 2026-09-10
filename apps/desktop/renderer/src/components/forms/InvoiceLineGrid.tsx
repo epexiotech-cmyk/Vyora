@@ -61,7 +61,11 @@ function InvoiceLineRow({
 
   const currentStock = useWatch({ control, name: `lines.${index}.currentStock` });
   const currentQty = useWatch({ control, name: `lines.${index}.qty` });
-  const isOutOfStock = currentStock !== null && currentStock !== undefined && currentStock !== 'loading' && Number(currentQty) > Number(currentStock);
+  const isOutOfStock =
+    currentStock !== null &&
+    currentStock !== undefined &&
+    currentStock !== 'loading' &&
+    Number(currentQty) > Number(currentStock);
 
   // Can remove if it's not the only row, or if it is the only row but has a product selected
   const canRemove = totalRows > 1 || !!productId;
@@ -87,7 +91,7 @@ function InvoiceLineRow({
       {/* 2. Product */}
       <div
         className={cn(
-          'border-border/50 flex min-h-[3rem] py-1 flex-1 flex-col justify-center border-r px-2 relative',
+          'border-border/50 relative flex min-h-[3rem] flex-1 flex-col justify-center border-r px-2 py-1',
           lineErrors.productId && 'bg-destructive/10',
         )}
         title={lineErrors.productId?.message as string | undefined}
@@ -104,43 +108,53 @@ function InvoiceLineRow({
           disabled={isReadOnly}
         />
         {currentStock === 'loading' && (
-          <div className="mt-0.5 flex items-center gap-1 rounded-sm border border-border/50 bg-muted/30 px-1.5 py-0.5 w-fit">
-            <span className="text-[11px] text-muted-foreground animate-pulse font-medium">
+          <div className="border-border/50 bg-muted/30 mt-0.5 flex w-fit items-center gap-1 rounded-sm border px-1.5 py-0.5">
+            <span className="text-muted-foreground animate-pulse text-[11px] font-medium">
               Checking stock...
             </span>
           </div>
         )}
         {currentStock !== null && currentStock !== undefined && currentStock !== 'loading' && (
-          <div className={cn(
-            "mt-0.5 flex items-center gap-1.5 rounded-sm border px-2 py-0.5 w-fit shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
-            isOutOfStock ? "bg-destructive/10 border-destructive/20" : "bg-muted/20 border-border/50"
-          )}>
-            <Package className={cn(
-              "h-3 w-3",
-              isOutOfStock ? "text-destructive/70" : "text-muted-foreground/70"
-            )} />
-            <span className={cn(
-              "text-[11px]",
-              isOutOfStock ? "text-destructive font-medium" : "text-muted-foreground"
-            )}>
-              {isOutOfStock ? "Insufficient stock — Available:" : "Available Qty:"}
+          <div
+            className={cn(
+              'mt-0.5 flex w-fit items-center gap-1.5 rounded-sm border px-2 py-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]',
+              isOutOfStock
+                ? 'bg-destructive/10 border-destructive/20'
+                : 'bg-muted/20 border-border/50',
+            )}
+          >
+            <Package
+              className={cn(
+                'h-3 w-3',
+                isOutOfStock ? 'text-destructive/70' : 'text-muted-foreground/70',
+              )}
+            />
+            <span
+              className={cn(
+                'text-[11px]',
+                isOutOfStock ? 'text-destructive font-medium' : 'text-muted-foreground',
+              )}
+            >
+              {isOutOfStock ? 'Insufficient stock — Available:' : 'Available Qty:'}
             </span>
-            <span className={cn(
-              "text-[11px] font-semibold",
-              isOutOfStock || currentStock <= 0 ? "text-destructive" : "text-foreground"
-            )}>
+            <span
+              className={cn(
+                'text-[11px] font-semibold',
+                isOutOfStock || currentStock <= 0 ? 'text-destructive' : 'text-foreground',
+              )}
+            >
               {Intl.NumberFormat().format(Number(currentStock))}
             </span>
             {isOutOfStock && (
               <>
-                <span className="text-[11px] text-destructive/50 mx-0.5">|</span>
-                <span className="text-[11px] text-destructive font-medium">Invoice Qty:</span>
-                <span className="text-[11px] text-destructive font-semibold">
+                <span className="text-destructive/50 mx-0.5 text-[11px]">|</span>
+                <span className="text-destructive text-[11px] font-medium">Invoice Qty:</span>
+                <span className="text-destructive text-[11px] font-semibold">
                   {Intl.NumberFormat().format(Number(currentQty))}
                 </span>
-                <span className="text-[11px] text-destructive/50 mx-0.5">|</span>
-                <span className="text-[11px] text-destructive font-medium">Resulting Stock:</span>
-                <span className="text-[11px] text-destructive font-semibold">
+                <span className="text-destructive/50 mx-0.5 text-[11px]">|</span>
+                <span className="text-destructive text-[11px] font-medium">Resulting Stock:</span>
+                <span className="text-destructive text-[11px] font-semibold">
                   {Intl.NumberFormat().format(Number(currentStock) - Number(currentQty))}
                 </span>
               </>
@@ -152,7 +166,7 @@ function InvoiceLineRow({
       {/* 3. Qty */}
       <div
         className={cn(
-          'border-border/50 flex h-12 w-24 shrink-0 items-center border-r px-2 relative',
+          'border-border/50 relative flex h-12 w-24 shrink-0 items-center border-r px-2',
           (lineErrors.qty || isOutOfStock) && 'bg-destructive/10',
         )}
         title={lineErrors.qty?.message as string | undefined}
@@ -185,8 +199,8 @@ function InvoiceLineRow({
           data-testid={`line-qty-input-${index}`}
         />
         {isOutOfStock && (
-          <span 
-            className="text-[10px] text-destructive absolute bottom-1 right-2 font-bold leading-none" 
+          <span
+            className="text-destructive absolute right-2 bottom-1 text-[10px] leading-none font-bold"
             title={`Only ${currentStock} in stock`}
           >
             !
@@ -362,19 +376,22 @@ export function InvoiceLineGrid({
       setValue(`lines.${index}.taxId`, product.taxId || null);
       setValue(`lines.${index}.hsnCode`, product.hsnCode || null);
       setValue(`lines.${index}.itemTypeSnapshot`, product.itemType || null);
-      
+
       if (product.itemType === 'INVENTORY_ITEM') {
         setValue(`lines.${index}.currentStock`, 'loading');
-        window.vyora.inventory.getStock(product.id).then((stockRes) => {
-          if (stockRes.success && stockRes.data !== undefined) {
-            setValue(`lines.${index}.currentStock`, stockRes.data.stock);
-          } else {
+        window.vyora.inventory
+          .getStock(product.id)
+          .then((stockRes) => {
+            if (stockRes.success && stockRes.data !== undefined) {
+              setValue(`lines.${index}.currentStock`, stockRes.data.stock);
+            } else {
+              setValue(`lines.${index}.currentStock`, 0);
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch stock for product', err);
             setValue(`lines.${index}.currentStock`, 0);
-          }
-        }).catch((err) => {
-          console.error('Failed to fetch stock for product', err);
-          setValue(`lines.${index}.currentStock`, 0);
-        });
+          });
       } else {
         setValue(`lines.${index}.currentStock`, null);
       }

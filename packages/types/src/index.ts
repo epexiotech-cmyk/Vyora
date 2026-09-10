@@ -32,6 +32,12 @@ export * from './master/employeeExpenseType.dto';
 export * from './master/employee.dto';
 export * from './master/leaveType.dto';
 export * from './master/holiday.dto';
-
-
 export * from './master/employeeLeaveBalance.dto';
+export * from './master/leavePolicy.dto';
+export * from './master/weeklyOffPolicy.dto';
+export * from './master/leaveRequest.dto';
+export * from './master/attendance.dto';
+export * from './master/salaryComponent.dto';
+export * from './master/salaryStructure.dto';
+export * from './payroll/payrollPeriod.dto';
+export * from './payroll/payrollSnapshot.dto';

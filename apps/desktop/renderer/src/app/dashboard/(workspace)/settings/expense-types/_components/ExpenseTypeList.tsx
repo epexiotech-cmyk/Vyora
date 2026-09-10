@@ -4,10 +4,11 @@ import { ExpensePresetDto, LedgerDto, LedgerGroupDto } from '@vyora/types';
 import { Plus } from 'lucide-react';
 import * as React from 'react';
 
+import { useExpenseTypes } from '../hooks/useExpenseTypes';
+
 import { ExpenseTypeDialog } from './ExpenseTypeDialog';
 import { ExpenseTypeFormPayload } from './ExpenseTypeForm';
 import { ExpenseTypeTable } from './ExpenseTypeTable';
-import { useExpenseTypes } from '../hooks/useExpenseTypes';
 
 import { AppButton } from '@/components/ui/AppButton';
 

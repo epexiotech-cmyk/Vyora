@@ -60,6 +60,7 @@
     "test": "tests"
   },
   "dependencies": {
+    "decimal.js": "^10.6.0",
     "eslint-config-next": "^16.2.6",
     "eslint-import-resolver-node": "^0.3.10",
     "eslint-import-resolver-typescript": "^3.10.1",

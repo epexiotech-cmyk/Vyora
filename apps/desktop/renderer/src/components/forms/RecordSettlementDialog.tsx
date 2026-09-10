@@ -223,8 +223,12 @@ export function RecordSettlementDialog({
               documentNumber: d.documentNumber,
               documentDate: new Date(d.documentDate),
               grandTotal: d.grandTotal,
-              balanceDue: d.balanceDue, 
-              allocatedAmount: initialAlloc ? initialAlloc.allocatedAmount : (isDefault ? Math.min(defaultAmount || d.balanceDue, d.balanceDue) : 0),
+              balanceDue: d.balanceDue,
+              allocatedAmount: initialAlloc
+                ? initialAlloc.allocatedAmount
+                : isDefault
+                  ? Math.min(defaultAmount || d.balanceDue, d.balanceDue)
+                  : 0,
               isSelected: !!initialAlloc || isDefault,
             };
           });
@@ -565,43 +569,53 @@ export function RecordSettlementDialog({
           <span className="text-sm font-medium text-gray-500">Loading existing settlement...</span>
         </div>
       )}
-      
+
       {!isLoadingDocs && defaultAllocationId && outstandingDocs.length > 0 && (
-        <div className="bg-muted/30 mb-6 rounded-md p-4 text-sm border border-border/50">
-          <h4 className="font-semibold mb-2 text-foreground/80">
+        <div className="bg-muted/30 border-border/50 mb-6 rounded-md border p-4 text-sm">
+          <h4 className="text-foreground/80 mb-2 font-semibold">
             {type === 'PAYMENT' ? 'Purchase Context' : 'Sales Context'}
           </h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
-              <span className="text-muted-foreground block mb-1">Document Amount</span>
+              <span className="text-muted-foreground mb-1 block">Document Amount</span>
               <span className="font-medium">
-                {formatMoney(outstandingDocs.find(d => d.id === defaultAllocationId)?.grandTotal || 0)}
+                {formatMoney(
+                  outstandingDocs.find((d) => d.id === defaultAllocationId)?.grandTotal || 0,
+                )}
               </span>
             </div>
             <div>
-              <span className="text-muted-foreground block mb-1">Document Balance</span>
+              <span className="text-muted-foreground mb-1 block">Document Balance</span>
               <span className="font-medium">
-                {formatMoney(outstandingDocs.find(d => d.id === defaultAllocationId)?.balanceDue || 0)}
+                {formatMoney(
+                  outstandingDocs.find((d) => d.id === defaultAllocationId)?.balanceDue || 0,
+                )}
               </span>
             </div>
             <div>
-              <span className="text-muted-foreground block mb-1">
+              <span className="text-muted-foreground mb-1 block">
                 {type === 'PAYMENT' ? 'Supplier Outstanding' : 'Customer Outstanding'}
               </span>
-              <span className="font-medium">
-                {formatMoney(totalPendingPaise)}
-              </span>
+              <span className="font-medium">{formatMoney(totalPendingPaise)}</span>
             </div>
           </div>
         </div>
       )}
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit((data) => onSubmit(data as unknown as SettlementFormValues))} className="space-y-6">
+        <form
+          onSubmit={methods.handleSubmit((data) =>
+            onSubmit(data as unknown as SettlementFormValues),
+          )}
+          className="space-y-6"
+        >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <AppField name="partyId" label={type === 'PAYMENT' ? 'Supplier *' : 'Customer *'}>
               {type === 'PAYMENT' ? (
-                <PurchaseSupplierSelector name="partyId" disabled={isSubmitting || !!defaultPartyId} />
+                <PurchaseSupplierSelector
+                  name="partyId"
+                  disabled={isSubmitting || !!defaultPartyId}
+                />
               ) : (
                 <SalesCustomerSelector name="partyId" disabled={isSubmitting || !!defaultPartyId} />
               )}

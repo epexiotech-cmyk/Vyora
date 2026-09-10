@@ -1,6 +1,13 @@
 import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-import { employee_types, departments, designations, work_locations, leave_types } from './master';
+import {
+  employee_types,
+  departments,
+  designations,
+  work_locations,
+  leave_types,
+  salary_components,
+} from './master';
 import { companies, financial_years } from './system';
 
 export const employees = sqliteTable(
@@ -173,8 +180,160 @@ export const employee_leave_balances = sqliteTable(
 export type EmployeeLeaveBalance = typeof employee_leave_balances.$inferSelect;
 export type InsertEmployeeLeaveBalance = typeof employee_leave_balances.$inferInsert;
 
+export const leave_requests = sqliteTable(
+  'leave_requests',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    employeeId: text('employee_id')
+      .references(() => employees.id)
+      .notNull(),
+    leaveTypeId: text('leave_type_id')
+      .references(() => leave_types.id)
+      .notNull(),
+    financialYearId: text('financial_year_id')
+      .references(() => financial_years.id)
+      .notNull(),
+
+    fromDate: integer('from_date', { mode: 'timestamp' }).notNull(),
+    toDate: integer('to_date', { mode: 'timestamp' }).notNull(),
+    requestedDays: real('requested_days').notNull(),
+    reason: text('reason').notNull(),
+
+    status: text('status', {
+      enum: ['Pending', 'Approved', 'Rejected', 'Cancelled'],
+    })
+      .default('Pending')
+      .notNull(),
+
+    approverId: text('approver_id').references(
+      (): import('drizzle-orm/sqlite-core').AnySQLiteColumn => employees.id,
+    ),
+    approverRemarks: text('approver_remarks'),
+    approvedAt: integer('approved_at', { mode: 'timestamp' }),
+
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    index('idx_leave_requests_employee_fy').on(
+      table.companyId,
+      table.employeeId,
+      table.financialYearId,
+    ),
+    index('idx_leave_requests_status').on(table.companyId, table.status),
+  ],
+);
+
+export type LeaveRequest = typeof leave_requests.$inferSelect;
+export type InsertLeaveRequest = typeof leave_requests.$inferInsert;
+
 export type EmployeeBankDetail = typeof employee_bank_details.$inferSelect;
 export type InsertEmployeeBankDetail = typeof employee_bank_details.$inferInsert;
 
 export type EmployeeDocument = typeof employee_documents.$inferSelect;
 export type InsertEmployeeDocument = typeof employee_documents.$inferInsert;
+
+export const attendance_records = sqliteTable(
+  'attendance_records',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    employeeId: text('employee_id')
+      .references(() => employees.id)
+      .notNull(),
+    attendanceDate: integer('attendance_date', { mode: 'timestamp' }).notNull(),
+    status: text('status', {
+      enum: ['Present', 'Absent', 'Half Day'],
+    }).notNull(),
+    remarks: text('remarks'),
+
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_attendance_records_unique').on(
+      table.companyId,
+      table.employeeId,
+      table.attendanceDate,
+    ),
+    index('idx_attendance_records_company_date').on(table.companyId, table.attendanceDate),
+    index('idx_attendance_records_employee').on(table.companyId, table.employeeId),
+  ],
+);
+
+export type AttendanceRecord = typeof attendance_records.$inferSelect;
+export type InsertAttendanceRecord = typeof attendance_records.$inferInsert;
+
+export const employee_salary_structures = sqliteTable(
+  'employee_salary_structures',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    employeeId: text('employee_id')
+      .references(() => employees.id)
+      .notNull(),
+    effectiveFrom: integer('effective_from', { mode: 'timestamp' }).notNull(),
+    effectiveTo: integer('effective_to', { mode: 'timestamp' }),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+
+    syncVersion: integer('sync_version').default(1).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+    deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  },
+  (table) => [
+    index('idx_emp_salary_structures_company').on(table.companyId),
+    index('idx_emp_salary_structures_emp_date').on(
+      table.companyId,
+      table.employeeId,
+      table.effectiveFrom,
+    ),
+  ],
+);
+
+export type EmployeeSalaryStructure = typeof employee_salary_structures.$inferSelect;
+export type InsertEmployeeSalaryStructure = typeof employee_salary_structures.$inferInsert;
+
+export const employee_salary_structure_lines = sqliteTable(
+  'employee_salary_structure_lines',
+  {
+    id: text('id').primaryKey(),
+    companyId: text('company_id')
+      .references(() => companies.id)
+      .notNull(),
+    structureId: text('structure_id')
+      .references(() => employee_salary_structures.id)
+      .notNull(),
+    salaryComponentId: text('salary_component_id')
+      .references(() => salary_components.id)
+      .notNull(),
+
+    amount: integer('amount').default(0).notNull(),
+    percentage: real('percentage'),
+    displayOrder: integer('display_order').default(0).notNull(),
+
+    createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  },
+  (table) => [
+    index('idx_emp_sal_struct_lines_company').on(table.companyId),
+    index('idx_emp_sal_struct_lines_struct').on(table.companyId, table.structureId),
+    uniqueIndex('idx_emp_sal_struct_lines_unique').on(
+      table.companyId,
+      table.structureId,
+      table.salaryComponentId,
+    ),
+  ],
+);
+
+export type EmployeeSalaryStructureLine = typeof employee_salary_structure_lines.$inferSelect;
+export type InsertEmployeeSalaryStructureLine = typeof employee_salary_structure_lines.$inferInsert;

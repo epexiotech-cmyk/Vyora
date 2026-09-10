@@ -6,10 +6,14 @@ import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
 
+import { EmployeeAttendance } from './_components/EmployeeAttendance';
+import { EmployeeLeaveBalances } from './_components/EmployeeLeaveBalances';
+import { EmployeeLeaveRequests } from './_components/EmployeeLeaveRequests';
+import { EmployeeSalaryStructures } from './_components/EmployeeSalaryStructures';
+
 import { AppButton } from '@/components/ui/AppButton';
 import { AppCard } from '@/components/ui/AppCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { EmployeeLeaveBalances } from './_components/EmployeeLeaveBalances';
 
 export default function ViewEmployeePage({ params }: { params: { id: string } }) {
   const [data, setData] = React.useState<EmployeeDto | null>(null);
@@ -372,7 +376,10 @@ export default function ViewEmployeePage({ params }: { params: { id: string } })
               )}
             </AppCard>
 
+            <EmployeeSalaryStructures employeeId={params.id} />
             <EmployeeLeaveBalances employeeId={params.id} />
+            <EmployeeLeaveRequests employeeId={params.id} />
+            <EmployeeAttendance employeeId={params.id} />
           </div>
         </div>
       </div>

@@ -181,6 +181,45 @@ export default function SettingsPage() {
               </AppCardContent>
             </AppCard>
           </Link>
+
+          <Link href="/dashboard/settings/leave-policies">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Leave Policies</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Configure leave entitlements and policies per employee type.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/weekly-off-policies">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Weekly Off Policies</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Configure weekly off days and rules per employee type.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
+
+          <Link href="/dashboard/settings/salary-components">
+            <AppCard className="hover:border-primary/50 h-full cursor-pointer transition-colors">
+              <AppCardHeader>
+                <AppCardTitle>Salary Components</AppCardTitle>
+              </AppCardHeader>
+              <AppCardContent>
+                <p className="text-muted-foreground text-sm">
+                  Configure global earnings, deductions, and salary components.
+                </p>
+              </AppCardContent>
+            </AppCard>
+          </Link>
         </div>
       </div>
     </div>

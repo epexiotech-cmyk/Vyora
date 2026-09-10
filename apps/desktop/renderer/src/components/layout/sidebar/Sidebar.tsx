@@ -26,6 +26,7 @@ import {
   Wallet,
   Banknote,
   ReceiptText,
+  Calendar,
 } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
@@ -171,6 +172,17 @@ export function Sidebar() {
 
         <SidebarGroup label="Human Resources">
           <SidebarItem icon={Users} label="Employee Database" href="/dashboard/employees" />
+          <SidebarItem
+            icon={ListTree}
+            label="Attendance Register"
+            href="/dashboard/attendance/register"
+          />
+          <SidebarItem
+            icon={Calendar}
+            label="Leave Requests"
+            href="/dashboard/attendance/leave-requests"
+          />
+          <SidebarItem icon={FileText} label="Payroll Export" href="/dashboard/attendance/export" />
         </SidebarGroup>
       </div>
 
